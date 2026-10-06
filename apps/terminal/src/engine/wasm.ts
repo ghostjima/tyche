@@ -255,11 +255,11 @@ export const wasmEngine: Engine = {
     m.free();
     return out;
   },
-  calculate(issue, market, plan) {
+  calculate(issue, market, plan, feePct) {
     const i = issueOf(issue);
     const m = marketOf(market);
     const p = planOf(plan);
-    const out = result(glue.calculate(i, m, p), calculation);
+    const out = result(glue.calculate(i, m, p, feePct), calculation);
     i.free();
     m.free();
     p.free();

@@ -5,11 +5,11 @@
 // that takes it out; the measures down the side.
 import type { ReactNode } from "react";
 import { Button, Panel, Table, keepFocusInPlace } from "@ghostjima/stoa-react";
-import { COMMISSION_PCT } from "@tyche/yield-twin";
 import { CURVE, MARKET } from "../data/market";
 import type { Engine, Plan } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Item } from "../lib/filters";
+import { feeInRange } from "../lib/fee";
 import type { Formats } from "../lib/format";
 import { isLiquid } from "../lib/liquidity";
 import { gSpreadText } from "./Analogues";
@@ -27,19 +27,23 @@ export type CompareProps = {
   /** The plan each issue is worked out with: its own in the calculator,
    * else the default one. */
   planOf: (item: Item) => Plan;
+  /** The broker's fee in percent of each trade, the session's. */
+  feePct: number;
   onRemove: (id: string) => void;
   nameOf: (item: Item) => string;
   source: ReactNode;
 };
 
-export function Compare({ t, f, engine, items, planOf, onRemove, nameOf, source }: CompareProps) {
+export function Compare({ t, f, engine, items, planOf, feePct, onRemove, nameOf, source }: CompareProps) {
   const frequency = (days: number) => (days <= 31 ? t.chipMonthly : days <= 92 ? t.chipQuarterly : t.chipSemiannual);
   const couponKind = (i: Item) =>
     i.bond.coupon.kind === "fixed" ? t.chipFixed : i.bond.coupon.kind === "key_rate" ? t.chipKeyRate : i.bond.coupon.kind === "ruonia" ? t.chipRuonia : t.chipLinker;
-  // After tax and the fee to the nearest exit, nothing reinvested.
+  // After tax and the session's fee to the nearest exit, nothing
+  // reinvested.
   const afterTax = (i: Item) => {
-    const e = engine.explain(i.bond.issue, MARKET, planOf(i), COMMISSION_PCT, CURVE);
+    const e = engine.explain(i.bond.issue, MARKET, planOf(i), feePct, CURVE);
     if ("error" in e) return t.errors[e.error];
+    if (!feeInRange(feePct)) return t.feeOutOfRangeShort;
     const held = (e.ok.toOffer ?? e.ok.toMaturity).held;
     return held.annualPct === null ? t.overPeriod(f.percent(held.periodPct / 100)) : f.percent(held.annualPct / 100);
   };

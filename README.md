@@ -151,7 +151,8 @@ single-issue calculator: see [What is built](#what-is-built).
   decision is made (the offer with a countdown, amortisation,
   subordination, a floater's coupon resets, the rating's outlook, the
   qualified-investor flag and what it means, a liquidity warning with
-  its thresholds), the yield to maturity and to the offer after the fee
+  its thresholds), the yield to maturity and to the offer after the
+  broker's fee (a field, one value for the session, kept in the link)
   and after tax without reinvestment, with the working shown step by
   step and the Tax Code articles cited, clean and dirty price, accrued
   interest, durations and the payment schedule; the issue's analogues

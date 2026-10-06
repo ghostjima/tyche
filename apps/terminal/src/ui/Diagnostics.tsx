@@ -21,8 +21,8 @@ export type DiagnosticsProps = {
   activeKind: EngineKind | null;
   lastDeriveMs: number | null;
   lastCalculateMs: number | null;
-  /** What the timing runs on: the issue and plan on screen. */
-  subject: { issue: Issue; market: Market; plan: Plan } | null;
+  /** What the timing runs on: the issue, plan and fee on screen. */
+  subject: { issue: Issue; market: Market; plan: Plan; feePct: number } | null;
 };
 
 type Row = { id: string; engine: string; fn: string; median: number; p95: number };
@@ -39,10 +39,10 @@ export function Diagnostics({ t, f, isOpen, onOpenChange, engines, choice, onCho
     setBusy(true);
     // Let the busy state paint before the timing blocks the thread.
     setTimeout(() => {
-      const { issue, market, plan } = subject;
+      const { issue, market, plan, feePct } = subject;
       setTimings({
-        wasm: wasm ? timeEngine(wasm, issue, market, plan) : null,
-        twin: timeEngine(twinEngine, issue, market, plan),
+        wasm: wasm ? timeEngine(wasm, issue, market, plan, feePct) : null,
+        twin: timeEngine(twinEngine, issue, market, plan, feePct),
       });
       setBusy(false);
     }, 0);

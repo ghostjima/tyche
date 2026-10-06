@@ -50,6 +50,15 @@ for (const lang of LANGS) {
       await expect(page.locator(".working .stoa-table").first()).toBeVisible();
       await expectNoSeriousViolations(page, "fixed issue with an offer", { lang, theme });
 
+      // A broker's fee out of range: the field's message, the yield
+      // block's and the calculator's.
+      const fee = page.getByTestId("fee").locator("input");
+      await fee.fill("2");
+      await fee.press("Enter");
+      await expect(page.getByTestId("fee").getByRole("alert")).toBeVisible();
+      await expect(page.locator(".calculator").getByTestId("calc-error")).toBeVisible();
+      await expectNoSeriousViolations(page, "fee out of range", { lang, theme });
+
       // The risks at their fullest: subordinated, qualified only, a
       // negative outlook, a thin market.
       await open(page, lang, theme, "&issue=BELB-02");

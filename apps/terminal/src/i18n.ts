@@ -237,6 +237,14 @@ const en = {
     `Liquid: the synthetic order book quotes a spread of ${spread} (up to ${maxSpread} counts as liquid) and holds ${depth} bonds on each side (at least ${minDepth}).`,
 
   honestYield: "Yield after tax and fees",
+  feeLabel: "Broker's fee, % of each trade",
+  feeDesc: (min: string, max: string, usual: string) =>
+    `Charged on the purchase and on a sale before maturity, not at redemption. It lowers every yield after the fee and after tax in this block, the comparison's and the calculator's results. From ${min} to ${max}; ${usual} unless you change it.`,
+  feeRange: (min: string, max: string) => `Enter a fee from ${min} to ${max}.`,
+  feeOutOfRange: (min: string, max: string) => `The broker's fee is not from ${min} to ${max}, so the figures after it are not worked out.`,
+  feeOutOfRangeShort: "the fee is out of range",
+  feeReset: (usual: string) => `Use the usual fee, ${usual}`,
+  calcFee: (fee: string) => `Broker's fee: ${fee} of each trade, as set with the issue's yield.`,
   yieldCaption: "Yield to maturity and to the offer",
   colMeasure: "Held to",
   colYield: "Yield",
@@ -756,6 +764,14 @@ const ru: Strings = {
     `Ликвидный: в синтетическом стакане спред котировок ${spread} (ликвидным считается до ${maxSpread}) и ${depth} облигаций с каждой стороны (не меньше ${minDepth}).`,
 
   honestYield: "Доходность после налога и комиссии",
+  feeLabel: "Комиссия брокера, % от сделки",
+  feeDesc: (min, max, usual) =>
+    `Берётся при покупке и при продаже до погашения, при погашении не берётся. Уменьшает каждую доходность после комиссии и после налога в этом блоке, в сравнении и в результатах калькулятора. От ${min} до ${max}; ${usual}, если не менять.`,
+  feeRange: (min, max) => `Введите комиссию от ${min} до ${max}.`,
+  feeOutOfRange: (min, max) => `Комиссия брокера не в пределах от ${min} до ${max}, поэтому показатели после неё не посчитаны.`,
+  feeOutOfRangeShort: "комиссия вне пределов",
+  feeReset: (usual) => `Вернуть обычную комиссию, ${usual}`,
+  calcFee: (fee) => `Комиссия брокера: ${fee} от сделки, как задано у доходности выпуска.`,
   yieldCaption: "Доходность к погашению и к оферте",
   colMeasure: "Держать до",
   colYield: "Доходность",

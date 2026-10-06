@@ -13,7 +13,8 @@ export type EngineKind = "wasm" | "twin";
 export type Engine = {
   kind: EngineKind;
   derive_bond(issue: Issue, market: Market): Result<Derived>;
-  calculate(issue: Issue, market: Market, plan: Plan): Result<Calculation>;
+  /** A plan with a broker's fee in percent of each trade. */
+  calculate(issue: Issue, market: Market, plan: Plan, feePct: number): Result<Calculation>;
   /** The working behind the figures, for a plan, a broker's fee in
    * percent of each trade and the zero-coupon curve the G-spreads are
    * taken against. */

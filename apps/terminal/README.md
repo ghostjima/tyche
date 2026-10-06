@@ -54,10 +54,17 @@ Status: early. Performance record, with stamps:
   RUONIA, the synthetic rating with its outlook (from a fictional
   agency), who can buy it and what "qualified investors only" means,
   and liquidity from the synthetic order book against the named
-  thresholds, as a warning when it is thin. Then the yield to maturity
-  and to the offer side by side: as solved from the payments, after the
-  broker's 0.05 percent fee, and after tax and the fee with nothing
-  reinvested, for the calculator's amount, account and other income.
+  thresholds, as a warning when it is thin. Then the broker's fee, a
+  field in percent of each trade (0.05 by default, from 0 to 1 in steps
+  of 0.01), one value for the session that the card, the calculator and
+  the comparison share, kept in the URL (`?fee=`, left out at the
+  default) so a link reproduces the figures; a fee out of that range is
+  said under the field and announced, and the figures after it are not
+  shown, with a way back to the usual fee; a fee the engine refuses
+  (`invalid_fee`) is its sentence. Then the yield to maturity and to the
+  offer side by side: as solved from the payments, after the fee, and
+  after tax and the fee with nothing reinvested, for the calculator's
+  amount, account and other income.
   "How it is worked out" shows each step: the coupon and the accrued
   interest, every payment discounted at the solved yield, the yields
   after the fee and after tax, the G-spread of each yield (the Macaulay
@@ -101,8 +108,8 @@ Status: early. Performance record, with stamps:
   long-term holding relief on a gain held more than three years; the
   calculator says which rules apply at the chosen horizon and which
   revision of the Tax Code they follow. The result is the total at the
-  horizon as a signed breakdown (income positive, tax and commission
-  negative), the profit and the effective annual return, or the return
+  horizon as a signed breakdown (income positive, tax and the broker's
+  fee set with the issue's yield negative), the profit and the effective annual return, or the return
   over the period for a horizon under a month; the sale before maturity
   under the key-rate change (a fixed coupon's price moves by its
   duration, a floater's coupons follow the key rate and its price
@@ -161,8 +168,8 @@ URL (`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage,
 under `tyche.lang` and `tyche.theme`, and set before the first paint by
 Stoa's first-paint script, built from the same choices the app reads
 (`src/preferences.ts`). `?issue=TICKER` opens an issue,
-`?page=data` the data and licensing page, `?engine=twin` starts on the
-TypeScript engine.
+`?fee=0.3` sets the broker's fee in percent, `?page=data` the data and
+licensing page, `?engine=twin` starts on the TypeScript engine.
 
 ## Accessibility
 
@@ -172,14 +179,17 @@ What the tests cover, and nothing wider:
   Russian and English, each in the light and the dark theme, on:
   the list, a goal with its filters, "Money by a date" with its month,
   the data and licensing page, an issue with an offer (with the Terms
-  and the working open), an issue with every risk, three issues compared
+  and the working open), a broker's fee out of range, an issue with
+  every risk, three issues compared
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison and an
   issue at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
-  stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
+  stop), the arrow keys through it and Enter to open an issue, the
+  broker's fee by the arrow keys a hundredth of a percent at a time, the
+  horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
   close it; on a phone, an issue picked by pointer or by Enter opens with
   the focus on the Back button, and the page's Back button and the

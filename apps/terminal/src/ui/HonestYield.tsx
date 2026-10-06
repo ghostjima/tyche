@@ -3,12 +3,15 @@
 // nothing reinvested, for the calculator's amount, account and other
 // income, and the G-spread to the Bank of Russia's zero-coupon curve; then
 // how each figure is worked out, step by step, each step citing its rule.
-// Every figure comes from the engine's explain.
-import { DerivationTable, Disclosure, Table, type DerivationStep } from "@ghostjima/stoa-react";
+// The broker's fee is set here, one value for the session that the
+// calculator and the comparison share. Every figure comes from the
+// engine's explain.
+import { DerivationTable, Disclosure, NumberField, Table, type DerivationStep } from "@ghostjima/stoa-react";
 import { TAX_HIGHER_RATE_PCT, TAX_RATE_PCT } from "@tyche/yield-twin";
 import { TAX_RULES_DAY } from "../data/market";
 import type { Explanation, GSpread, Plan, Result, TaxYear, YieldTrace } from "../engine/types";
 import type { Strings } from "../i18n";
+import { FEE_DEFAULT, FEE_MAX, FEE_MIN, FEE_STEP, feeInRange } from "../lib/fee";
 import type { Formats } from "../lib/format";
 
 /** The day-count basis the engine's yields use. */
@@ -31,7 +34,42 @@ export type HonestYieldProps = {
   /** An inflation-linked issue: its yield is real, so it has no G-spread
    * to a nominal curve. */
   realYield: boolean;
+  /** The broker's fee in percent of each trade, as typed. */
+  feePct: number;
+  onFee: (feePct: number) => void;
 };
+
+/** The codes a fault in the fee or the curve gives, which this block
+ * explains itself; the plan's own errors are the calculator's to explain. */
+const OWN_ERRORS = new Set(["invalid_fee", "curve_missing", "invalid_curve"]);
+
+/** The fee, labelled, with what it is charged on and its range; an
+ * out-of-range value is said in words and announced. */
+function FeeField({ t, f, feePct, onFee }: { t: Strings; f: Formats; feePct: number; onFee: (feePct: number) => void }) {
+  const invalid = !feeInRange(feePct);
+  const pct = (v: number) => f.percent(v / 100, 2);
+  return (
+    <div className="calc-field fee-field" data-testid="fee">
+      <NumberField
+        label={t.feeLabel}
+        value={feePct}
+        onChange={onFee}
+        step={FEE_STEP}
+        keepTypedValue
+        unit="%"
+        aria-describedby={invalid ? "fee-desc fee-error" : "fee-desc"}
+      />
+      <p id="fee-desc" className="muted">
+        {t.feeDesc(pct(FEE_MIN), pct(FEE_MAX), pct(FEE_DEFAULT))}
+      </p>
+      {invalid && (
+        <p id="fee-error" className="stoa-field__error" role="alert">
+          {t.feeRange(pct(FEE_MIN), pct(FEE_MAX))}
+        </p>
+      )}
+    </div>
+  );
+}
 
 /** The annual return after tax and the fee, or the return over the
  * period where the engine does not annualise it. */
@@ -39,14 +77,26 @@ function afterTax(t: Strings, f: Formats, y: YieldTrace): string {
   return y.held.annualPct === null ? t.overPeriod(f.percent(y.held.periodPct / 100)) : f.percent(y.held.annualPct / 100);
 }
 
-export function HonestYield({ t, f, explanation, plan, realYield }: HonestYieldProps) {
-  if ("error" in explanation) {
+export function HonestYield({ t, f, explanation, plan, realYield, feePct, onFee }: HonestYieldProps) {
+  const pct = (v: number) => f.percent(v / 100, 2);
+  const blocked =
+    "error" in explanation
+      ? OWN_ERRORS.has(explanation.error)
+        ? t.errors[explanation.error]
+        : t.workingError
+      : feeInRange(feePct)
+        ? null
+        : t.feeOutOfRange(pct(FEE_MIN), pct(FEE_MAX));
+  if (blocked !== null || "error" in explanation) {
     return (
       <section className="block" aria-labelledby="yield-h" data-testid="honest-yield">
         <h3 id="yield-h" className="block__title">
           {t.honestYield}
         </h3>
-        <p className="muted">{t.workingError}</p>
+        <FeeField t={t} f={f} feePct={feePct} onFee={onFee} />
+        <p className="muted" data-testid="yield-error">
+          {blocked}
+        </p>
       </section>
     );
   }
@@ -67,6 +117,7 @@ export function HonestYield({ t, f, explanation, plan, realYield }: HonestYieldP
       <h3 id="yield-h" className="block__title">
         {t.honestYield}
       </h3>
+      <FeeField t={t} f={f} feePct={feePct} onFee={onFee} />
       {/* The measures down the side and the events across, so the table
           fits a phone: three columns at most. */}
       <Table<Measure>

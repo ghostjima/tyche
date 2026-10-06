@@ -1,8 +1,9 @@
 // The calculator for the chosen issue: the inputs, then the plan as a
 // signed breakdown, the sale before maturity under a key-rate change, the
 // floater's key-rate scenarios and, for an issue with an offer, selling
-// back against holding on. The engine computes everything; an error code
-// it returns is shown as a sentence, with a way back to valid inputs.
+// back against holding on, all after the broker's fee set with the issue's
+// yield. The engine computes everything; an error code it returns is shown
+// as a sentence, with a way back to valid inputs.
 import type { ReactNode } from "react";
 import {
   Button,
@@ -16,13 +17,15 @@ import {
   Slider,
   Switch,
   Table,
+  keepFocusInPlace,
   type TableColumn,
 } from "@ghostjima/stoa-react";
 import { IIS_B_LAST_OPEN_DAY, LDV_FIRST_DAY, TAX_RULES_DAY, dayToMs } from "../data/market";
 import type { Breakdown, Calculation, Derived, ErrorCode, Plan, Result, TaxRegime } from "../engine/types";
 import type { Strings } from "../i18n";
+import { FEE_DEFAULT, FEE_MAX, FEE_MIN, feeInRange } from "../lib/fee";
 import type { Formats } from "../lib/format";
-import { COMMISSION_PCT, LDV_CAP_PER_YEAR, TAX_HIGHER_RATE_PCT, TAX_RATE_PCT, TAX_THRESHOLD, WORST_CASE_COUPON_PCT } from "@tyche/yield-twin";
+import { LDV_CAP_PER_YEAR, TAX_HIGHER_RATE_PCT, TAX_RATE_PCT, TAX_THRESHOLD, WORST_CASE_COUPON_PCT } from "@tyche/yield-twin";
 
 /** What the calculator asks for: the engine's plan. */
 export type PlanInput = Plan;
@@ -42,6 +45,10 @@ export type CalculatorProps = {
   plan: PlanInput;
   onPlan: (p: PlanInput) => void;
   result: Result<Calculation>;
+  /** The broker's fee in percent of each trade, set with the issue's
+   * yield; the calculator shares it. */
+  feePct: number;
+  onFee: (feePct: number) => void;
   /** Where the figures come from, at the top of the calculator. */
   source: ReactNode;
 };
@@ -54,7 +61,8 @@ export function annualText(t: Strings, f: Formats, b: Breakdown): string {
   return b.annualPct === null ? t.overPeriod(f.percent(b.periodPct / 100)) : f.percent(b.annualPct / 100);
 }
 
-export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, source }: CalculatorProps) {
+export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, feePct, onFee, source }: CalculatorProps) {
+  const pct = (v: number) => f.percent(v / 100, 2);
   const set = (patch: Partial<PlanInput>) => onPlan({ ...plan, ...patch });
   const pp = (v: number) => t.shiftValue(f.signed(v, 1));
   const horizonText = (day: number) =>
@@ -129,6 +137,11 @@ export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, so
           format={pp}
           hint={floater ? t.shiftHintFloater : t.shiftHint}
         />
+        {Number.isFinite(feePct) && (
+          <p className="muted" data-testid="calc-fee">
+            {t.calcFee(pct(feePct))}
+          </p>
+        )}
       </div>
 
       <section className="block" aria-labelledby="result-h" data-testid="result">
@@ -136,9 +149,15 @@ export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, so
           {t.result}
         </h3>
         {"error" in result ? (
-          <CalcError t={t} code={result.error} onReset={() => onPlan(defaultPlan(d))} />
+          result.error === "invalid_fee" ? (
+            <FeeError t={t} text={t.errors.invalid_fee} usual={pct(FEE_DEFAULT)} onFee={onFee} />
+          ) : (
+            <CalcError t={t} code={result.error} onReset={() => onPlan(defaultPlan(d))} />
+          )
+        ) : !feeInRange(feePct) ? (
+          <FeeError t={t} text={t.feeOutOfRange(pct(FEE_MIN), pct(FEE_MAX))} usual={pct(FEE_DEFAULT)} onFee={onFee} />
         ) : (
-          <Results t={t} f={f} d={d} floater={floater} plan={plan} c={result.ok} pp={pp} />
+          <Results t={t} f={f} d={d} floater={floater} plan={plan} feePct={feePct} c={result.ok} pp={pp} />
         )}
       </section>
     </Panel>
@@ -155,14 +174,42 @@ function CalcError({ t, code, onReset }: { t: Strings; code: ErrorCode; onReset:
   );
 }
 
-function breakdownLines(t: Strings, f: Formats, b: Breakdown, toMaturity: boolean): Line[] {
+/** A fee the figures cannot be worked out with: why, and a way back to
+ * the usual fee. The fee field announces the fault itself, so this is not
+ * an alert. */
+function FeeError({ t, text, usual, onFee }: { t: Strings; text: string; usual: string; onFee: (feePct: number) => void }) {
+  return (
+    <div data-testid="calc-error" data-code="fee">
+      <Callout
+        tone="negative"
+        title={t.errorTitle}
+        action={
+          <Button
+            onPress={(e) => {
+              // The notice leaves with the reset; the focus moves on to the
+              // next stop instead of falling to the page.
+              keepFocusInPlace(e.target);
+              onFee(FEE_DEFAULT);
+            }}
+          >
+            {t.feeReset(usual)}
+          </Button>
+        }
+      >
+        {text}
+      </Callout>
+    </div>
+  );
+}
+
+function breakdownLines(t: Strings, f: Formats, b: Breakdown, toMaturity: boolean, feePct: number): Line[] {
   const lines: Line[] = [{ id: "coupons", label: t.rowCoupons, value: b.coupons }];
   if (b.reinvest !== 0) lines.push({ id: "reinvest", label: t.rowReinvest, value: b.reinvest });
   if (b.amort !== 0) lines.push({ id: "amort", label: t.rowAmort, value: b.amort });
   lines.push(
     { id: "body", label: toMaturity ? t.rowRedemption : t.rowSale, value: b.body },
     { id: "tax", label: t.rowTax, value: b.tax },
-    { id: "commission", label: t.rowCommission(f.percent(COMMISSION_PCT / 100)), value: b.commission },
+    { id: "commission", label: t.rowCommission(f.percent(feePct / 100, 2)), value: b.commission },
     { id: "total", label: t.rowTotal, value: b.total, total: true },
   );
   return lines;
@@ -174,6 +221,7 @@ function Results({
   d,
   floater,
   plan,
+  feePct,
   c,
   pp,
 }: {
@@ -182,6 +230,7 @@ function Results({
   d: Derived;
   floater: boolean;
   plan: PlanInput;
+  feePct: number;
   c: Calculation;
   pp: (v: number) => string;
 }) {
@@ -208,7 +257,7 @@ function Results({
         wrapHeaders
         caption={t.breakdownCaption}
         columns={lineColumns}
-        rows={breakdownLines(t, f, b, b.horizonDay >= d.maturityDay)}
+        rows={breakdownLines(t, f, b, b.horizonDay >= d.maturityDay, feePct)}
         rowKey={(l) => l.id}
         rowHeader="label"
         emptyText=""

@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
+import { COMMISSION_PCT } from "@tyche/yield-twin";
 import { BONDS } from "../data/universe.testing";
 import { CURVE, MARKET } from "../data/market";
 import { twinEngine } from "./twin";
@@ -45,7 +46,7 @@ describe("WebAssembly and twin through the app's adapters", () => {
     for (const b of BONDS) close(wasm.derive_bond(b.issue, MARKET), twinEngine.derive_bond(b.issue, MARKET), b.id);
   });
 
-  it("calculate the same plans, and the same errors, for every issue", () => {
+  it("calculate the same plans, and the same errors, for every issue and fee", () => {
     const regimes: TaxRegime[] = ["standard", "iis_b"];
     for (const b of BONDS) {
       const d = twinEngine.derive_bond(b.issue, MARKET);
@@ -60,7 +61,11 @@ describe("WebAssembly and twin through the app's adapters", () => {
         { amount: 2e9, horizonDay: 10, reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 },
         { amount: 100_000, horizonDay: Math.min(365, maturity), reinvest: true, taxRegime: "standard", otherIncome: -1, rateShiftPct: 0 },
       ];
-      for (const [n, plan] of plans.entries()) close(wasm.calculate(b.issue, MARKET, plan), twinEngine.calculate(b.issue, MARKET, plan), `${b.id} plan ${n}`);
+      for (const [n, plan] of plans.entries()) {
+        for (const fee of [COMMISSION_PCT, 0, 1, -0.5]) {
+          close(wasm.calculate(b.issue, MARKET, plan, fee), twinEngine.calculate(b.issue, MARKET, plan, fee), `${b.id} plan ${n} fee ${fee}`);
+        }
+      }
     }
   });
 
