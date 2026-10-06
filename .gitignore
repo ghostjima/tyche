@@ -1,0 +1,18 @@
+*.log
+*.tsbuildinfo
+.DS_Store
+node_modules
+dist
+playwright-report
+test-results
+# Rust builds and the wasm-pack packages.
+target/
+pkg/
+# Market data downloaded for tyche-market's command line; never committed.
+/crates/tyche-market/data/
+/apps/terminal/docs/screenshots/
+# Local only: agent instructions and internal material. The shared rules
+# are in CONTRIBUTING.md.
+CLAUDE.md
+AGENTS.md
+/docs/inside/

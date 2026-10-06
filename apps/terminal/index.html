@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Fictional Russian bond issues: yields, payment schedules and a holding calculator, computed in the browser by a Rust engine in WebAssembly. In English, Russian and Arabic." />
+    <!-- No icon yet; an empty one keeps the browser from asking for /favicon.ico. -->
+    <link rel="icon" href="data:," />
+    <title>Tyche Bonds</title>
+    <script>
+      // The language, its direction and the theme before the first paint,
+      // read as the app reads them (?lang= and ?theme= first, then the last
+      // visit's choice), so an Arabic page is laid out right to left and a
+      // dark one drawn dark from the start. The app applies them again.
+      (function () {
+        var query = new URLSearchParams(location.search);
+        var stored = function (key) {
+          try {
+            return localStorage.getItem(key);
+          } catch (e) {
+            return null;
+          }
+        };
+        var pick = function (asked, key, allowed, fallback) {
+          if (allowed.indexOf(asked) >= 0) return asked;
+          var kept = stored(key);
+          return allowed.indexOf(kept) >= 0 ? kept : fallback;
+        };
+        var root = document.documentElement;
+        var lang = pick(query.get("lang"), "horkos-bonds.lang", ["en", "ru", "ar"], "en");
+        root.lang = lang;
+        root.dir = lang === "ar" ? "rtl" : "ltr";
+        var theme = pick(query.get("theme"), "horkos-bonds.theme", ["system", "light", "dark"], "system");
+        if (theme !== "system") root.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

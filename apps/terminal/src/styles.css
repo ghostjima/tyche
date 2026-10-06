@@ -1,0 +1,100 @@
+/* Every weight the interface uses, in each script, so the browser never
+   synthesises bold: regular, Stoa's medium (badges, panel titles) and
+   semibold (headings and strong text). Plex Sans and Mono carry Latin and
+   Cyrillic; Noto Sans Arabic is in Stoa's numeric stack for tabular
+   Arabic-Indic digits. */
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/noto-sans-arabic/400.css";
+@import "@ghostjima/stoa-react/styles.css";
+
+:root {
+  font-family: var(--stoa-font-family-sans);
+  font-size: var(--stoa-font-size-md);
+  background: var(--stoa-color-bg);
+  color: var(--stoa-color-text);
+}
+body { margin: 0; }
+strong { font-weight: var(--stoa-font-weight-semibold); }
+
+.muted { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
+
+.app { display: grid; gap: var(--stoa-space-4); }
+
+/* Side by side from 64rem (the same breakpoint as ui/useMediaQuery). */
+.workspace { display: grid; gap: var(--stoa-space-4); align-items: start; }
+@media (min-width: 64rem) {
+  .workspace { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  /* The list stays in view while the issue scrolls; its own area scrolls. */
+  .pane-list { position: sticky; inset-block-start: 0; }
+  .pane-list__scroll { max-block-size: calc(var(--stoa-space-12) * 13); }
+}
+/* While the engine loads: the room the list will take. Side by side that
+   is its scroll box, always full; alone on a narrow screen the sixty
+   issues run past the fold, so the placeholder does too. */
+.pane-list__placeholder { min-block-size: 100dvh; }
+@media (min-width: 64rem) {
+  .pane-list__placeholder { min-block-size: 0; block-size: calc(var(--stoa-space-12) * 13); }
+}
+.detail { display: grid; gap: var(--stoa-space-4); min-inline-size: 0; }
+.detail--empty { padding-block: var(--stoa-space-8); }
+.narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
+.narrow > .detail { justify-self: stretch; }
+
+/* Workaround for Stoa: a filter chip's count is in the numeric face, whose
+   first Arabic face is Noto Sans Arabic, with taller line metrics than the
+   fallback drawn before it arrives. In Arabic the chips grew from 24 to 31
+   px when it did, and moved the list. The count's own line box no longer
+   sets the chip's height. */
+.stoa-filter-chip__count { line-height: 1; }
+
+.issue-list { display: grid; gap: var(--stoa-space-3); }
+.issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
+.issue-list__bar .muted { margin-inline-end: auto; }
+
+.issue-desc { display: grid; }
+.issue-desc__facts { display: flex; flex-wrap: wrap; column-gap: var(--stoa-space-3); }
+.issue-desc__facts > span { white-space: nowrap; }
+.cell-stack { display: grid; justify-items: end; }
+
+/* Stoa keeps a table's headers and row headers on one line. Here the row
+   headers are sentences ("Broker's commission, 0.05% of each trade") and
+   dates, and on a phone that pushed the amounts out of the box: they wrap
+   instead, and the amounts stay on one line. */
+.detail .stoa-table th { white-space: normal; }
+.event-cell { display: grid; gap: var(--stoa-space-1); justify-items: start; }
+.cell-note { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); font-family: var(--stoa-font-family-sans); }
+
+.issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
+.tags { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1); }
+.block { display: grid; gap: var(--stoa-space-3); margin-block-start: var(--stoa-space-4); min-inline-size: 0; }
+.block__title { margin: 0; font-size: var(--stoa-font-size-lg); font-weight: var(--stoa-font-weight-semibold); }
+.block__subtitle { margin: 0; font-size: var(--stoa-font-size-md); font-weight: var(--stoa-font-weight-semibold); }
+.metrics {
+  display: grid; gap: var(--stoa-space-3) var(--stoa-space-4);
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--stoa-space-12) * 4), 1fr));
+}
+
+.calc-inputs {
+  display: grid; gap: var(--stoa-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--stoa-space-12) * 6), 1fr));
+  align-items: start;
+}
+.calc-horizon, .calc-field { display: grid; gap: var(--stoa-space-2); }
+
+.foot { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-4); align-items: center; justify-content: space-between; }
+.foot p { margin: 0; }
+.foot__actions { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2); }
+
+.glossary__list { display: grid; gap: var(--stoa-space-2); margin: 0; }
+.glossary__item dt { font-weight: var(--stoa-font-weight-semibold); }
+.glossary__item dd { margin: 0; color: var(--stoa-color-text-muted); }
+
+.diagnostics { display: grid; gap: var(--stoa-space-3); justify-items: start; }
+.diagnostics > * { max-inline-size: 100%; }
+.timing-call { display: grid; }

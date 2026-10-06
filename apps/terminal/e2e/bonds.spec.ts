@@ -1,0 +1,223 @@
+// The main tasks: finding an issue, reading it, and planning a holding in
+// the calculator, by pointer and by keyboard; the loading, empty and
+// error states; and the narrow layout.
+import { expect, test } from "@playwright/test";
+import { ISSUES, ready } from "./helpers";
+
+test("the list shows sixty issues, filters by chips with counts, and searches", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  const rows = page.locator(".pane-list [role=option]");
+  await expect(rows).toHaveCount(60);
+  await expect(page.getByText("60 of 60 issues")).toBeVisible();
+
+  const floater = page.getByRole("button", { name: "Floater 15" });
+  await floater.click();
+  await expect(floater).toHaveAttribute("aria-pressed", "true");
+  await expect(rows).toHaveCount(15);
+  // Counts follow the other groups: OFZ floaters are three.
+  await expect(page.getByRole("button", { name: "OFZ 3" })).toBeVisible();
+  await page.getByRole("button", { name: "OFZ 3" }).click();
+  await expect(rows).toHaveCount(3);
+  await expect(page.getByText("3 of 60 issues")).toBeVisible();
+
+  await page.getByRole("button", { name: "Clear filters" }).first().click();
+  await expect(rows).toHaveCount(60);
+
+  await page.getByLabel("Search by issuer or ticker").fill("kama");
+  await expect(rows).toHaveCount(4);
+  for (const row of await rows.all()) await expect(row).toContainText("Kama");
+});
+
+test("a search with no match shows an empty state that clears the filters", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await page.getByLabel("Search by issuer or ticker").fill("no such issuer");
+  await expect(page.getByText("No issues match")).toBeVisible();
+  await expect(page.locator(".pane-list [role=listbox]")).toHaveCount(0);
+  await page.locator(".stoa-empty-state").getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(60);
+  await expect(page.getByLabel("Search by issuer or ticker")).toHaveValue("");
+});
+
+test("sorting by maturity puts the soonest first", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await page.getByRole("button", { name: /Sort by/ }).click();
+  await page.getByRole("option", { name: "Maturity, soonest first" }).click();
+  const first = page.locator(".pane-list [role=option]").first();
+  await expect(first).toContainText("IRTT-01");
+  await expect(first).toContainText("Jan 3, 2027");
+});
+
+test("an issue shows its figures, schedule, payments and price curve", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await expect(page.getByText("Choose an issue")).toBeVisible();
+  await page.getByRole("option", { name: ISSUES.offer }).click();
+  expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.offer);
+  const card = page.locator(".issue-card");
+  await expect(card.getByRole("heading", { level: 2 })).toHaveText("Oka Development");
+  await expect(card.getByText("Offer on May 22, 2028")).toBeVisible();
+  const figures = page.getByTestId("figures");
+  for (const label of ["Clean price", "Accrued interest", "Dirty price", "Yield to maturity", "Yield to the offer", "Duration"]) {
+    await expect(figures.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(figures).toContainText("20.54%");
+  await expect(figures).toContainText("19.83%");
+  await expect(page.getByRole("img", { name: /^Payments to maturity\./ })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Payments per bond" }).locator("tbody tr")).toHaveCount(10);
+  await expect(page.getByRole("figure", { name: "Dirty price against yield to maturity" })).toBeVisible();
+  // The selected row says so.
+  await expect(page.getByRole("option", { name: ISSUES.offer })).toHaveAttribute("aria-selected", "true");
+});
+
+test("the calculator breaks the total into signed lines and compares the offer", async ({ page }) => {
+  await page.goto(`/?issue=${ISSUES.offer}`);
+  await ready(page);
+  const result = page.getByTestId("result");
+  const breakdown = page.getByRole("table", { name: "Where the total comes from" });
+  await expect(breakdown.getByRole("row", { name: /Coupons/ })).toContainText("+₽");
+  await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("-₽");
+  await expect(breakdown.getByRole("row", { name: /Broker's commission/ })).toContainText("-₽");
+  await expect(breakdown.getByRole("row", { name: /^Total/ })).toContainText("₽117,754.96");
+  await expect(page.getByTestId("offer").getByRole("row", { name: /Sell back on May 22, 2028/ })).toContainText("17.45%");
+
+  await page.getByLabel("Amount, ₽").fill("250000");
+  await page.getByLabel("Amount, ₽").press("Enter");
+  await expect(result).toContainText("Bonds bought");
+  await expect(result.locator(".stoa-metric").filter({ hasText: "Bonds bought" })).toContainText("240");
+
+  // Holding to maturity: no sale, so the key rate does not matter.
+  await page.getByRole("button", { name: "Maturity", exact: true }).click();
+  await expect(page.getByTestId("early-exit")).toContainText("The plan holds to maturity");
+  await expect(breakdown.getByRole("row", { name: /Redemption at maturity/ })).toBeVisible();
+
+  // IIS type B: no tax.
+  await page.getByRole("radio", { name: "IIS type B" }).click();
+  await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("₽0.00");
+  // The regime's explanation is the group's description, read with it.
+  await expect(page.getByRole("radiogroup", { name: "Tax regime" })).toHaveAccessibleDescription(/Individual investment account \(IIS\) of type B/);
+});
+
+test("a floater shows three key-rate scenarios with a coupon chart", async ({ page }) => {
+  await page.goto(`/?issue=${ISSUES.floater}`);
+  await ready(page);
+  const floater = page.getByTestId("floater");
+  const rows = floater.getByRole("table", { name: "Totals at the horizon by key rate scenario" }).locator("tbody tr");
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(0)).toContainText("-2 pp");
+  await expect(rows.nth(1)).toContainText("Unchanged");
+  await expect(rows.nth(2)).toContainText("+2 pp");
+  await expect(floater.getByRole("figure", { name: "Coupon per bond by payment date" })).toBeVisible();
+  // Floaters have no fixed-coupon price curve.
+  await expect(page.getByRole("figure", { name: "Dirty price against yield to maturity" })).toHaveCount(0);
+});
+
+test("engine error codes become sentences, with a way back", async ({ page }) => {
+  await page.goto(`/?issue=${ISSUES.ofz}`);
+  await ready(page);
+  const amount = page.getByLabel("Amount, ₽");
+  for (const [value, code, text] of [
+    ["0", "amount_not_positive", "Enter an amount above zero."],
+    ["500", "amount_below_one_bond", "The amount does not buy one bond at the dirty price."],
+    ["2000000000", "amount_too_large", "The amount is above the calculator's limit of one billion roubles."],
+  ] as const) {
+    await amount.fill(value);
+    await amount.press("Enter");
+    const error = page.getByTestId("calc-error");
+    await expect(error).toHaveAttribute("data-code", code);
+    await expect(error.getByRole("alert")).toContainText(text);
+  }
+  await page.getByRole("button", { name: "Reset the inputs" }).click();
+  await expect(page.getByTestId("calc-error")).toHaveCount(0);
+  await expect(amount).toHaveValue("100,000");
+});
+
+test("keyboard: search, open an issue and change the plan", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await page.keyboard.press("/");
+  await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
+  await page.keyboard.type(ISSUES.amortising);
+  // Tab leaves the field, then each chip group, the sort and the list are
+  // one stop each.
+  const link = page.getByRole("option", { name: ISSUES.amortising });
+  for (let i = 0; i < 12 && !(await link.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
+  await expect(link).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".issue-card").getByRole("heading", { level: 2 })).toHaveText("Angara Metals");
+
+  const total = page.getByRole("table", { name: "Where the total comes from" }).getByRole("row", { name: /^Total/ });
+  const before = await total.textContent();
+  const horizon = page.getByRole("slider", { name: "Holding horizon" });
+  await horizon.focus();
+  await page.keyboard.press("PageUp");
+  await expect(total).not.toHaveText(before ?? "");
+
+  const reinvest = page.getByRole("switch", { name: /Reinvest payments/ });
+  await reinvest.focus();
+  await page.keyboard.press("Space");
+  await expect(reinvest).not.toBeChecked();
+  await expect(page.getByRole("table", { name: "Where the total comes from" }).getByRole("row", { name: /reinvested/ })).toHaveCount(0);
+
+  const shift = page.getByRole("slider", { name: "Key rate change by the horizon" });
+  await shift.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(shift).toHaveAttribute("aria-valuetext", "+1.0 pp");
+  await expect(page.getByTestId("early-exit")).toContainText("Total if the key rate changes by +1.0 pp");
+});
+
+test("keyboard shortcuts are listed in a dialog", async ({ page }) => {
+  await page.goto("/");
+  await ready(page);
+  await page.keyboard.press("?");
+  const dialog = page.getByRole("dialog", { name: "Keyboard shortcuts" });
+  await expect(dialog).toContainText("Search the issues");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+});
+
+test("on a phone the issue replaces the list, and Back returns to its row", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await ready(page);
+  const link = page.getByRole("option", { name: ISSUES.ofz });
+  await link.click();
+  const back = page.getByRole("button", { name: "Back to the list" });
+  await expect(back).toBeFocused();
+  await expect(page.locator(".pane-list")).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Calculator" })).toBeVisible();
+  await back.press("Enter");
+  await expect(page.getByRole("option", { name: ISSUES.ofz })).toBeFocused();
+});
+
+test("while the engine loads the list says so", async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/*.wasm", async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/");
+  await expect(page.locator(".app")).toHaveAttribute("data-state", "loading");
+  await expect(page.getByText("Loading the bond engine…")).toBeAttached();
+  await expect(page.locator(".workspace")).toHaveAttribute("aria-busy", "true");
+  release();
+  await ready(page);
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(60);
+});
+
+test("without WebAssembly the TypeScript engine takes over, and WebAssembly can be retried", async ({ page }) => {
+  await page.route("**/*.wasm", (route) => route.abort());
+  await page.goto(`/?issue=${ISSUES.offer}`);
+  await ready(page, "twin");
+  await expect(page.getByText("WebAssembly did not load")).toBeVisible();
+  await expect(page.getByTestId("figures")).toContainText("20.54%");
+  await page.unroute("**/*.wasm");
+  await page.getByRole("button", { name: "Try WebAssembly again" }).click();
+  await ready(page, "wasm");
+  await expect(page.getByText("WebAssembly did not load")).toHaveCount(0);
+  await expect(page.getByTestId("figures")).toContainText("20.54%");
+});

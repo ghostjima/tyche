@@ -1,0 +1,40 @@
+{
+  "name": "terminal",
+  "private": true,
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run --exclude \"e2e/**\"",
+    "e2e": "playwright test",
+    "measure": "node scripts/measure.mjs"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
+    "@fontsource/noto-sans-arabic": "5.3.0",
+    "@ghostjima/stoa-react": "link:../../../stoa/packages/react",
+    "@ghostjima/stoa-tokens": "link:../../../stoa/packages/tokens",
+    "@tyche/yield-twin": "workspace:*",
+    "react": "19.3.0",
+    "react-aria-components": "1.21.1",
+    "react-dom": "19.3.0",
+    "tyche-yield": "link:../../crates/tyche-yield/pkg"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "lighthouse": "12.8.2",
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tyche-terminal",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "apps/terminal", "exec", "vite", "--host", "127.0.0.1", "--port", "5181", "--strictPort"],
+      "port": 5181
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# esbuild's install script only verifies its platform binary; allowed.
+allowBuilds:
+  esbuild: true

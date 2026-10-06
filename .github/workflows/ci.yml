@@ -1,0 +1,325 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Both crates: format, lints on every feature set, tests. The release
+  # test run per crate is kept for the tests badges.
+  rust:
+    name: rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      # rust-toolchain.toml pins the toolchain; rustup installs it on first use.
+      - run: rustup show
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo clippy --workspace --all-targets --locked --no-default-features -- -D warnings
+      - run: cargo clippy --workspace --all-targets --locked --features wasm -- -D warnings
+      - run: cargo clippy --workspace --all-targets --locked --all-features -- -D warnings
+      # bash on every runner, so a failed test still fails the step through
+      # the pipe.
+      - name: cargo test --release (tyche-yield)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/rust-tests"
+          cargo test --release --locked -p tyche-yield 2>&1 | tee "$RUNNER_TEMP/rust-tests/yield-tests.txt"
+      - name: cargo test --release (tyche-market)
+        shell: bash
+        run: cargo test --release --locked -p tyche-market 2>&1 | tee "$RUNNER_TEMP/rust-tests/market-tests.txt"
+      - run: cargo test --workspace --release --locked --no-default-features
+      - run: cargo test --workspace --release --locked --all-features
+      - if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-tests
+          path: ${{ runner.temp }}/rust-tests
+          if-no-files-found: error
+          retention-days: 7
+
+  # The WebAssembly packages of both crates. The app and the parity run use
+  # this job's tyche-yield package, so what is measured is what is tested.
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - run: rustup target add wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # Prebuilt binaries, checked against the SHA-256 sums in the action's
+      # manifest; wasm-bindgen at the version Cargo.lock pins, so wasm-pack
+      # uses it instead of fetching its own.
+      - uses: taiki-e/install-action@183e4297cca2404691e9380e1307288dced5c82a # v2.87.25
+        with:
+          tool: wasm-pack@0.13.1,wasm-bindgen@0.2.129
+      - run: wasm-pack build crates/tyche-yield --release --target web --out-dir pkg --out-name tyche_yield -- --no-default-features --features wasm
+      - run: wasm-pack build crates/tyche-market --release --target web --out-dir pkg --out-name tyche_market -- --no-default-features --features wasm
+      - run: ls -l crates/tyche-yield/pkg crates/tyche-market/pkg
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: wasm
+          path: |
+            crates/tyche-yield/pkg
+            crates/tyche-market/pkg
+          if-no-files-found: error
+          retention-days: 7
+
+  msrv:
+    name: msrv (1.85)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install 1.85 --profile minimal && rustup target add wasm32-unknown-unknown --toolchain 1.85
+      - run: cargo +1.85 check --workspace --all-targets --locked
+      - run: cargo +1.85 check -p tyche-yield --lib --no-default-features --features wasm --target wasm32-unknown-unknown --locked
+      - run: cargo +1.85 check -p tyche-market --lib --no-default-features --features wasm --target wasm32-unknown-unknown --locked
+
+  # The TypeScript twin, then the twin against the wasm build of tyche-yield.
+  parity:
+    needs: wasm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: wasm
+          path: crates
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      # Only the twin: the app's Stoa links are not needed here.
+      - run: pnpm install --frozen-lockfile --filter @tyche/yield-twin
+      - run: pnpm --filter @tyche/yield-twin build
+      - run: pnpm --filter @tyche/yield-twin typecheck
+      # Both outputs are kept for the badges; bash fails the step through
+      # the pipe when a test fails. The parity run reports in TAP, which
+      # carries the counts each test reports.
+      - name: Twin tests
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/parity"
+          pnpm --filter @tyche/yield-twin test 2>&1 | tee "$RUNNER_TEMP/parity/twin-output.txt"
+      - name: Parity
+        shell: bash
+        run: node --test --test-reporter=tap crates/tyche-yield/node/parity.test.mjs 2>&1 | tee "$RUNNER_TEMP/parity/parity-output.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: parity
+          path: ${{ runner.temp }}/parity
+          if-no-files-found: error
+          retention-days: 7
+
+  # The app links Stoa from a sibling checkout
+  # (link:../../../stoa/packages/... from apps/terminal), so this
+  # repository is checked out into tyche/ and Stoa into stoa/ next to it.
+  build-and-test:
+    needs: wasm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tyche
+    env:
+      E2E_PORT: 4181
+      LIGHTHOUSE_PORT: 4180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: tyche
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: ghostjima/stoa
+          ref: main
+          path: stoa
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: wasm
+          path: tyche/crates
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          package_json_file: tyche/package.json
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: |
+            tyche/pnpm-lock.yaml
+            stoa/pnpm-lock.yaml
+      - name: Stoa
+        working-directory: stoa
+        run: pnpm install --frozen-lockfile && pnpm build
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - name: Unit tests
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/app"
+          pnpm --filter terminal test 2>&1 | tee "$RUNNER_TEMP/app/unit.log"
+      - name: Script tests
+        run: node --test scripts/*.test.mjs
+      - name: Chromium
+        run: pnpm --filter terminal exec playwright install --with-deps chromium
+      # The e2e builds the app itself and serves it with vite preview, on
+      # E2E_PORT.
+      - name: e2e against vite preview of the build
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ runner.temp }}/app/e2e.json
+        run: pnpm --filter terminal e2e --reporter=list,json
+      # Lighthouse 12 (a pinned dev dependency) in Playwright's Chromium,
+      # accessibility, best practices and SEO only: performance on a shared
+      # runner measures the runner.
+      - name: Lighthouse, desktop and mobile, against vite preview of the build
+        working-directory: tyche/apps/terminal
+        shell: bash
+        run: |
+          pnpm exec vite preview --host 127.0.0.1 --port "$LIGHTHOUSE_PORT" --strictPort &
+          for _ in $(seq 1 60); do
+            curl -sf "http://127.0.0.1:$LIGHTHOUSE_PORT/" > /dev/null && break
+            sleep 1
+          done
+          CHROME_PATH="$(node -e "import('@playwright/test').then((m) => console.log(m.chromium.executablePath()))")"
+          export CHROME_PATH
+          for form in desktop mobile; do
+            preset=()
+            if [ "$form" = desktop ]; then preset=(--preset=desktop); fi
+            pnpm exec lighthouse "http://127.0.0.1:$LIGHTHOUSE_PORT/" "${preset[@]}" \
+              --only-categories=accessibility,best-practices,seo \
+              --chrome-flags="--headless=new --no-sandbox" \
+              --output=json --output-path="$RUNNER_TEMP/app/lighthouse-$form.json" --quiet
+          done
+          cp -R dist "$RUNNER_TEMP/app/dist"
+      # On a pull request the commits since its base are checked; on a push,
+      # the last commit, unless it is the first one, which has no parent.
+      - name: House style (emoji, attribution, internal paths)
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          base=()
+          if [ "$EVENT_NAME" = pull_request ]; then
+            base=("origin/$BASE_REF")
+          elif git rev-parse -q --verify HEAD~1 > /dev/null; then
+            base=(HEAD~1)
+          fi
+          node scripts/check-text.mjs "${base[@]}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: app
+          path: ${{ runner.temp }}/app
+          if-no-files-found: error
+          retention-days: 7
+
+  # Builds the badges on every run, so a value that can no longer be read
+  # fails on the pull request; only main publishes them.
+  badges:
+    needs: [rust, wasm, msrv, parity, build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          path: ${{ runner.temp }}/measured
+      - name: Badge values
+        run: >-
+          node scripts/badges.mjs --out "$RUNNER_TEMP/badges"
+          --yield-tests "$RUNNER_TEMP/measured/rust-tests/yield-tests.txt"
+          --market-tests "$RUNNER_TEMP/measured/rust-tests/market-tests.txt"
+          --twin "$RUNNER_TEMP/measured/parity/twin-output.txt"
+          --parity "$RUNNER_TEMP/measured/parity/parity-output.txt"
+          --yield-wasm "$RUNNER_TEMP/measured/wasm/tyche-yield/pkg/tyche_yield_bg.wasm"
+          --market-wasm "$RUNNER_TEMP/measured/wasm/tyche-market/pkg/tyche_market_bg.wasm"
+          --unit "$RUNNER_TEMP/measured/app/unit.log"
+          --e2e "$RUNNER_TEMP/measured/app/e2e.json"
+          --lighthouse-desktop "$RUNNER_TEMP/measured/app/lighthouse-desktop.json"
+          --lighthouse-mobile "$RUNNER_TEMP/measured/app/lighthouse-mobile.json"
+          --dist "$RUNNER_TEMP/measured/app/dist"
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: badges
+          path: ${{ runner.temp }}/badges
+          if-no-files-found: error
+          retention-days: 7
+
+  # Commits the badge JSON to the orphan branch `badges`, which the README's
+  # img.shields.io/endpoint badges read. Only after a green run on main.
+  publish-badges:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: badges
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-badges
+      cancel-in-progress: false
+    steps:
+      # This job pushes to the badges branch, so it keeps the credentials.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: badges
+          path: ${{ runner.temp }}/badges
+      - name: Commit to the badges branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="$RUNNER_TEMP/badges-branch"
+          status=0
+          git ls-remote --exit-code origin refs/heads/badges > /dev/null || status=$?
+          if [ "$status" -eq 0 ]; then
+            git fetch --depth=1 origin badges
+            git worktree add -B badges "$branch" FETCH_HEAD
+          elif [ "$status" -eq 2 ]; then
+            git worktree add --detach "$branch"
+            git -C "$branch" switch --orphan badges
+          else
+            exit "$status"
+          fi
+          find "$branch" -maxdepth 1 -name '*.json' -delete
+          cp "$RUNNER_TEMP"/badges/*.json "$branch"/
+          cd "$branch"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "The badges are unchanged."
+            exit 0
+          fi
+          git commit -q -m "Badges measured on ${GITHUB_SHA}"
+          git push origin HEAD:refs/heads/badges

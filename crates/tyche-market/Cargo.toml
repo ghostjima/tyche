@@ -1,0 +1,39 @@
+[package]
+name = "tyche-market"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "Order-book reconstruction and replay for IEX DEEP and DEEP+ market data, with a parity check between the two feeds"
+repository = "https://github.com/ghostjima/tyche"
+readme = "README.md"
+keywords = ["market-data", "order-book", "iex", "pcap", "finance"]
+categories = ["finance", "parser-implementations"]
+exclude = ["/data", "/tests/fixtures/*.pcap.gz"]
+
+[features]
+default = ["gzip"]
+# Read .pcap.gz files directly (flate2 with its pure-Rust backend).
+gzip = ["dep:flate2"]
+# JavaScript bindings for the browser (wasm-bindgen).
+wasm = ["dep:wasm-bindgen"]
+
+[dependencies]
+flate2 = { version = "1", optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+
+[[bin]]
+name = "tyche"
+path = "src/bin/tyche.rs"
+required-features = ["gzip"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[test]]
+name = "samples"
+required-features = ["gzip"]
+
+[[test]]
+name = "hostile"
+required-features = ["gzip"]

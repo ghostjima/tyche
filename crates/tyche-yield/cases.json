@@ -1,0 +1,3865 @@
+[
+  {
+    "name": "price: single flow one year at 10%",
+    "fn": "price_from_yield",
+    "args": [
+      [1000],
+      [365],
+      0.1
+    ],
+    "expect": 909.090909090909
+  },
+  {
+    "name": "price: zero yield sums the flows",
+    "fn": "price_from_yield",
+    "args": [
+      [50, 1050],
+      [182.5, 365],
+      0
+    ],
+    "expect": 1100
+  },
+  {
+    "name": "price: two-year bullet at 12%",
+    "fn": "price_from_yield",
+    "args": [
+      [120, 1120],
+      [365, 730],
+      0.12
+    ],
+    "expect": 999.9999999999998
+  },
+  {
+    "name": "price: ten semiannual coupons at 15%",
+    "fn": "price_from_yield",
+    "args": [
+      [60, 60, 60, 60, 60, 60, 60, 60, 60, 1060],
+      [182, 364, 546, 728, 910, 1092, 1274, 1456, 1638, 1820],
+      0.15
+    ],
+    "expect": 915.3394949246294
+  },
+  {
+    "name": "ytm: recovers 10% from one flow",
+    "fn": "ytm_effective",
+    "args": [
+      [1000],
+      [365],
+      909.090909090909
+    ],
+    "expect": 0.09999999999999998
+  },
+  {
+    "name": "ytm: two-year zero at par plus 10%",
+    "fn": "ytm_effective",
+    "args": [
+      [1100],
+      [730],
+      1000
+    ],
+    "expect": 0.04880884817015152
+  },
+  {
+    "name": "ytm: semiannual bond priced at 15%",
+    "fn": "ytm_effective",
+    "args": [
+      [60, 60, 60, 1060],
+      [182, 364, 546, 728],
+      958.9616088889923
+    ],
+    "expect": 0.1499999999999998
+  },
+  {
+    "name": "simple yield: one year",
+    "fn": "ytm_simple",
+    "args": [
+      [50, 1050],
+      [182, 365],
+      1000
+    ],
+    "expect": 0.1
+  },
+  {"name": "simple yield: two years", "fn": "ytm_simple", "args": [[1050],[730],1000], "expect": 0.025},
+  {"name": "accrued: half period", "fn": "accrued_interest", "args": [35,91,182], "expect": 17.5},
+  {"name": "accrued: zero period is zero", "fn": "accrued_interest", "args": [35,91,0], "expect": 0},
+  {
+    "name": "macaulay: single flow is its tenor",
+    "fn": "macaulay_duration",
+    "args": [
+      [1000],
+      [730],
+      0.1
+    ],
+    "expect": 2
+  },
+  {
+    "name": "macaulay: two flows at 10%",
+    "fn": "macaulay_duration",
+    "args": [
+      [50, 1050],
+      [365, 730],
+      0.1
+    ],
+    "expect": 1.9502262443438914
+  },
+  {
+    "name": "modified: single flow at 10%",
+    "fn": "modified_duration",
+    "args": [
+      [1000],
+      [730],
+      0.1
+    ],
+    "expect": 1.8181818181818181
+  },
+  {
+    "name": "modified: semiannual bond at 15%",
+    "fn": "modified_duration",
+    "args": [
+      [60, 60, 60, 1060],
+      [182, 364, 546, 728],
+      0.15
+    ],
+    "expect": 1.5892486487501458
+  },
+  {
+    "name": "flow: fixed two coupons",
+    "fn": "build_cash_flow",
+    "args": [
+      1000,
+      182,
+      [182, 364],
+      [10, 10],
+      [],
+      [],
+      0,
+      0,
+      0
+    ],
+    "expect": [182, 49.863013698630134, 0, 364, 49.863013698630134, 1000]
+  },
+  {
+    "name": "flow: amortising three coupons",
+    "fn": "build_cash_flow",
+    "args": [
+      1000,
+      100,
+      [100, 200, 300],
+      [12, 12, 12],
+      [100, 200],
+      [0.3, 0.3],
+      0,
+      0,
+      0
+    ],
+    "expect": [100, 32.87671232876713, 300, 200, 23.013698630136986, 300, 300, 13.150684931506849, 400]
+  },
+  {
+    "name": "flow: redeem at offer",
+    "fn": "build_cash_flow",
+    "args": [
+      1000,
+      182,
+      [182, 364, 546],
+      [10, 10, 10],
+      [],
+      [],
+      364,
+      1,
+      0
+    ],
+    "expect": [182, 49.863013698630134, 0, 364, 49.863013698630134, 1000]
+  },
+  {
+    "name": "flow: coupon 0.1% after offer",
+    "fn": "build_cash_flow",
+    "args": [
+      1000,
+      182,
+      [182, 364, 546],
+      [10, 10, 10],
+      [],
+      [],
+      364,
+      2,
+      0.1
+    ],
+    "expect": [182, 49.863013698630134, 0, 364, 49.863013698630134, 0, 546, 0.4986301369863014, 1000]
+  },
+  {
+    "name": "flow: floater with varying rates",
+    "fn": "build_cash_flow",
+    "args": [
+      1000,
+      91,
+      [91, 182, 273],
+      [16, 18, 20],
+      [],
+      [],
+      0,
+      0,
+      0
+    ],
+    "expect": [91, 39.89041095890411, 0, 182, 44.87671232876713, 0, 273, 49.863013698630134, 1000]
+  },
+  {
+    "name": "rate path: ramp over four steps",
+    "fn": "floater_rate_path",
+    "args": [16, 2, 4, 6],
+    "expect": [16.5, 17, 17.5, 18, 18, 18]
+  },
+  {
+    "name": "rate path: immediate cut",
+    "fn": "floater_rate_path",
+    "args": [16, -3, 1, 3],
+    "expect": [13, 13, 13]
+  },
+  {
+    "name": "floater coupons: spread two over key rate",
+    "fn": "floater_coupons",
+    "args": [
+      1000,
+      2,
+      [16, 18],
+      91
+    ],
+    "expect": [44.87671232876713, 49.863013698630134]
+  },
+  {
+    "name": "income tax: 13% under the threshold",
+    "fn": "income_tax",
+    "args": [1000, 0],
+    "expect": 130
+  },
+  {"name": "income tax: a negative base pays nothing", "fn": "income_tax", "args": [-500, 0], "expect": 0},
+  {
+    "name": "income tax: 15% on the part above 2.4 million with other income",
+    "fn": "income_tax",
+    "args": [1000000, 2000000],
+    "expect": 142000
+  },
+  {"name": "income tax: all at 15% above the threshold", "fn": "income_tax", "args": [1000, 3000000], "expect": 150},
+  {
+    "name": "hold: to maturity without reinvestment",
+    "fn": "hold_value",
+    "args": [
+      [182, 364, 546],
+      [50, 50, 50],
+      [0, 0, 1000],
+      546,
+      0,
+      0.1
+    ],
+    "expect": [150, 0, 0, 1000, 0]
+  },
+  {
+    "name": "hold: early exit with reinvestment and amortisation",
+    "fn": "hold_value",
+    "args": [
+      [100, 200, 300],
+      [50, 50, 50],
+      [300, 300, 400],
+      250,
+      0.1,
+      0.1
+    ],
+    "expect": [100, 18.580646930416055, 600, 0, 444.1629029822563]
+  },
+  {
+    "name": "shift: plus two points at duration 2.5",
+    "fn": "price_after_rate_shift",
+    "args": [1000, 2.5, 2],
+    "expect": 950
+  },
+  {"name": "ytm: price zero is NaN", "fn": "ytm_effective", "args": [[1000],[365],0], "expect": "NaN"},
+  {"name": "ytm: no flows is NaN", "fn": "ytm_effective", "args": [[],[],950], "expect": "NaN"},
+  {
+    "name": "simple yield: last flow today is NaN",
+    "fn": "ytm_simple",
+    "args": [
+      [1000],
+      [0],
+      950
+    ],
+    "expect": "NaN"
+  },
+  {
+    "name": "accrued: NaN days propagate",
+    "fn": "accrued_interest",
+    "args": [35, "NaN", 182],
+    "expect": "NaN"
+  },
+  {
+    "name": "income tax: NaN base propagates",
+    "fn": "income_tax",
+    "args": ["NaN", 0],
+    "expect": "NaN"
+  },
+  {
+    "name": "shift: large rise floors the price at zero",
+    "fn": "price_after_rate_shift",
+    "args": [1000, 10, 15],
+    "expect": 0
+  },
+  {
+    "name": "derive: fixed bullet, semiannual",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 861,
+        "couponDays": [133, 315, 497, 679, 861],
+        "ratesPct": [12.03, 12.03, 12.03, 12.03, 12.03],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 49,
+        "couponAmount": 59.98520547945205,
+        "accrued": 16.149863013698628,
+        "dirtyPrice": 997.35,
+        "flows": {
+          "days": [133, 315, 497, 679, 861],
+          "coupons": [59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205],
+          "principals": [0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.1338293250500341,
+        "ytmOffer": null,
+        "ytmSimple": 0.12861056247371452,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.1338293250500341,
+        "macaulay": 2.0892913017294896,
+        "modified": 1.8426858924620713
+      }
+    }
+  },
+  {
+    "name": "derive: amortisation over six coupons",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-07-11", "fractionPct": 16.67},
+          {"date": "2028-01-09", "fractionPct": 16.67},
+          {"date": "2028-07-09", "fractionPct": 16.67},
+          {"date": "2029-01-07", "fractionPct": 16.67},
+          {"date": "2029-07-08", "fractionPct": 16.67},
+          {"date": "2030-01-06", "fractionPct": 16.67}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 1220,
+        "couponDays": [128, 310, 492, 674, 856, 1038, 1220],
+        "ratesPct": [11.08, 11.08, 11.08, 11.08, 11.08, 11.08, 11.08],
+        "amortDays": [310, 492, 674, 856, 1038],
+        "amortFracs": [0.16670000000000001, 0.16670000000000001, 0.16670000000000001, 0.16670000000000001, 0.16670000000000001],
+        "daysSinceLast": 54,
+        "couponAmount": 55.24821917808219,
+        "accrued": 16.39232876712329,
+        "dirtyPrice": 985.3900000000001,
+        "flows": {
+          "days": [128, 310, 492, 674, 856, 1038, 1220],
+          "coupons": [55.24821917808219, 55.24821917808219, 46.03834104109589, 36.82846290410958, 27.618584767123284, 18.408706630136976, 9.198828493150673],
+          "principals": [0, 166.70000000000002, 166.70000000000002, 166.70000000000002, 166.70000000000002, 166.70000000000002, 166.4999999999998]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.13239167689158127,
+        "ytmOffer": null,
+        "ytmSimple": 0.07991157965415702,
+        "event": "maturity",
+        "eventDay": 1220,
+        "yieldEvent": 0.13239167689158127,
+        "macaulay": 1.8541615705078391,
+        "modified": 1.637385374994559
+      }
+    }
+  },
+  {
+    "name": "derive: monthly coupons, amortisation and an offer",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.93,
+        "accrued": 9.21,
+        "couponType": "fixed",
+        "couponRatePct": 12.45,
+        "spreadPct": 0,
+        "periodDays": 30,
+        "maturity": "2027-04-05",
+        "offers": ["2026-12-06"],
+        "amortization": [
+          {"date": "2027-01-05", "fractionPct": 25},
+          {"date": "2027-02-04", "fractionPct": 25},
+          {"date": "2027-03-06", "fractionPct": 25},
+          {"date": "2027-04-05", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 213,
+        "couponDays": [3, 33, 63, 93, 123, 153, 183, 213],
+        "ratesPct": [12.45, 12.45, 12.45, 12.45, 12.45, 12.45, 12.45, 12.45],
+        "amortDays": [123, 153, 183],
+        "amortFracs": [0.25, 0.25, 0.25],
+        "daysSinceLast": 27,
+        "couponAmount": 10.232876712328768,
+        "accrued": 9.20958904109589,
+        "dirtyPrice": 1008.5100000000001,
+        "flows": {
+          "days": [3, 33, 63, 93, 123, 153, 183, 213],
+          "coupons": [10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768, 7.674657534246576, 5.116438356164384, 2.558219178082192],
+          "principals": [0, 0, 0, 0, 250, 250, 250, 250]
+        },
+        "flowsToOffer": {
+          "days": [3, 33, 63, 93],
+          "coupons": [10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768],
+          "principals": [0, 0, 0, 1000]
+        },
+        "offerDay": 93,
+        "ytmMaturity": 0.1336185441140697,
+        "ytmOffer": 0.13499057523031832,
+        "ytmSimple": 0.09855728687833658,
+        "event": "offer",
+        "eventDay": 93,
+        "yieldEvent": 0.13499057523031832,
+        "macaulay": 0.4451050135078531,
+        "modified": 0.3926409071366291
+      }
+    }
+  },
+  {
+    "name": "derive: floater with an offer",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.78,
+        "accrued": 29.46,
+        "couponType": "floater",
+        "couponRatePct": 17.07,
+        "spreadPct": 1.07,
+        "periodDays": 91,
+        "maturity": "2027-04-02",
+        "offers": ["2027-01-01"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 210,
+        "couponDays": [28, 119, 210],
+        "ratesPct": [17.07, 17.07, 17.07],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 63,
+        "couponAmount": 42.55808219178082,
+        "accrued": 29.463287671232877,
+        "dirtyPrice": 1037.26,
+        "flows": {
+          "days": [28, 119, 210],
+          "coupons": [42.55808219178082, 42.55808219178082, 42.55808219178082],
+          "principals": [0, 0, 1000]
+        },
+        "flowsToOffer": {"days": [28,119], "coupons": [42.55808219178082,42.55808219178082], "principals": [0,1000]},
+        "offerDay": 119,
+        "ytmMaturity": 0.165317799279722,
+        "ytmOffer": 0.1533828554848301,
+        "ytmSimple": 0.15150354918590475,
+        "event": "offer",
+        "eventDay": 119,
+        "yieldEvent": 0.1533828554848301,
+        "macaulay": 0.5453912025279783,
+        "modified": 0.46801928440901047
+      }
+    }
+  },
+  {
+    "name": "derive: floater with amortisation",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 102.6,
+        "accrued": 44.86,
+        "couponType": "floater",
+        "couponRatePct": 22.74,
+        "spreadPct": 6.74,
+        "periodDays": 91,
+        "maturity": "2028-03-22",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-06-23", "fractionPct": 25},
+          {"date": "2027-09-22", "fractionPct": 25},
+          {"date": "2027-12-22", "fractionPct": 25},
+          {"date": "2028-03-22", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 565,
+        "couponDays": [19, 110, 201, 292, 383, 474, 565],
+        "ratesPct": [22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002],
+        "amortDays": [292, 383, 474],
+        "amortFracs": [0.25, 0.25, 0.25],
+        "daysSinceLast": 72,
+        "couponAmount": 56.69424657534247,
+        "accrued": 44.856986301369865,
+        "dirtyPrice": 1070.86,
+        "flows": {
+          "days": [19, 110, 201, 292, 383, 474, 565],
+          "coupons": [56.69424657534247, 56.69424657534247, 56.69424657534247, 56.69424657534247, 42.52068493150685, 28.347123287671234, 14.173561643835617],
+          "principals": [0, 0, 0, 250, 250, 250, 250]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.21737707726678812,
+        "ytmOffer": null,
+        "ytmSimple": 0.1453629445789911,
+        "event": "maturity",
+        "eventDay": 565,
+        "yieldEvent": 0.21737707726678812,
+        "macaulay": 1.0159555807764966,
+        "modified": 0.8345446942844399
+      }
+    }
+  },
+  {
+    "name": "derive: offer in twenty days",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.06,
+        "accrued": 101.73,
+        "couponType": "fixed",
+        "couponRatePct": 22.92,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2031-09-18",
+        "offers": ["2026-09-24"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 1840,
+        "couponDays": [20, 202, 384, 566, 748, 930, 1112, 1294, 1476, 1658, 1840],
+        "ratesPct": [22.92, 22.92, 22.92, 22.92, 22.92, 22.92, 22.92, 22.92, 22.92, 22.92, 22.92],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 162,
+        "couponAmount": 114.28602739726028,
+        "accrued": 101.72712328767125,
+        "dirtyPrice": 1102.33,
+        "flows": {
+          "days": [20, 202, 384, 566, 748, 930, 1112, 1294, 1476, 1658, 1840],
+          "coupons": [114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028, 114.28602739726028],
+          "principals": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": {"days": [20], "coupons": [114.28602739726028], "principals": [1000]},
+        "offerDay": 20,
+        "ytmMaturity": 0.24190542922958624,
+        "ytmOffer": 0.2175934536097669,
+        "ytmSimple": 0.20781472663240208,
+        "event": "offer",
+        "eventDay": 20,
+        "yieldEvent": 0.2175934536097669,
+        "macaulay": 2.9406362771038044,
+        "modified": 2.367842355700162
+      }
+    }
+  },
+  {
+    "name": "derive: accrued interest computed when not quoted",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 2570,
+        "couponDays": [22, 204, 386, 568, 750, 932, 1114, 1296, 1478, 1660, 1842, 2024, 2206, 2388, 2570],
+        "ratesPct": [11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75, 11.75],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 160,
+        "couponAmount": 58.58904109589041,
+        "accrued": 51.50684931506849,
+        "dirtyPrice": 1007.9068493150685,
+        "flows": {
+          "days": [22, 204, 386, 568, 750, 932, 1114, 1296, 1478, 1660, 1842, 2024, 2206, 2388, 2570],
+          "coupons": [58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041, 58.58904109589041],
+          "principals": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.13105235053826492,
+        "ytmOffer": null,
+        "ytmSimple": 0.12272187452926701,
+        "event": "maturity",
+        "eventDay": 2570,
+        "yieldEvent": 0.13105235053826492,
+        "macaulay": 4.677093736988423,
+        "modified": 4.1351699899324785
+      }
+    }
+  },
+  {
+    "name": "derive: nearest future offer from an unsorted list, between coupon days",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2032-01-01", "2025-01-01", "2029-02-06"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 3525,
+        "couponDays": [67, 158, 249, 340, 431, 522, 613, 704, 795, 886, 977, 1068, 1159, 1250, 1341, 1432, 1523, 1614, 1705, 1796, 1887, 1978, 2069, 2160, 2251, 2342, 2433, 2524, 2615, 2706, 2797, 2888, 2979, 3070, 3161, 3252, 3343, 3434, 3525],
+        "ratesPct": [18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14, 18.14],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 24,
+        "couponAmount": 45.22575342465754,
+        "accrued": 11.927671232876714,
+        "dirtyPrice": 1003.43,
+        "flows": {
+          "days": [67, 158, 249, 340, 431, 522, 613, 704, 795, 886, 977, 1068, 1159, 1250, 1341, 1432, 1523, 1614, 1705, 1796, 1887, 1978, 2069, 2160, 2251, 2342, 2433, 2524, 2615, 2706, 2797, 2888, 2979, 3070, 3161, 3252, 3343, 3434, 3525],
+          "coupons": [45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754],
+          "principals": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": {
+          "days": [67, 158, 249, 340, 431, 522, 613, 704, 795, 886],
+          "coupons": [45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754, 45.22575342465754],
+          "principals": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1000]
+        },
+        "offerDay": 886,
+        "ytmMaturity": 0.19624354295510826,
+        "ytmOffer": 0.1990783877342578,
+        "ytmSimple": 0.18165681782408338,
+        "event": "offer",
+        "eventDay": 886,
+        "yieldEvent": 0.1990783877342578,
+        "macaulay": 4.650251294768813,
+        "modified": 3.8873783872481256
+      }
+    }
+  },
+  {
+    "name": "derive: amortisation off a coupon day and after maturity is ignored",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-01-01", "fractionPct": 20},
+          {"date": "2030-01-01", "fractionPct": 50}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 861,
+        "couponDays": [133, 315, 497, 679, 861],
+        "ratesPct": [12.03, 12.03, 12.03, 12.03, 12.03],
+        "amortDays": [119],
+        "amortFracs": [0.2],
+        "daysSinceLast": 49,
+        "couponAmount": 59.98520547945205,
+        "accrued": 16.149863013698628,
+        "dirtyPrice": 997.35,
+        "flows": {
+          "days": [133, 315, 497, 679, 861],
+          "coupons": [59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205],
+          "principals": [0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.1338293250500341,
+        "ytmOffer": null,
+        "ytmSimple": 0.12861056247371452,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.1338293250500341,
+        "macaulay": 2.0892913017294896,
+        "modified": 1.8426858924620713
+      }
+    }
+  },
+  {
+    "name": "derive: one day to maturity",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.9,
+        "accrued": 49,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2026-09-05",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 1,
+        "couponDays": [1],
+        "ratesPct": [10],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 181,
+        "couponAmount": 49.863013698630134,
+        "accrued": 49.5890410958904,
+        "dirtyPrice": 1048,
+        "flows": {"days": [1], "coupons": [49.863013698630134], "principals": [1000]},
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.9122468550928937,
+        "ytmOffer": null,
+        "ytmSimple": 0.6488549618320426,
+        "event": "maturity",
+        "eventDay": 1,
+        "yieldEvent": 0.9122468550928937,
+        "macaulay": 0.0027397260273972603,
+        "modified": 0.0014327261253433564
+      }
+    }
+  },
+  {
+    "name": "derive: zero dirty price gives NaN yields",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 0,
+        "accrued": 0,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 861,
+        "couponDays": [133, 315, 497, 679, 861],
+        "ratesPct": [12.03, 12.03, 12.03, 12.03, 12.03],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 49,
+        "couponAmount": 59.98520547945205,
+        "accrued": 16.149863013698628,
+        "dirtyPrice": 0,
+        "flows": {
+          "days": [133, 315, 497, 679, 861],
+          "coupons": [59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205, 59.98520547945205],
+          "principals": [0, 0, 0, 0, 1000]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": "NaN",
+        "ytmOffer": null,
+        "ytmSimple": "NaN",
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": "NaN",
+        "macaulay": "NaN",
+        "modified": "NaN"
+      }
+    }
+  },
+  {
+    "name": "derive: nominal 500",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 500,
+        "pricePct": 98.12,
+        "accrued": 6.2,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 861,
+        "couponDays": [133, 315, 497, 679, 861],
+        "ratesPct": [12.03, 12.03, 12.03, 12.03, 12.03],
+        "amortDays": [],
+        "amortFracs": [],
+        "daysSinceLast": 49,
+        "couponAmount": 29.992602739726024,
+        "accrued": 8.074931506849314,
+        "dirtyPrice": 496.8,
+        "flows": {
+          "days": [133, 315, 497, 679, 861],
+          "coupons": [29.992602739726024, 29.992602739726024, 29.992602739726024, 29.992602739726024, 29.992602739726024],
+          "principals": [0, 0, 0, 0, 500]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.1358757947274306,
+        "ytmOffer": null,
+        "ytmSimple": 0.13069591962310242,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.1358757947274306,
+        "macaulay": 2.088679557935035,
+        "modified": 1.8388274207711621
+      }
+    }
+  },
+  {
+    "name": "derive: every date and the valuation date moved by 500 days",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.93,
+        "accrued": 9.21,
+        "couponType": "fixed",
+        "couponRatePct": 12.45,
+        "spreadPct": 0,
+        "periodDays": 30,
+        "maturity": "2028-08-17",
+        "offers": ["2028-04-19"],
+        "amortization": [
+          {"date": "2028-05-19", "fractionPct": 25},
+          {"date": "2028-06-18", "fractionPct": 25},
+          {"date": "2028-07-18", "fractionPct": 25},
+          {"date": "2028-08-17", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2028-01-17", "keyRatePct": 16}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 213,
+        "couponDays": [3, 33, 63, 93, 123, 153, 183, 213],
+        "ratesPct": [12.45, 12.45, 12.45, 12.45, 12.45, 12.45, 12.45, 12.45],
+        "amortDays": [123, 153, 183],
+        "amortFracs": [0.25, 0.25, 0.25],
+        "daysSinceLast": 27,
+        "couponAmount": 10.232876712328768,
+        "accrued": 9.20958904109589,
+        "dirtyPrice": 1008.5100000000001,
+        "flows": {
+          "days": [3, 33, 63, 93, 123, 153, 183, 213],
+          "coupons": [10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768, 7.674657534246576, 5.116438356164384, 2.558219178082192],
+          "principals": [0, 0, 0, 0, 250, 250, 250, 250]
+        },
+        "flowsToOffer": {
+          "days": [3, 33, 63, 93],
+          "coupons": [10.232876712328768, 10.232876712328768, 10.232876712328768, 10.232876712328768],
+          "principals": [0, 0, 0, 1000]
+        },
+        "offerDay": 93,
+        "ytmMaturity": 0.1336185441140697,
+        "ytmOffer": 0.13499057523031832,
+        "ytmSimple": 0.09855728687833658,
+        "event": "offer",
+        "eventDay": 93,
+        "yieldEvent": 0.13499057523031832,
+        "macaulay": 0.4451050135078531,
+        "modified": 0.3926409071366291
+      }
+    }
+  },
+  {
+    "name": "derive: floater at key rate 18 with the spread 2 lower",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 102.6,
+        "accrued": 44.86,
+        "couponType": "floater",
+        "couponRatePct": 22.74,
+        "spreadPct": 4.74,
+        "periodDays": 91,
+        "maturity": "2028-03-22",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-06-23", "fractionPct": 25},
+          {"date": "2027-09-22", "fractionPct": 25},
+          {"date": "2027-12-22", "fractionPct": 25},
+          {"date": "2028-03-22", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 18}
+    ],
+    "expect": {
+      "ok": {
+        "maturityDay": 565,
+        "couponDays": [19, 110, 201, 292, 383, 474, 565],
+        "ratesPct": [22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002, 22.740000000000002],
+        "amortDays": [292, 383, 474],
+        "amortFracs": [0.25, 0.25, 0.25],
+        "daysSinceLast": 72,
+        "couponAmount": 56.69424657534247,
+        "accrued": 44.856986301369865,
+        "dirtyPrice": 1070.86,
+        "flows": {
+          "days": [19, 110, 201, 292, 383, 474, 565],
+          "coupons": [56.69424657534247, 56.69424657534247, 56.69424657534247, 56.69424657534247, 42.52068493150685, 28.347123287671234, 14.173561643835617],
+          "principals": [0, 0, 0, 250, 250, 250, 250]
+        },
+        "flowsToOffer": null,
+        "offerDay": null,
+        "ytmMaturity": 0.21737707726678812,
+        "ytmOffer": null,
+        "ytmSimple": 0.1453629445789911,
+        "event": "maturity",
+        "eventDay": 565,
+        "yieldEvent": 0.21737707726678812,
+        "macaulay": 1.0159555807764966,
+        "modified": 0.8345446942844399
+      }
+    }
+  },
+  {
+    "name": "derive error: malformed valuation date",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-9-4", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "derive error: maturity on a day that does not exist",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2027-02-30",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "derive error: malformed offer date",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": ["2027-13-01"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "derive error: empty amortisation date",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": [
+          {"date": "", "fractionPct": 10}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "derive error: zero nominal",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 0,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_nominal"}
+  },
+  {
+    "name": "derive error: NaN nominal",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": "NaN",
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_nominal"}
+  },
+  {
+    "name": "derive error: zero period",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 0,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_period"}
+  },
+  {
+    "name": "derive error: matures on the valuation date",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2026-09-04",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "matured"}
+  },
+  {
+    "name": "derive error: matured last year",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2025-09-04",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "matured"}
+  },
+  {
+    "name": "derive error: unknown coupon type",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "zero",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_code"}
+  },
+  {
+    "name": "derive error: a bad date is reported before a bad nominal",
+    "fn": "derive_bond",
+    "args": [
+      {
+        "nominal": 0,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "x",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16}
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "calculate: fixed, one year, standard 13",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 100,
+          "invested": 99735,
+          "coupons": 11997.04109589041,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 100482.80597365885,
+          "tax": -1643.8159616531175,
+          "commission": -100.10890298682943,
+          "total": 110735.92220490931,
+          "profit": 11000.922204909308,
+          "periodPct": 11.030152107995496,
+          "annualPct": 11.030152107995495,
+          "horizonDay": 365
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 100,
+            "invested": 99735,
+            "coupons": 11997.04109589041,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 100482.80597365885,
+            "tax": -1643.8159616531175,
+            "commission": -100.10890298682943,
+            "total": 110735.92220490931,
+            "profit": 11000.922204909308,
+            "periodPct": 11.030152107995496,
+            "annualPct": 11.030152107995495,
+            "horizonDay": 365
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 1.1247691881126514
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: fixed, reinvested, standard, other income at the threshold, key rate up 2",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 2400000,
+        "rateShiftPct": 2
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 100,
+          "invested": 99735,
+          "coupons": 11997.04109589041,
+          "reinvest": 602.6206643159292,
+          "amort": 0,
+          "body": 100482.80597365885,
+          "tax": -1987.1038246317557,
+          "commission": -100.10890298682943,
+          "total": 110995.25500624659,
+          "profit": 11260.255006246589,
+          "periodPct": 11.290173967259827,
+          "annualPct": 11.29017396725982,
+          "horizonDay": 365
+        },
+        "earlyExit": {
+          "rateShiftPct": 2,
+          "applicable": true,
+          "result": {
+            "qty": 100,
+            "invested": 99735,
+            "coupons": 11997.04109589041,
+            "reinvest": 602.6206643159292,
+            "amort": 0,
+            "body": 98222.40669177339,
+            "tax": -1648.2134622950762,
+            "commission": -98.9787033458867,
+            "total": 109074.87628633877,
+            "profit": 9339.876286338767,
+            "periodPct": 9.364692722052206,
+            "annualPct": 9.364692722052204,
+            "horizonDay": 365
+          },
+          "diff": -1920.3787199078215,
+          "modDurationAtHorizon": 1.1247691881126514
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: fixed, 300 days, key rate down 2",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 250,
+          "invested": 249337.5,
+          "coupons": 14996.301369863013,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 260569.67347701787,
+          "tax": -3376.5577638185064,
+          "commission": -254.95358673850896,
+          "total": 271934.46349632385,
+          "profit": 22596.96349632385,
+          "periodPct": 9.062801823361449,
+          "annualPct": 11.132203318055556,
+          "horizonDay": 300
+        },
+        "earlyExit": {
+          "rateShiftPct": -2,
+          "applicable": true,
+          "result": {
+            "qty": 250,
+            "invested": 249337.5,
+            "coupons": 14996.301369863013,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 266878.1428472939,
+            "tax": -4196.2487314453165,
+            "commission": -258.10782142364695,
+            "total": 277420.087664288,
+            "profit": 28082.587664288003,
+            "periodPct": 11.2628817022261,
+            "annualPct": 13.8656867474398,
+            "horizonDay": 300
+          },
+          "diff": 5485.6241679641535,
+          "modDurationAtHorizon": 1.2105148857302443
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: held to maturity, IIS type B, no early exit",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 861,
+        "reinvest": false,
+        "taxRegime": "iis_b",
+        "otherIncome": 0,
+        "rateShiftPct": 3
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 100,
+          "invested": 99735,
+          "coupons": 29992.602739726022,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 100000,
+          "tax": 0,
+          "commission": -49.8675,
+          "total": 129942.73523972603,
+          "profit": 30207.735239726026,
+          "periodPct": 30.287998435580317,
+          "annualPct": 11.869302347914946,
+          "horizonDay": 861
+        },
+        "earlyExit": {
+          "rateShiftPct": 3,
+          "applicable": false,
+          "result": {
+            "qty": 100,
+            "invested": 99735,
+            "coupons": 29992.602739726022,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 100000,
+            "tax": 0,
+            "commission": -49.8675,
+            "total": 129942.73523972603,
+            "profit": 30207.735239726026,
+            "periodPct": 30.287998435580317,
+            "annualPct": 11.869302347914946,
+            "horizonDay": 861
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: held more than three years, the gain is relieved",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": 51.51,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 1200,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99783.09,
+          "coupons": 40602.20547945206,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 98953.55515121117,
+          "tax": -4615.353012328767,
+          "commission": -99.3683225756056,
+          "total": 134841.03929575885,
+          "profit": 35057.94929575885,
+          "periodPct": 35.134158799611086,
+          "annualPct": 9.59087577277893,
+          "horizonDay": 1200
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99783.09,
+            "coupons": 40602.20547945206,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 98953.55515121117,
+            "tax": -4615.353012328767,
+            "commission": -99.3683225756056,
+            "total": 134841.03929575885,
+            "profit": 35057.94929575885,
+            "periodPct": 35.134158799611086,
+            "annualPct": 9.59087577277893,
+            "horizonDay": 1200
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 2.695543096015351
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: held exactly three years, the gain is taxed",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": 51.51,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 1096,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99783.09,
+          "coupons": 34801.890410958906,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 101306.810874683,
+          "tax": -4709.258623576592,
+          "commission": -100.5449504373415,
+          "total": 131298.89771162797,
+          "profit": 31515.807711627975,
+          "periodPct": 31.584317254184025,
+          "annualPct": 9.57171423224854,
+          "horizonDay": 1096
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99783.09,
+            "coupons": 34801.890410958906,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 101306.810874683,
+            "tax": -4709.258623576592,
+            "commission": -100.5449504373415,
+            "total": 131298.89771162797,
+            "profit": 31515.807711627975,
+            "periodPct": 31.584317254184025,
+            "annualPct": 9.57171423224854,
+            "horizonDay": 1096
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 2.7822067957253203
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: amortising, to maturity, reinvested",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-07-11", "fractionPct": 16.67},
+          {"date": "2028-01-09", "fractionPct": 16.67},
+          {"date": "2028-07-09", "fractionPct": 16.67},
+          {"date": "2029-01-07", "fractionPct": 16.67},
+          {"date": "2029-07-08", "fractionPct": 16.67},
+          {"date": "2030-01-06", "fractionPct": 16.67}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 1220,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 101,
+          "invested": 99524.39000000001,
+          "coupons": 25107.525581369857,
+          "reinvest": 24696.015706433795,
+          "amort": 84183.50000000001,
+          "body": 16816.499999999978,
+          "tax": -6593.127189775249,
+          "commission": -49.76219500000001,
+          "total": 144160.6519030284,
+          "profit": 44636.26190302838,
+          "periodPct": 44.84957094741136,
+          "annualPct": 11.723173817569066,
+          "horizonDay": 1220
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": false,
+          "result": {
+            "qty": 101,
+            "invested": 99524.39000000001,
+            "coupons": 25107.525581369857,
+            "reinvest": 24696.015706433795,
+            "amort": 84183.50000000001,
+            "body": 16816.499999999978,
+            "tax": -6593.127189775249,
+            "commission": -49.76219500000001,
+            "total": 144160.6519030284,
+            "profit": 44636.26190302838,
+            "periodPct": 44.84957094741136,
+            "annualPct": 11.723173817569066,
+            "horizonDay": 1220
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: amortising, early exit with key rate up 1.5",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-07-11", "fractionPct": 16.67},
+          {"date": "2028-01-09", "fractionPct": 16.67},
+          {"date": "2028-07-09", "fractionPct": 16.67},
+          {"date": "2029-01-07", "fractionPct": 16.67},
+          {"date": "2029-07-08", "fractionPct": 16.67},
+          {"date": "2030-01-06", "fractionPct": 16.67}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 500,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 1.5
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 101,
+          "invested": 99524.39000000001,
+          "coupons": 15810.012719123286,
+          "reinvest": 0,
+          "amort": 33673.4,
+          "body": 66209.5332853904,
+          "tax": -2091.1395755732283,
+          "commission": -82.86696164269523,
+          "total": 113518.93946729777,
+          "profit": 13994.549467297751,
+          "periodPct": 14.061427020349232,
+          "annualPct": 10.080735984874757,
+          "horizonDay": 500
+        },
+        "earlyExit": {
+          "rateShiftPct": 1.5,
+          "applicable": true,
+          "result": {
+            "qty": 101,
+            "invested": 99524.39000000001,
+            "coupons": 15810.012719123286,
+            "reinvest": 0,
+            "amort": 33673.4,
+            "body": 65195.84575910188,
+            "tax": -1959.4260868449298,
+            "commission": -82.36011787955094,
+            "total": 112637.47227350068,
+            "profit": 13113.082273500666,
+            "periodPct": 13.175747445928243,
+            "annualPct": 9.456097796120467,
+            "horizonDay": 500
+          },
+          "diff": -881.4671937970852,
+          "modDurationAtHorizon": 1.020686373485523
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: floater scenarios over two years, reinvested",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 111.45,
+        "accrued": 54.87,
+        "couponType": "floater",
+        "couponRatePct": 16.83,
+        "spreadPct": 0.83,
+        "periodDays": 182,
+        "maturity": "2029-05-04",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 730,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 85,
+          "invested": 99396.45,
+          "coupons": 28532.613698630143,
+          "reinvest": 3785.8315932960154,
+          "amort": 0,
+          "body": 92423.21672425783,
+          "tax": -3282.4092837668422,
+          "commission": -95.90983336212891,
+          "total": 121363.34289905502,
+          "profit": 21966.89289905502,
+          "periodPct": 22.100279133766872,
+          "annualPct": 10.498995078582896,
+          "horizonDay": 730
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 85,
+            "invested": 99396.45,
+            "coupons": 28532.613698630143,
+            "reinvest": 3785.8315932960154,
+            "amort": 0,
+            "body": 92423.21672425783,
+            "tax": -3282.4092837668422,
+            "commission": -95.90983336212891,
+            "total": 121363.34289905502,
+            "profit": 21966.89289905502,
+            "periodPct": 22.100279133766872,
+            "annualPct": 10.498995078582896,
+            "horizonDay": 730
+          },
+          "diff": 0,
+          "modDurationAtHorizon": null
+        },
+        "floater": {
+          "days": [63, 245, 427, 609, 791, 973],
+          "scenarios": [
+            {
+              "shiftPct": -2,
+              "breakdown": {
+                "qty": 85,
+                "invested": 99396.45,
+                "coupons": 26413.435616438357,
+                "reinvest": 3572.5501925252415,
+                "amort": 0,
+                "body": 91901.90135784108,
+                "tax": -2911.4524388463497,
+                "commission": -95.64917567892054,
+                "total": 118880.78555227941,
+                "profit": 19484.335552279415,
+                "periodPct": 19.602647330241084,
+                "annualPct": 9.362995263590456,
+                "horizonDay": 730
+              },
+              "coupons": [81.42630136986301, 78.93315068493152, 76.44000000000001, 73.9468493150685, 73.9468493150685, 73.9468493150685]
+            },
+            {
+              "shiftPct": 0,
+              "breakdown": {
+                "qty": 85,
+                "invested": 99396.45,
+                "coupons": 28532.613698630143,
+                "reinvest": 3785.8315932960154,
+                "amort": 0,
+                "body": 92423.21672425783,
+                "tax": -3282.4092837668422,
+                "commission": -95.90983336212891,
+                "total": 121363.34289905502,
+                "profit": 21966.89289905502,
+                "periodPct": 22.100279133766872,
+                "annualPct": 10.498995078582896,
+                "horizonDay": 730
+              },
+              "coupons": [83.91945205479453, 83.91945205479453, 83.91945205479453, 83.91945205479453, 83.91945205479453, 83.91945205479453]
+            },
+            {
+              "shiftPct": 2,
+              "breakdown": {
+                "qty": 85,
+                "invested": 99396.45,
+                "coupons": 30651.791780821924,
+                "reinvest": 3999.1129940667897,
+                "amort": 0,
+                "body": 92943.43053447596,
+                "tax": -3653.222997982666,
+                "commission": -96.16994026723798,
+                "total": 123844.94237111478,
+                "profit": 24448.492371114786,
+                "periodPct": 24.596947246219344,
+                "annualPct": 11.623002668007176,
+                "horizonDay": 730
+              },
+              "coupons": [86.41260273972604, 88.90575342465755, 91.39890410958904, 93.89205479452055, 93.89205479452055, 93.89205479452055]
+            }
+          ]
+        },
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: floater with amortisation to maturity, IIS type B",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 102.6,
+        "accrued": 44.86,
+        "couponType": "floater",
+        "couponRatePct": 22.74,
+        "spreadPct": 6.74,
+        "periodDays": 91,
+        "maturity": "2028-03-22",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-06-23", "fractionPct": 25},
+          {"date": "2027-09-22", "fractionPct": 25},
+          {"date": "2027-12-22", "fractionPct": 25},
+          {"date": "2028-03-22", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 565,
+        "reinvest": false,
+        "taxRegime": "iis_b",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 93,
+          "invested": 99589.98,
+          "coupons": 28999.107123287675,
+          "reinvest": 0,
+          "amort": 69750,
+          "body": 23250,
+          "tax": 0,
+          "commission": -49.79499,
+          "total": 121949.31213328768,
+          "profit": 22359.33213328768,
+          "periodPct": 22.45138731154247,
+          "annualPct": 13.979333589067178,
+          "horizonDay": 565
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": false,
+          "result": {
+            "qty": 93,
+            "invested": 99589.98,
+            "coupons": 28999.107123287675,
+            "reinvest": 0,
+            "amort": 69750,
+            "body": 23250,
+            "tax": 0,
+            "commission": -49.79499,
+            "total": 121949.31213328768,
+            "profit": 22359.33213328768,
+            "periodPct": 22.45138731154247,
+            "annualPct": 13.979333589067178,
+            "horizonDay": 565
+          },
+          "diff": 0,
+          "modDurationAtHorizon": null
+        },
+        "floater": {
+          "days": [19, 110, 201, 292, 383, 474, 565],
+          "scenarios": [
+            {
+              "shiftPct": -2,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 27144.203013698632,
+                "reinvest": 0,
+                "amort": 69750,
+                "body": 23250,
+                "tax": 0,
+                "commission": -49.79499,
+                "total": 120094.40802369863,
+                "profit": 20504.428023698638,
+                "periodPct": 20.58884641175612,
+                "annualPct": 12.856311456667125,
+                "horizonDay": 565
+              },
+              "coupons": [55.447671232876715, 54.20109589041096, 52.95452054794521, 51.707945205479454, 38.78095890410959, 25.853972602739727, 12.926986301369864]
+            },
+            {
+              "shiftPct": 0,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 28999.107123287675,
+                "reinvest": 0,
+                "amort": 69750,
+                "body": 23250,
+                "tax": 0,
+                "commission": -49.79499,
+                "total": 121949.31213328768,
+                "profit": 22359.33213328768,
+                "periodPct": 22.45138731154247,
+                "annualPct": 13.979333589067178,
+                "horizonDay": 565
+              },
+              "coupons": [56.69424657534247, 56.69424657534247, 56.69424657534247, 56.69424657534247, 42.52068493150685, 28.347123287671234, 14.173561643835617]
+            },
+            {
+              "shiftPct": 2,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 30854.011232876717,
+                "reinvest": 0,
+                "amort": 69750,
+                "body": 23250,
+                "tax": 0,
+                "commission": -49.79499,
+                "total": 123804.21624287672,
+                "profit": 24214.236242876723,
+                "periodPct": 24.313928211328815,
+                "annualPct": 15.096325087296304,
+                "horizonDay": 565
+              },
+              "coupons": [57.94082191780822, 59.187397260273976, 60.43397260273973, 61.68054794520548, 46.26041095890411, 30.84027397260274, 15.42013698630137]
+            }
+          ]
+        },
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: floater with an offer, standard, other income at the threshold, key rate up 2",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.78,
+        "accrued": 29.46,
+        "couponType": "floater",
+        "couponRatePct": 17.07,
+        "spreadPct": 1.07,
+        "periodDays": 91,
+        "maturity": "2027-04-02",
+        "offers": ["2027-01-01"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 100,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 2400000,
+        "rateShiftPct": 2
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 96,
+          "invested": 99576.95999999999,
+          "coupons": 4085.575890410959,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99628.79498175686,
+          "tax": -605.6711992015429,
+          "commission": -99.60287749087844,
+          "total": 103009.09679547539,
+          "profit": 3432.136795475395,
+          "periodPct": 3.4467177904159705,
+          "annualPct": 13.166012214205548,
+          "horizonDay": 100
+        },
+        "earlyExit": {
+          "rateShiftPct": 2,
+          "applicable": true,
+          "result": {
+            "qty": 96,
+            "invested": 99576.95999999999,
+            "coupons": 4324.918356164384,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 100002.04677554179,
+            "tax": -697.5323442477624,
+            "commission": -99.78950338777089,
+            "total": 103529.64328407064,
+            "profit": 3952.6832840706484,
+            "periodPct": 3.969475754301646,
+            "annualPct": 15.267365594041692,
+            "horizonDay": 100
+          },
+          "diff": 520.5464885952533,
+          "modDurationAtHorizon": null
+        },
+        "floater": {
+          "days": [28, 119, 210],
+          "scenarios": [
+            {
+              "shiftPct": -2,
+              "breakdown": {
+                "qty": 96,
+                "invested": 99576.95999999999,
+                "coupons": 3965.9046575342463,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99442.44372407568,
+                "tax": -559.7818019621844,
+                "commission": -99.50970186203784,
+                "total": 102749.05687778571,
+                "profit": 3172.0968777857197,
+                "periodPct": 3.185573126339386,
+                "annualPct": 12.126761711524336,
+                "horizonDay": 100
+              },
+              "coupons": [41.311506849315066, 40.06493150684931, 38.81835616438356]
+            },
+            {
+              "shiftPct": 0,
+              "breakdown": {
+                "qty": 96,
+                "invested": 99576.95999999999,
+                "coupons": 4085.575890410959,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99628.79498175686,
+                "tax": -605.6711992015429,
+                "commission": -99.60287749087844,
+                "total": 103009.09679547539,
+                "profit": 3432.136795475395,
+                "periodPct": 3.4467177904159705,
+                "annualPct": 13.166012214205548,
+                "horizonDay": 100
+              },
+              "coupons": [42.55808219178082, 42.55808219178082, 42.55808219178082]
+            },
+            {
+              "shiftPct": 2,
+              "breakdown": {
+                "qty": 96,
+                "invested": 99576.95999999999,
+                "coupons": 4205.247123287671,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99815.06305823236,
+                "tax": -651.5481254986398,
+                "commission": -99.69601152911619,
+                "total": 103269.06604449228,
+                "profit": 3692.1060444922914,
+                "periodPct": 3.7077914855929444,
+                "annualPct": 14.211953080450312,
+                "horizonDay": 100
+              },
+              "coupons": [43.80465753424657, 45.051232876712334, 46.29780821917809]
+            }
+          ]
+        },
+        "offer": {
+          "before": {
+            "qty": 96,
+            "invested": 99576.95999999999,
+            "coupons": 8171.151780821918,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 96000,
+            "tax": -681.6604951232889,
+            "commission": -49.78848,
+            "total": 103439.70280569863,
+            "profit": 3862.742805698639,
+            "periodPct": 3.879153175291392,
+            "annualPct": 12.38189598573356,
+            "horizonDay": 119
+          },
+          "after": {
+            "qty": 96,
+            "invested": 99576.95999999999,
+            "coupons": 8195.08602739726,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 96000,
+            "tax": -685.2506321095904,
+            "commission": -49.78848,
+            "total": 103460.04691528768,
+            "profit": 3883.086915287684,
+            "periodPct": 3.8995837142323726,
+            "annualPct": 6.875062010041333,
+            "horizonDay": 210
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: offer pair, one year",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2030-02-05"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99339.56999999999,
+          "coupons": 17909.398356164387,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99422.99916602334,
+          "tax": -2326.1480108886144,
+          "commission": -99.38128458301168,
+          "total": 114906.86822671609,
+          "profit": 15567.298226716099,
+          "periodPct": 15.670792843895038,
+          "annualPct": 15.670792843895033,
+          "horizonDay": 365
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 17909.398356164387,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99422.99916602334,
+            "tax": -2326.1480108886144,
+            "commission": -99.38128458301168,
+            "total": 114906.86822671609,
+            "profit": 15567.298226716099,
+            "periodPct": 15.670792843895038,
+            "annualPct": 15.670792843895033,
+            "horizonDay": 365
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 3.7216743764793665
+        },
+        "floater": null,
+        "offer": {
+          "before": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 62682.894246575364,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -7995.237152054797,
+            "commission": -49.669785000000005,
+            "total": 153637.98730952057,
+            "profit": 54298.41730952058,
+            "periodPct": 54.65940441409257,
+            "annualPct": 13.578960433748488,
+            "horizonDay": 1250
+          },
+          "after": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 63299.94904109594,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -8075.454275342469,
+            "commission": -49.669785000000005,
+            "total": 154174.82498075347,
+            "profit": 54835.25498075348,
+            "periodPct": 55.199811093156015,
+            "annualPct": 4.65645934382708,
+            "horizonDay": 3525
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: monthly, amortisation and offer, sixty days",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.93,
+        "accrued": 9.21,
+        "couponType": "fixed",
+        "couponRatePct": 12.45,
+        "spreadPct": 0,
+        "periodDays": 30,
+        "maturity": "2027-04-05",
+        "offers": ["2026-12-06"],
+        "amortization": [
+          {"date": "2027-01-05", "fractionPct": 25},
+          {"date": "2027-02-04", "fractionPct": 25},
+          {"date": "2027-03-06", "fractionPct": 25},
+          {"date": "2027-04-05", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 60,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99842.49,
+          "coupons": 2026.109589041096,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99866.63143825102,
+          "tax": -253.5515406544858,
+          "commission": -99.85456071912552,
+          "total": 101539.3349259185,
+          "profit": 1696.8449259185,
+          "periodPct": 1.6995218427730516,
+          "annualPct": 10.795819826665621,
+          "horizonDay": 60
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 2026.109589041096,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99866.63143825102,
+            "tax": -253.5515406544858,
+            "commission": -99.85456071912552,
+            "total": 101539.3349259185,
+            "profit": 1696.8449259185,
+            "periodPct": 1.6995218427730516,
+            "annualPct": 10.795819826665621,
+            "horizonDay": 60
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0.2548233617296726
+        },
+        "floater": null,
+        "offer": {
+          "before": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 4052.219178082192,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -410.77503130068277,
+            "commission": -49.921245000000006,
+            "total": 102591.5229017815,
+            "profit": 2749.0329017814947,
+            "periodPct": 2.753369734450227,
+            "annualPct": 11.249076971232853,
+            "horizonDay": 93
+          },
+          "after": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 4072.561643835616,
+            "reinvest": 0,
+            "amort": 74250,
+            "body": 24750,
+            "tax": -413.4195518486279,
+            "commission": -49.921245000000006,
+            "total": 102609.220846987,
+            "profit": 2766.7308469869895,
+            "periodPct": 2.7710955996660234,
+            "annualPct": 4.795419527517519,
+            "horizonDay": 213
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: offer in twenty days, ten-day horizon",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.06,
+        "accrued": 101.73,
+        "couponType": "fixed",
+        "couponRatePct": 22.92,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2031-09-18",
+        "offers": ["2026-09-24"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 10,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 90,
+          "invested": 99209.7,
+          "coupons": 0,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99800.3131951477,
+          "tax": -63.84406451151546,
+          "commission": -99.50500659757385,
+          "total": 99636.9641240386,
+          "profit": 427.26412403860013,
+          "periodPct": 0.43066769079898454,
+          "annualPct": null,
+          "horizonDay": 10
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 90,
+            "invested": 99209.7,
+            "coupons": 0,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99800.3131951477,
+            "tax": -63.84406451151546,
+            "commission": -99.50500659757385,
+            "total": 99636.9641240386,
+            "profit": 427.26412403860013,
+            "periodPct": 0.43066769079898454,
+            "annualPct": null,
+            "horizonDay": 10
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 2.345781690186389
+        },
+        "floater": null,
+        "offer": {
+          "before": {
+            "qty": 90,
+            "invested": 99209.7,
+            "coupons": 10285.742465753425,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 90000,
+            "tax": -133.4368900479447,
+            "commission": -49.604850000000006,
+            "total": 100102.70072570548,
+            "profit": 893.0007257054822,
+            "periodPct": 0.9001143292495413,
+            "annualPct": null,
+            "horizonDay": 20
+          },
+          "after": {
+            "qty": 90,
+            "invested": 99209.7,
+            "coupons": 10734.509589041101,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 90000,
+            "tax": -193.57730136986288,
+            "commission": -49.604850000000006,
+            "total": 100491.32743767124,
+            "profit": 1281.627437671239,
+            "periodPct": 1.2918368240920384,
+            "annualPct": 0.25494442204361256,
+            "horizonDay": 1840
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: accrued interest computed when not quoted",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 900,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99782.77808219178,
+          "coupons": 29001.575342465752,
+          "reinvest": 5622.10224100822,
+          "amort": 0,
+          "body": 100562.02364144674,
+          "tax": -4589.357596442724,
+          "commission": -100.17240086181926,
+          "total": 130496.17122761617,
+          "profit": 30713.393145424387,
+          "periodPct": 30.780254604783146,
+          "annualPct": 11.497294158233174,
+          "horizonDay": 900
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99782.77808219178,
+            "coupons": 29001.575342465752,
+            "reinvest": 5622.10224100822,
+            "amort": 0,
+            "body": 100562.02364144674,
+            "tax": -4589.357596442724,
+            "commission": -100.17240086181926,
+            "total": 130496.17122761617,
+            "profit": 30713.393145424387,
+            "periodPct": 30.780254604783146,
+            "annualPct": 11.497294158233174,
+            "horizonDay": 900
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 3.075552252484891
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: nearest offer from an unsorted list",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2032-01-01", "2025-01-01", "2029-02-06"],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 400,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99339.56999999999,
+          "coupons": 17909.398356164387,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 101146.07018768207,
+          "tax": -2550.0352440878414,
+          "commission": -100.24282009384103,
+          "total": 116405.19047966477,
+          "profit": 17065.62047966478,
+          "periodPct": 17.17907625296222,
+          "annualPct": 15.56483110508231,
+          "horizonDay": 400
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 17909.398356164387,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 101146.07018768207,
+            "tax": -2550.0352440878414,
+            "commission": -100.24282009384103,
+            "total": 116405.19047966477,
+            "profit": 17065.62047966478,
+            "periodPct": 17.17907625296222,
+            "annualPct": 15.56483110508231,
+            "horizonDay": 400
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 3.641514770583376
+        },
+        "floater": null,
+        "offer": {
+          "before": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 44773.49589041097,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -5769.953293703427,
+            "commission": -49.669785000000005,
+            "total": 137953.87281170752,
+            "profit": 38614.30281170753,
+            "periodPct": 38.871018680378356,
+            "annualPct": 14.485592790949342,
+            "horizonDay": 886
+          },
+          "after": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 45489.279452054834,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -5760.067228767127,
+            "commission": -49.669785000000005,
+            "total": 138679.5424382877,
+            "profit": 39339.9724382877,
+            "periodPct": 39.601512708669574,
+            "annualPct": 3.514885765986575,
+            "horizonDay": 3525
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: one day to maturity",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.9,
+        "accrued": 49,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2026-09-05",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 5000,
+        "horizonDay": 1,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 4,
+          "invested": 4192,
+          "coupons": 199.45205479452054,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 4000,
+          "tax": -0.6962871232877282,
+          "commission": -2.096,
+          "total": 4196.659767671233,
+          "profit": 4.6597676712326574,
+          "periodPct": 0.11115857994352712,
+          "annualPct": null,
+          "horizonDay": 1
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": false,
+          "result": {
+            "qty": 4,
+            "invested": 4192,
+            "coupons": 199.45205479452054,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 4000,
+            "tax": -0.6962871232877282,
+            "commission": -2.096,
+            "total": 4196.659767671233,
+            "profit": 4.6597676712326574,
+            "periodPct": 0.11115857994352712,
+            "annualPct": null,
+            "horizonDay": 1
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: amount at the limit",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 1000000000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 1002657,
+          "invested": 999999958.95,
+          "coupons": 120289172.3408219,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 1007497887.8913085,
+          "tax": -18969502.85380645,
+          "commission": -1003748.9234206544,
+          "total": 1107813808.4549034,
+          "profit": 107813849.50490332,
+          "periodPct": 10.781385393066202,
+          "annualPct": 10.781385393066213,
+          "horizonDay": 365
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 1002657,
+            "invested": 999999958.95,
+            "coupons": 120289172.3408219,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 1007497887.8913085,
+            "tax": -18969502.85380645,
+            "commission": -1003748.9234206544,
+            "total": 1107813808.4549034,
+            "profit": 107813849.50490332,
+            "periodPct": 10.781385393066202,
+            "annualPct": 10.781385393066213,
+            "horizonDay": 365
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 1.1247691881126514
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: dates moved by 500 days",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.93,
+        "accrued": 9.21,
+        "couponType": "fixed",
+        "couponRatePct": 12.45,
+        "spreadPct": 0,
+        "periodDays": 30,
+        "maturity": "2028-08-17",
+        "offers": ["2028-04-19"],
+        "amortization": [
+          {"date": "2028-05-19", "fractionPct": 25},
+          {"date": "2028-06-18", "fractionPct": 25},
+          {"date": "2028-07-18", "fractionPct": 25},
+          {"date": "2028-08-17", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2028-01-17", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 120,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 1
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99842.49,
+          "coupons": 4052.219178082192,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99891.27574523198,
+          "tax": -520.1479452573997,
+          "commission": -99.866882872616,
+          "total": 103323.48009518415,
+          "profit": 3480.990095184141,
+          "periodPct": 3.486481652434891,
+          "annualPct": 10.98672001415435,
+          "horizonDay": 120
+        },
+        "earlyExit": {
+          "rateShiftPct": 1,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 4052.219178082192,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99777.23187589293,
+            "tax": -505.3296550948308,
+            "commission": -99.80986093794648,
+            "total": 103224.31153794234,
+            "profit": 3381.8215379423345,
+            "periodPct": 3.387156648379196,
+            "annualPct": 10.663027971036666,
+            "horizonDay": 120
+          },
+          "diff": -99.16855724180641,
+          "modDurationAtHorizon": 0.11416799764366584
+        },
+        "floater": null,
+        "offer": {
+          "before": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 4052.219178082192,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -410.77503130068277,
+            "commission": -49.921245000000006,
+            "total": 102591.5229017815,
+            "profit": 2749.0329017814947,
+            "periodPct": 2.753369734450227,
+            "annualPct": 11.249076971232853,
+            "horizonDay": 93
+          },
+          "after": {
+            "qty": 99,
+            "invested": 99842.49,
+            "coupons": 4072.561643835616,
+            "reinvest": 0,
+            "amort": 74250,
+            "body": 24750,
+            "tax": -413.41955184862786,
+            "commission": -49.921245000000006,
+            "total": 102609.220846987,
+            "profit": 2766.7308469869895,
+            "periodPct": 2.7710955996660234,
+            "annualPct": 4.795419527517519,
+            "horizonDay": 213
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: floater at key rate 18 with the spread 2 lower",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 102.6,
+        "accrued": 44.86,
+        "couponType": "floater",
+        "couponRatePct": 22.74,
+        "spreadPct": 4.74,
+        "periodDays": 91,
+        "maturity": "2028-03-22",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-06-23", "fractionPct": 25},
+          {"date": "2027-09-22", "fractionPct": 25},
+          {"date": "2027-12-22", "fractionPct": 25},
+          {"date": "2028-03-22", "fractionPct": 25}
+        ]
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 18},
+      {
+        "amount": 100000,
+        "horizonDay": 200,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 93,
+          "invested": 99589.98,
+          "coupons": 10545.129863013699,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99576.22670875172,
+          "tax": -1356.1331508934377,
+          "commission": -99.58310335437587,
+          "total": 108665.64031751761,
+          "profit": 9075.660317517613,
+          "periodPct": 9.113025544856635,
+          "annualPct": 17.253223717248957,
+          "horizonDay": 200
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 93,
+            "invested": 99589.98,
+            "coupons": 10545.129863013699,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99576.22670875172,
+            "tax": -1356.1331508934377,
+            "commission": -99.58310335437587,
+            "total": 108665.64031751761,
+            "profit": 9075.660317517613,
+            "periodPct": 9.113025544856635,
+            "annualPct": 17.253223717248957,
+            "horizonDay": 200
+          },
+          "diff": 0,
+          "modDurationAtHorizon": null
+        },
+        "floater": {
+          "days": [19, 110, 201, 292, 383, 474, 565],
+          "scenarios": [
+            {
+              "shiftPct": -2,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 10197.335342465754,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99245.18382212817,
+                "tax": -1267.9058057487725,
+                "commission": -99.41758191106408,
+                "total": 108075.19577693408,
+                "profit": 8485.215776934085,
+                "periodPct": 8.520150096359178,
+                "annualPct": 16.093112254783758,
+                "horizonDay": 200
+              },
+              "coupons": [55.447671232876715, 54.20109589041096, 52.95452054794521, 51.707945205479454, 38.78095890410959, 25.853972602739727, 12.926986301369864]
+            },
+            {
+              "shiftPct": 0,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 10545.129863013699,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99576.22670875172,
+                "tax": -1356.1331508934377,
+                "commission": -99.58310335437587,
+                "total": 108665.64031751761,
+                "profit": 9075.660317517613,
+                "periodPct": 9.113025544856635,
+                "annualPct": 17.253223717248957,
+                "horizonDay": 200
+              },
+              "coupons": [56.69424657534247, 56.69424657534247, 56.69424657534247, 56.69424657534247, 42.52068493150685, 28.347123287671234, 14.173561643835617]
+            },
+            {
+              "shiftPct": 2,
+              "breakdown": {
+                "qty": 93,
+                "invested": 99589.98,
+                "coupons": 10892.924383561643,
+                "reinvest": 0,
+                "amort": 0,
+                "body": 99907.46322121228,
+                "tax": -1444.385654811233,
+                "commission": -99.74872161060615,
+                "total": 109256.25322835207,
+                "profit": 9666.273228352075,
+                "periodPct": 9.70607005679896,
+                "annualPct": 18.418880358375933,
+                "horizonDay": 200
+              },
+              "coupons": [57.94082191780822, 59.187397260273976, 60.43397260273973, 61.68054794520548, 46.26041095890411, 30.84027397260274, 15.42013698630137]
+            }
+          ]
+        },
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: amount just above the limit",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 1000000001,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_too_large"}
+  },
+  {
+    "name": "calculate: zero amount",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 0,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_not_positive"}
+  },
+  {
+    "name": "calculate: NaN amount",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": "NaN",
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_not_positive"}
+  },
+  {
+    "name": "calculate: negative amount",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": -5,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_not_positive"}
+  },
+  {
+    "name": "calculate: amount below one bond",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_below_one_bond"}
+  },
+  {
+    "name": "calculate: horizon zero",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 0,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "horizon_out_of_range"}
+  },
+  {
+    "name": "calculate: horizon half a day",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 0.5,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "horizon_out_of_range"}
+  },
+  {
+    "name": "calculate: horizon after maturity",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 862,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "horizon_out_of_range"}
+  },
+  {
+    "name": "calculate: NaN horizon",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": "NaN",
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "horizon_out_of_range"}
+  },
+  {
+    "name": "calculate: amount is checked before the horizon",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 0,
+        "horizonDay": 0,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "amount_not_positive"}
+  },
+  {
+    "name": "calculate error: negative dirty price",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": -50,
+        "accrued": 10,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_price"}
+  },
+  {
+    "name": "calculate error: zero dirty price",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 0,
+        "accrued": 0,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_price"}
+  },
+  {
+    "name": "calculate error: issue errors come first",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2026-01-01",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 0,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "matured"}
+  },
+  {
+    "name": "calculate error: unknown tax regime",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "flat",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_code"}
+  },
+  {
+    "name": "calculate error: an unknown code is reported before a bad date",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "zero",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "x",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_code"}
+  },
+  {
+    "name": "calculate error: malformed valuation date",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_date"}
+  },
+  {
+    "name": "periodic rate: annual period is the yield",
+    "fn": "periodic_rate_pct",
+    "args": [0.18, 365],
+    "expect": 18
+  },
+  {
+    "name": "periodic rate: 21% effective is 20% twice a year",
+    "fn": "periodic_rate_pct",
+    "args": [0.21, 182.5],
+    "expect": 20
+  },
+  {
+    "name": "path value: flat 18% prices 180 and 1180 at par",
+    "fn": "value_along_path",
+    "args": [
+      [365, 730],
+      [180, 1180],
+      0,
+      365,
+      [18, 18]
+    ],
+    "expect": 1000
+  },
+  {
+    "name": "path value: half a period left at 20%",
+    "fn": "value_along_path",
+    "args": [
+      [365, 730],
+      [200, 1200],
+      182.5,
+      365,
+      [20, 20]
+    ],
+    "expect": 1095.4451150103323
+  },
+  {
+    "name": "path value: rates rising with the coupons stay at par",
+    "fn": "value_along_path",
+    "args": [
+      [365, 730],
+      [190, 1200],
+      0,
+      365,
+      [19, 20]
+    ],
+    "expect": 1000
+  },
+  {
+    "name": "path value: flows on or before the horizon are left out",
+    "fn": "value_along_path",
+    "args": [
+      [365, 730],
+      [190, 1200],
+      365,
+      365,
+      [19, 20]
+    ],
+    "expect": 1000
+  },
+  {
+    "name": "calculate: above par to maturity, other income just under the threshold",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 105,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 365,
+        "maturity": "2027-07-02",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-01-01", "keyRatePct": 16},
+      {
+        "amount": 11100,
+        "horizonDay": 547,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 2399700,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 10,
+          "invested": 11001.369863013699,
+          "coupons": 2000,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 10000,
+          "tax": -136.9694178082192,
+          "commission": -5.50068493150685,
+          "total": 11857.529897260274,
+          "profit": 856.1600342465754,
+          "periodPct": 7.782303884945835,
+          "annualPct": 5.127937063579968,
+          "horizonDay": 547
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": false,
+          "result": {
+            "qty": 10,
+            "invested": 11001.369863013699,
+            "coupons": 2000,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 10000,
+            "tax": -136.9694178082192,
+            "commission": -5.50068493150685,
+            "total": 11857.529897260274,
+            "profit": 856.1600342465754,
+            "periodPct": 7.782303884945835,
+            "annualPct": 5.127937063579968,
+            "horizonDay": 547
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate error: negative other income",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 105,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 365,
+        "maturity": "2027-07-02",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-01-01", "keyRatePct": 16},
+      {
+        "amount": 11100,
+        "horizonDay": 547,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": -1,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_other_income"}
+  },
+  {
+    "name": "calculate error: other income is checked after the horizon",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 105,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 365,
+        "maturity": "2027-07-02",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-01-01", "keyRatePct": 16},
+      {
+        "amount": 11100,
+        "horizonDay": 0,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": "NaN",
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "horizon_out_of_range"}
+  },
+  {
+    "name": "calculate: sold the day after the third anniversary, the gain is relieved",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": 51.51,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 1097,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 99,
+          "invested": 99783.09,
+          "coupons": 34801.890410958906,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 101340.99667524149,
+          "tax": -3861.3120534246573,
+          "commission": -100.56204333762075,
+          "total": 132181.01298943814,
+          "profit": 32397.922989438142,
+          "periodPct": 32.46835008761318,
+          "annualPct": 9.806950986634334,
+          "horizonDay": 1097
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": true,
+          "result": {
+            "qty": 99,
+            "invested": 99783.09,
+            "coupons": 34801.890410958906,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 101340.99667524149,
+            "tax": -3861.3120534246573,
+            "commission": -100.56204333762075,
+            "total": 132181.01298943814,
+            "profit": 32397.922989438142,
+            "periodPct": 32.46835008761318,
+            "annualPct": 9.806950986634334,
+            "horizonDay": 1097
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 2.779784513629178
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate: relief capped at three million a year held",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 50,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 0,
+        "spreadPct": 0,
+        "periodDays": 1097,
+        "maturity": "2029-09-05",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 1000000000,
+        "horizonDay": 1097,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "plan": {
+          "qty": 2000000,
+          "invested": 1000000000,
+          "coupons": 0,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 2000000000,
+          "tax": -148527000,
+          "commission": -500000,
+          "total": 1850973000,
+          "profit": 850973000,
+          "periodPct": 85.0973,
+          "annualPct": 22.73568687086296,
+          "horizonDay": 1097
+        },
+        "earlyExit": {
+          "rateShiftPct": 0,
+          "applicable": false,
+          "result": {
+            "qty": 2000000,
+            "invested": 1000000000,
+            "coupons": 0,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 2000000000,
+            "tax": -148527000,
+            "commission": -500000,
+            "total": 1850973000,
+            "profit": 850973000,
+            "periodPct": 85.0973,
+            "annualPct": 22.73568687086296,
+            "horizonDay": 1097
+          },
+          "diff": 0,
+          "modDurationAtHorizon": 0
+        },
+        "floater": null,
+        "offer": null
+      }
+    }
+  },
+  {
+    "name": "calculate error: the ldv regime is no longer a code",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": 51.51,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {"valuationDate": "2026-09-04", "keyRatePct": 16},
+      {
+        "amount": 100000,
+        "horizonDay": 1096,
+        "reinvest": false,
+        "taxRegime": "ldv",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      }
+    ],
+    "expect": {"error": "invalid_code"}
+  }
+]

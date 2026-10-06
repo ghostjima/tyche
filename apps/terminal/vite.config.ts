@@ -1,0 +1,25 @@
+import { defineConfig, searchForWorkspaceRoot } from "vite";
+import react from "@vitejs/plugin-react";
+
+// Served from GitHub Pages under /tyche/.
+export default defineConfig({
+  base: process.env.GITHUB_PAGES ? "/tyche/" : "/",
+  plugins: [react()],
+  // Stoa is linked from the sibling repository and has its own
+  // node_modules: without dedupe the app would run two copies of React and
+  // fail with "Invalid hook call".
+  resolve: { dedupe: ["react", "react-dom", "react-aria-components"] },
+  server: {
+    port: 5181,
+    strictPort: true,
+    // What the dev server may serve: this workspace (the app, the twin's
+    // build and the engine's WebAssembly package) and the linked Stoa
+    // packages with their dependencies. Not the whole parent folder, which
+    // would hand the other repositories' files (ignored ones included) to
+    // anything that can reach the server.
+    fs: {
+      allow: [searchForWorkspaceRoot(process.cwd()), "../../../stoa/packages", "../../../stoa/node_modules"],
+    },
+  },
+  preview: { port: 4176, strictPort: true },
+});

@@ -1,0 +1,19 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "R=\"$(git rev-parse --show-toplevel 2>/dev/null)\"; [ -f \"$R/scripts/check-text.mjs\" ] || R=\"$CLAUDE_PROJECT_DIR\"; node \"$R/scripts/check-text.mjs\" origin/main 1>&2 || exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+import { describe, expect, it } from "vitest";
+import { ERROR_CODES } from "./engine/types";
+import { LANGS, strings, type Strings } from "./i18n";
+
+type Leaf = string | ((...a: string[]) => string);
+
+/** Every leaf with its dotted path; arrays and records are walked. */
+function leaves(value: unknown, path = ""): [string, Leaf][] {
+  if (typeof value === "string" || typeof value === "function") return [[path, value as Leaf]];
+  if (value && typeof value === "object") return Object.entries(value).flatMap(([k, v]) => leaves(v, path ? `${path}.${k}` : k));
+  throw new Error(`${path}: unexpected ${typeof value}`);
+}
+
+const shape = (s: Strings) => leaves(s).map(([k, v]) => `${k}:${typeof v}${typeof v === "function" ? v.length : ""}`).sort();
+const rendered = (s: Strings) => leaves(s).map(([k, v]) => [k, typeof v === "function" ? v("@1", "@2", "@3") : v] as const);
+
+describe("interface strings", () => {
+  it("English, Russian and Arabic have the same keys, with the same kinds of value", () => {
+    for (const lang of LANGS) expect(shape(strings[lang]), lang).toEqual(shape(strings.en));
+  });
+
+  it("every function uses each of its arguments", () => {
+    for (const lang of LANGS)
+      for (const [k, v] of leaves(strings[lang]))
+        if (typeof v === "function") {
+          const out = v("@1", "@2", "@3");
+          for (let i = 1; i <= v.length; i++) expect(out, `${lang}.${k}`).toContain(`@${i}`);
+        }
+  });
+
+  it("no string is empty, and none holds a digit: numbers come formatted for the locale", () => {
+    for (const lang of LANGS)
+      for (const [k, v] of rendered(strings[lang])) {
+        expect(v.trim(), `${lang}.${k}`).not.toBe("");
+        expect(v.replace(/@\d/g, ""), `${lang}.${k}`).not.toMatch(/[0-9٠-٩]/);
+      }
+  });
+
+  it("Arabic has no Latin letters", () => {
+    for (const [k, v] of rendered(strings.ar)) expect(v.replace(/@\d/g, ""), `ar.${k}`).not.toMatch(/[A-Za-z]/);
+  });
+
+  it("every engine error code has a message in each language", () => {
+    for (const lang of LANGS) for (const code of ERROR_CODES) expect(strings[lang].errors[code], `${lang}.${code}`).toBeTruthy();
+    expect(Object.keys(strings.en.errors).sort()).toEqual([...ERROR_CODES].sort());
+  });
+
+  it("the header's title and subtitle start with a capital and have no full stop", () => {
+    for (const lang of LANGS) {
+      for (const text of [strings[lang].title, strings[lang].subtitle]) {
+        expect(text.endsWith("."), `${lang}: ${text}`).toBe(false);
+        const first = text[0]!;
+        // Arabic has no case; Latin and Cyrillic start upper-case.
+        if (lang !== "ar") expect(first, `${lang}: ${text}`).toBe(first.toLocaleUpperCase());
+      }
+    }
+  });
+});
