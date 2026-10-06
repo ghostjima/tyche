@@ -132,8 +132,9 @@ single-issue calculator: see [What is built](#what-is-built).
 - **Everything in the browser.** A static site, no server and no
   account: nothing to operate, and nothing personal is collected.
 - **Languages.** Russian first and English second, because the users
-  and the market are Russian. The prototype still opens in English and
-  also speaks Arabic, the right-to-left proof it shares with Stoa.
+  and the market are Russian. Rejected: a third, right-to-left language
+  in the product, which doubles the accessibility matrix without a user
+  who needs it; the right-to-left proof stays in Stoa.
 
 ## What is built
 
@@ -143,8 +144,8 @@ single-issue calculator: see [What is built](#what-is-built).
   search, filter and sort; an issue card with clean and dirty price,
   accrued interest, yields to maturity and to the offer, durations and
   the payment schedule; a holding calculator with reinvestment, the
-  account type, tax per calendar year and a key-rate change. English,
-  Russian and Arabic; light and dark themes. It will be served at
+  account type, tax per calendar year and a key-rate change. Russian
+  first, English second; light and dark themes. It will be served at
   ghostjima.github.io/tyche once Pages is enabled.
 - **The bond engine** ([`crates/tyche-yield`](crates/tyche-yield)) and
   its **TypeScript twin** ([`packages/yield-twin`](packages/yield-twin)):
@@ -169,8 +170,6 @@ design system of this product and of Ariadne Desk.
   and ladder cash flows, yield after fees, the G-spread to the curve,
   inflation-linked bonds. In the market engine: the synthetic bond
   market generator; the IEX decoding leaves the product.
-- Russian as the first language; Arabic leaves the product and stays in
-  Stoa.
 
 ## Validation plan and target metrics
 

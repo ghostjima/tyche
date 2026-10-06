@@ -76,20 +76,20 @@ plans.
 
 ## Languages and themes
 
-English, Russian and Arabic, with the same keys in each (checked by a
-unit test); Arabic is right to left, with Arabic-Indic digits. Numbers,
-money (roubles, with the sign) and dates are written through Intl in the
-language's locale. The theme is System, Light or Dark, System by
-default. Both are kept in the URL (`?lang=en|ru|ar`, `?theme=system|light|dark`)
-and in localStorage. `?issue=TICKER` opens an issue, `?engine=twin`
-starts on the TypeScript engine.
+Russian first and by default, English second, with the same keys in each
+(checked by a unit test). Numbers, money (roubles, with the sign) and
+dates are written through Intl in the language's locale. The theme is
+System, Light or Dark, System by default. Both are kept in the URL
+(`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage, under
+`tyche.lang` and `tyche.theme`. `?issue=TICKER` opens an issue,
+`?engine=twin` starts on the TypeScript engine.
 
 ## Accessibility
 
 What the tests cover, and nothing wider:
 
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
-  English, Russian and Arabic, each in the light and the dark theme, on:
+  Russian and English, each in the light and the dark theme, on:
   the list, an issue with an offer (with the Terms open), a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state and the WebAssembly fallback, at 1440 px; and the
@@ -133,6 +133,10 @@ E2E_PORT=4181 pnpm e2e
 ```
 
 ## Measurements
+
+`pnpm --filter terminal measure` reads the page's marks `tyche:wasm-init`
+and `tyche:list-ready`. The record below was taken before the move, when
+they were named `horkos:`.
 
 In Valkyra-Labs/horkos-bonds, before the move, at build `b2c8984`, in
 headless Chromium 153 on an Apple M4 Pro, from a local server

@@ -1,7 +1,6 @@
-// The interface around the figures: the rating in a right-to-left
-// sentence, tables on a phone, the issue list as one tab stop, the
-// browser's Back on a phone, the diagnostics table and searching for OFZ
-// in Russian.
+// The interface around the figures: tables on a phone, the issue list as
+// one tab stop, the browser's Back on a phone, the diagnostics table and
+// searching for OFZ in Russian.
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
@@ -12,33 +11,7 @@ async function overflowing(scope: Locator): Promise<string[]> {
   );
 }
 
-test("in Arabic the rating tag keeps its minus after the letters", async ({ page }) => {
-  await page.goto(`/?lang=ar&issue=${ISSUES.offer}`);
-  await ready(page);
-  const tag = page.locator(".issue-card .tags .stoa-tag").first();
-  await expect(tag).toContainText("BBB-");
-  // Where the minus and the first B are drawn, left to right.
-  const order = await tag.evaluate((el) => {
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      const text = node.textContent ?? "";
-      const at = text.indexOf("BBB-");
-      if (at < 0) continue;
-      const rect = (start: number) => {
-        const r = document.createRange();
-        r.setStart(node!, start);
-        r.setEnd(node!, start + 1);
-        return r.getBoundingClientRect().left;
-      };
-      return { b: rect(at), minus: rect(at + 3) };
-    }
-    return null;
-  });
-  expect(order).not.toBeNull();
-  expect(order!.minus).toBeGreaterThan(order!.b);
-});
-
-for (const lang of ["en", "ru", "ar"] as const) {
+for (const lang of ["ru", "en"] as const) {
   test(`at 375 px every table on an issue fits its box (${lang})`, async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     for (const id of [ISSUES.offer, ISSUES.floater]) {
@@ -51,7 +24,7 @@ for (const lang of ["en", "ru", "ar"] as const) {
 }
 
 test("the issue list is one tab stop, moved through with the arrow keys", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   const list = page.getByRole("listbox", { name: "Bond issues" });
   await expect(list.getByRole("option")).toHaveCount(60);
@@ -71,7 +44,7 @@ test("the issue list is one tab stop, moved through with the arrow keys", async 
 
 async function openOnPhone(page: Page) {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await page.getByRole("option", { name: ISSUES.ofz }).click();
   await expect(page.getByRole("button", { name: "Back to the list" })).toBeFocused();
@@ -80,6 +53,8 @@ async function openOnPhone(page: Page) {
 test("on a phone the browser's Back returns from an issue to the list", async ({ page }) => {
   await openOnPhone(page);
   expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.ofz);
+  // The history entry is marked under the product's own key.
+  expect(await page.evaluate(() => history.state)).toMatchObject({ tycheIssue: ISSUES.ofz });
   await page.goBack();
   await expect(page.locator(".pane-list")).toBeVisible();
   expect(new URL(page.url()).searchParams.get("issue")).toBeNull();
@@ -111,9 +86,8 @@ test("on a phone the search shortcut goes back to the list and into the search",
 });
 
 for (const [lang, width] of [
-  ["en", 1280],
   ["ru", 1280],
-  ["ar", 1280],
+  ["en", 1280],
   ["ru", 375],
 ] as const) {
   test(`the diagnostics timing table fits the sheet (${lang}, ${width} px)`, async ({ page }) => {

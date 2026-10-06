@@ -12,8 +12,8 @@ Tyche Bonds. The Tyche specifics follow the shared rules.
   session links in commits, pull request text, code or docs. Commit
   messages and pull request text describe the change only.
 - Plain, specific sentences, without redundant em dashes. Code, comments
-  and repository docs in English. The interface words exist in English,
-  Russian and Arabic.
+  and repository docs in English. The interface words exist in Russian, the
+  default, and English.
 - Public text names no internal material: plans, audits, roadmap phases,
   people, pricing or hiring.
 - `scripts/check-text.mjs` enforces emojis, attribution and internal paths

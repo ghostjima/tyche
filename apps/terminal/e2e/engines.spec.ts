@@ -43,12 +43,12 @@ async function setPlan(page: Page) {
 
 for (const [kind, id] of Object.entries(ISSUES)) {
   test(`both engines render identical figures (${kind} issue ${id})`, async ({ page }) => {
-    await page.goto(`/?issue=${id}`);
+    await page.goto(`/?lang=en&issue=${id}`);
     await ready(page, "wasm");
     await setPlan(page);
     const wasm = await figures(page);
 
-    await page.goto(`/?issue=${id}&engine=twin`);
+    await page.goto(`/?lang=en&issue=${id}&engine=twin`);
     await ready(page, "twin");
     await setPlan(page);
     const twin = await figures(page);
@@ -59,7 +59,7 @@ for (const [kind, id] of Object.entries(ISSUES)) {
 }
 
 test("the diagnostics switch engines without changing a figure, and time both", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.floater}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.floater}`);
   await ready(page, "wasm");
   const before = await figures(page);
   await page.getByRole("button", { name: "Engine diagnostics" }).click();
@@ -82,4 +82,18 @@ test("the diagnostics switch engines without changing a figure, and time both", 
   await page.keyboard.press("Escape");
   await expect(sheet).toHaveCount(0);
   expect(await figures(page)).toEqual(before);
+});
+
+test("the load leaves the product's marks on the performance timeline, which the measurement script reads", async ({ page }) => {
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
+  await ready(page, "wasm");
+  const marks = await page.evaluate(() =>
+    performance
+      .getEntries()
+      .filter((e) => e.entryType === "mark" || e.entryType === "measure")
+      .map((e) => `${e.entryType}:${e.name}`)
+      .filter((name) => /:(tyche|horkos):/.test(name))
+      .sort(),
+  );
+  expect(marks).toEqual(["mark:tyche:list-ready", "mark:tyche:wasm-start", "measure:tyche:wasm-init"]);
 });
