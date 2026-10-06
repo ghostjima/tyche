@@ -8,8 +8,11 @@ test("the list shows the synthetic universe, filters by chips with counts, and s
   await page.goto("/?lang=en");
   await ready(page);
   const rows = page.locator(".pane-list [role=option]");
+  const shown = page.locator(".stoa-filter-bar__count");
   await expect(rows).toHaveCount(188);
-  await expect(page.getByText("188 of 188 issues")).toBeVisible();
+  await expect(shown).toHaveText("188 of 188 shown");
+  // The filters are one search landmark, named.
+  await expect(page.getByRole("search", { name: "Issue filters" })).toBeVisible();
 
   const floater = page.getByRole("button", { name: "Floater 57" });
   await floater.click();
@@ -20,10 +23,13 @@ test("the list shows the synthetic universe, filters by chips with counts, and s
   await expect(page.getByRole("button", { name: "Synthetic government 8" })).toBeVisible();
   await page.getByRole("button", { name: "Synthetic government 8" }).click();
   await expect(rows).toHaveCount(8);
-  await expect(page.getByText("8 of 188 issues")).toBeVisible();
+  await expect(shown).toHaveText("8 of 188 shown");
 
-  await page.getByRole("button", { name: "Clear filters" }).first().click();
+  // Clear all turns every chip off and takes the focus to the search box.
+  await page.getByRole("button", { name: "Clear all" }).click();
   await expect(rows).toHaveCount(188);
+  await expect(page.getByRole("searchbox", { name: "Search by issuer or ticker" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Clear all" })).toHaveCount(0);
 
   await page.getByLabel("Search by issuer or ticker").fill("kama");
   await expect(rows).toHaveCount(6);
@@ -36,7 +42,7 @@ test("a search with no match shows an empty state that clears the filters", asyn
   await page.getByLabel("Search by issuer or ticker").fill("no such issuer");
   await expect(page.getByText("No issues match")).toBeVisible();
   await expect(page.locator(".pane-list [role=listbox]")).toHaveCount(0);
-  await page.locator(".stoa-empty-state").getByRole("button", { name: "Clear filters" }).click();
+  await page.locator(".stoa-empty-state").getByRole("button", { name: "Clear all" }).click();
   await expect(page.locator(".pane-list [role=option]")).toHaveCount(188);
   await expect(page.getByLabel("Search by issuer or ticker")).toHaveValue("");
 });
@@ -79,8 +85,9 @@ test("the calculator breaks the total into signed lines and compares the offer",
   const result = page.getByTestId("result");
   const breakdown = page.getByRole("table", { name: "Where the total comes from" });
   await expect(breakdown.getByRole("row", { name: /Coupons/ })).toContainText("+₽");
-  await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("-₽");
-  await expect(breakdown.getByRole("row", { name: /Broker's commission/ })).toContainText("-₽");
+  // Costs carry the minus sign (U+2212), not a hyphen.
+  await expect(breakdown.getByRole("row", { name: /^Tax/ })).toContainText("\u2212₽");
+  await expect(breakdown.getByRole("row", { name: /Broker's commission/ })).toContainText("\u2212₽");
   await expect(breakdown.getByRole("row", { name: /^Total/ })).toContainText("₽113,165.16");
   await expect(page.getByTestId("offer").getByRole("row", { name: /Sell back on Aug 29, 2027/ })).toContainText("12.71%");
 
@@ -107,7 +114,7 @@ test("a floater shows three key-rate scenarios with a coupon chart", async ({ pa
   const floater = page.getByTestId("floater");
   const rows = floater.getByRole("table", { name: "Totals at the horizon by key rate scenario" }).locator("tbody tr");
   await expect(rows).toHaveCount(3);
-  await expect(rows.nth(0)).toContainText("-2 pp");
+  await expect(rows.nth(0)).toContainText("\u22122 pp");
   await expect(rows.nth(1)).toContainText("Unchanged");
   await expect(rows.nth(2)).toContainText("+2 pp");
   await expect(floater.getByRole("figure", { name: "Coupon per bond by payment date" })).toBeVisible();
@@ -221,6 +228,20 @@ test("without WebAssembly the TypeScript engine takes over, and WebAssembly can 
   await ready(page, "wasm");
   await expect(page.getByText("WebAssembly did not load")).toHaveCount(0);
   await expect(page.getByTestId("figures")).toContainText("15.79%");
+  // The notice left with the retry: the focus moved on to the next stop
+  // where it was, the list's source link, instead of falling to the page.
+  await expect(page.locator(".pane-list .source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
+});
+
+test("on a phone, after WebAssembly loads on a retry, the focus moves on to the Back button", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.route("**/tyche_yield_bg*.wasm", (route) => route.abort());
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
+  await ready(page, "twin");
+  await page.unroute("**/tyche_yield_bg*.wasm");
+  await page.getByRole("button", { name: "Try WebAssembly again" }).click();
+  await ready(page, "wasm");
+  await expect(page.getByRole("button", { name: "Back to the list" })).toBeFocused();
 });
 
 test("without the market's WebAssembly the page says the market did not load, and loads it again", async ({ page }) => {

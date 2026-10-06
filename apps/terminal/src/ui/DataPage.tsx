@@ -41,7 +41,7 @@ export const DataPage = forwardRef<HTMLHeadingElement, DataPageProps>(function D
             { term: t.dataSimIssuers, description: t.dataSimIssuersText },
             { term: t.dataSimRatings, description: t.dataSimRatingsText },
             { term: t.dataSimPrices, description: t.dataSimPricesText },
-            { term: t.dataSimMarket, description: t.dataSimMarketText(f.date(dayOf(CALIBRATION_DATE))) },
+            { term: t.dataSimMarket, description: t.dataSimMarketText(f.day(dayOf(CALIBRATION_DATE))) },
             { term: t.dataSimLicence, description: t.dataSimLicenceText(CODE_LICENCE) },
           ]}
         />
@@ -49,7 +49,7 @@ export const DataPage = forwardRef<HTMLHeadingElement, DataPageProps>(function D
 
       <Panel title={t.dataBorTitle} level={3}>
         <SourceNote tag={t.borTag} kind="official">
-          {t.dataBorBody(f.date(0), f.date(dayOf(SNAPSHOT.retrievedAt.slice(0, 10))))} {link(SNAPSHOT.site, "cbr.ru")}
+          {t.dataBorBody(f.day(0), f.day(dayOf(SNAPSHOT.retrievedAt.slice(0, 10))))} {link(SNAPSHOT.site, "cbr.ru")}
         </SourceNote>
         <DescriptionList
           items={[
@@ -77,7 +77,7 @@ export const DataPage = forwardRef<HTMLHeadingElement, DataPageProps>(function D
       </Panel>
 
       <Panel title={t.dataTaxTitle} level={3}>
-        <p className="data-page__text">{t.dataTaxText(TAX_ARTICLES, f.date(TAX_RULES_DAY))}</p>
+        <p className="data-page__text">{t.dataTaxText(TAX_ARTICLES, f.day(TAX_RULES_DAY))}</p>
       </Panel>
 
       <Panel title={t.dataFontsTitle} level={3}>

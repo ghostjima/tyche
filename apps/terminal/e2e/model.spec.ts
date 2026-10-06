@@ -4,9 +4,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
-/** A rouble amount as the English screen writes it ("-₽1,234.56"). */
+/** A rouble amount as the English screen writes it ("\u2212₽1,234.56",
+ * a negative with the minus sign). */
 async function money(cell: Locator): Promise<number> {
-  const text = (await cell.innerText()).replace(/[₽,\s]/g, "");
+  const text = (await cell.innerText()).replace(/[₽,\s]/g, "").replace("\u2212", "-");
   return Number(text);
 }
 
@@ -68,7 +69,8 @@ test("tax: a brokerage account at 13 and 15 percent, with the sources of the rul
   expect((await money(tax)) / at13).toBeCloseTo(15 / 13, 4);
 
   await regime.getByRole("radio", { name: "IIS type B" }).click();
-  await expect(regime).toHaveAccessibleDescription(/opened by Dec 31, 2023/);
+  // A date is kept on one line: its spaces are non-breaking.
+  await expect(regime).toHaveAccessibleDescription(/opened by Dec\s31,\s2023/);
   await expect(tax).toHaveText("₽0.00");
   await expect(page.getByLabel("Other investment income per year, ₽")).toHaveCount(0);
 });

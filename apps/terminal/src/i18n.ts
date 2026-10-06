@@ -21,11 +21,6 @@ export const LANGS: Lang[] = ["ru", "en"];
 /** The React Aria, Stoa and Intl locale of each language. */
 export const LOCALES: Record<Lang, string> = { ru: "ru-RU", en: "en-US" };
 
-/** Where the choices are kept: ?theme= and ?lang= in the URL, and these
- * keys in localStorage. */
-export const THEME_STORE = { param: "theme", storageKey: "tyche.theme" };
-export const LANG_STORE = { param: "lang", storageKey: "tyche.lang" };
-
 const en = {
   title: "Tyche Bonds",
   subtitle: "Yields, payment schedules and a holding calculator for bonds",
@@ -96,7 +91,7 @@ const en = {
   marketRetry: "Load the market again",
 
   issues: "Issues",
-  listCount: (shown: string, total: string) => `${shown} of ${total} issues`,
+  filtersLabel: "Issue filters",
   search: "Search by issuer or ticker",
   groupSector: "Issuer",
   groupCoupon: "Coupon",
@@ -112,7 +107,6 @@ const en = {
   chipLong: "Over three years",
   chipAmortising: "Amortising",
   chipOffer: "With an offer",
-  clearFilters: "Clear filters",
   sortBy: "Sort by",
   sortYield: "Yield, highest first",
   sortMaturity: "Maturity, soonest first",
@@ -441,7 +435,7 @@ const ru: Strings = {
   marketRetry: "Загрузить рынок ещё раз",
 
   issues: "Выпуски",
-  listCount: (shown, total) => `${shown} из ${total} выпусков`,
+  filtersLabel: "Фильтры выпусков",
   search: "Поиск по эмитенту или тикеру",
   groupSector: "Эмитент",
   groupCoupon: "Купон",
@@ -457,7 +451,6 @@ const ru: Strings = {
   chipLong: "Больше трёх лет",
   chipAmortising: "С амортизацией",
   chipOffer: "С офертой",
-  clearFilters: "Сбросить фильтры",
   sortBy: "Сортировка",
   sortYield: "Доходность, сначала высокая",
   sortMaturity: "Погашение, сначала ближайшее",

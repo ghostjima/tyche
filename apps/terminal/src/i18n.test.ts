@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ERROR_CODES } from "./engine/types";
-import { LANGS, LANG_STORE, LOCALES, THEME_STORE, strings, type Strings } from "./i18n";
+import { LANGS, LOCALES, strings, type Strings } from "./i18n";
+import { PREFERENCES } from "./preferences";
 
 type Leaf = string | ((...a: string[]) => string);
 
@@ -21,9 +22,10 @@ describe("interface strings", () => {
     expect(LOCALES).toEqual({ ru: "ru-RU", en: "en-US" });
   });
 
-  it("the choices are kept under the product's own storage keys", () => {
-    expect(LANG_STORE).toEqual({ param: "lang", storageKey: "tyche.lang" });
-    expect(THEME_STORE).toEqual({ param: "theme", storageKey: "tyche.theme" });
+  it("the choices are kept under the product's own storage keys, in the languages' order", () => {
+    expect(PREFERENCES.languages).toEqual(LANGS);
+    expect(PREFERENCES.language).toEqual({ param: "lang", storageKey: "tyche.lang" });
+    expect(PREFERENCES.theme).toEqual({ param: "theme", storageKey: "tyche.theme" });
   });
 
   it("Russian and English have the same keys, with the same kinds of value", () => {

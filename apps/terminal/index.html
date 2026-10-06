@@ -7,32 +7,6 @@
     <!-- No icon yet; an empty one keeps the browser from asking for /favicon.ico. -->
     <link rel="icon" href="data:," />
     <title>Tyche Облигации</title>
-    <script>
-      // The language and the theme before the first paint, read as the app
-      // reads them (?lang= and ?theme= first, then the last visit's choice,
-      // then Russian and the system theme), so the page is in its language
-      // and a dark one is drawn dark from the start. The app applies them
-      // again.
-      (function () {
-        var query = new URLSearchParams(location.search);
-        var stored = function (key) {
-          try {
-            return localStorage.getItem(key);
-          } catch (e) {
-            return null;
-          }
-        };
-        var pick = function (asked, key, allowed, fallback) {
-          if (allowed.indexOf(asked) >= 0) return asked;
-          var kept = stored(key);
-          return allowed.indexOf(kept) >= 0 ? kept : fallback;
-        };
-        var root = document.documentElement;
-        root.lang = pick(query.get("lang"), "tyche.lang", ["ru", "en"], "ru");
-        var theme = pick(query.get("theme"), "tyche.theme", ["system", "light", "dark"], "system");
-        if (theme !== "system") root.dataset.theme = theme;
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

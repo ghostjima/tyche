@@ -42,10 +42,10 @@ export function useEngines(): { engines: Engines; retry: () => void } {
       alive = false;
     };
   }, [attempt]);
-  const retry = useCallback(() => {
-    setEngines({ status: "loading" });
-    setAttempt((a) => a + 1);
-  }, []);
+  // A retry loads the WebAssembly again while the twin keeps the figures
+  // on screen: the state stays as it is until the load settles, so the
+  // screen does not go back to its loading state and back.
+  const retry = useCallback(() => setAttempt((a) => a + 1), []);
   return { engines, retry };
 }
 

@@ -64,6 +64,36 @@ test("on a phone the browser's Back returns from an issue to the list", async ({
   await expect(page.locator(".issue-card")).toBeVisible();
 });
 
+test("on a phone an issue picked with the keyboard opens with the focus on Back, which Enter did not press", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/?lang=en");
+  await ready(page);
+  await page.getByRole("option", { name: ISSUES.gov }).focus();
+  await page.keyboard.press("Enter");
+  // No frame's wait in the app: Stoa's list cancels Enter's own action,
+  // so the Back button takes the focus and stays unpressed.
+  await expect(page.getByRole("button", { name: "Back to the list" })).toBeFocused();
+  await expect(page.locator(".issue-card")).toBeVisible();
+  expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.gov);
+});
+
+test("on a phone the filters fold into a sheet that the search stays beside", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/?lang=en");
+  await ready(page);
+  await expect(page.getByRole("searchbox", { name: "Search by issuer or ticker" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Floater 57" })).toBeHidden();
+  const open = page.getByRole("button", { name: "Filters", exact: true });
+  await open.click();
+  const sheet = page.getByRole("dialog", { name: "Filters" });
+  await sheet.getByRole("button", { name: "Floater 57" }).click();
+  await sheet.getByRole("button", { name: "Show results (57)" }).click();
+  await expect(sheet).toHaveCount(0);
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(57);
+  await expect(page.getByRole("button", { name: /^Filters/ })).toBeFocused();
+  await expect(page.getByRole("button", { name: /^Filters/ })).toContainText("1");
+});
+
 test("on a phone the page's own Back button goes back in the history too", async ({ page }) => {
   await openOnPhone(page);
   await page.getByRole("button", { name: "Back to the list" }).click();

@@ -2,10 +2,10 @@
 // and the issues as a record list: one tab stop, the arrow keys move
 // through it, and picking an issue opens it.
 import type { RefObject } from "react";
-import { Button, EmptyState, FilterChipGroup, Ltr, RecordList, Select, TextField, type RecordListItem } from "@ghostjima/stoa-react";
+import { FilterBar, Ltr, RecordList, Select, type RecordListItem } from "@ghostjima/stoa-react";
 import type { Bond } from "../data/issues";
 import type { Strings } from "../i18n";
-import { GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
+import { EMPTY_QUERY, GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
 import type { Formats } from "../lib/format";
 
 const CHIP_LABEL: Record<ChipId, keyof Strings> = {
@@ -41,6 +41,7 @@ export type IssueListProps = {
   nameOf: (bond: Bond) => string;
   /** What the search looks in besides the ticker. */
   textsOf: SearchTexts;
+  /** Around the filters, for the search shortcut to find the search box. */
   searchRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -59,7 +60,7 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
             {t.rating} <Ltr>{bond.rating}</Ltr>
           </span>
           <span>{bond.coupon.kind === "linker" ? t.chipLinker : bond.coupon.kind === "fixed" ? t.chipFixed : t.chipFloater}</span>
-          <span>{t.matures(f.date(derived.maturityDay))}</span>
+          <span>{t.matures(f.day(derived.maturityDay))}</span>
         </span>
       </span>
     ),
@@ -70,53 +71,44 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
       </span>
     ),
   }));
-  const active = query.chips.length > 0 || query.search !== "";
 
+  // Stoa's FilterBar: the search, the chip groups with their counts (in a
+  // sheet on a phone), how many issues are shown, Clear all, and the empty
+  // state in the list's place. The sort sits over the list.
   return (
-    <div className="issue-list">
-      <div ref={searchRef} className="issue-list__search">
-        <TextField label={t.search} value={query.search} onChange={(search) => onQuery({ ...query, search })} />
-      </div>
-      {GROUPS.map((group) => (
-        <FilterChipGroup<ChipId>
-          key={group.id}
-          label={t[GROUP_LABEL[group.id]] as string}
-          size="small"
-          chips={group.chips.map((id) => ({ id, label: t[CHIP_LABEL[id]] as string, count: counts[id] }))}
-          value={query.chips.filter((c) => group.chips.includes(c))}
-          onChange={(on) => onQuery({ ...query, chips: [...query.chips.filter((c) => !group.chips.includes(c)), ...on] })}
-        />
-      ))}
-      <div className="issue-list__bar">
-        <p className="muted" role="status">
-          {t.listCount(f.integer(visible.length), f.integer(all.length))}
-        </p>
-        {active && (
-          <Button variant="ghost" onPress={() => onQuery({ chips: [], search: "" })}>
-            {t.clearFilters}
-          </Button>
-        )}
-        <Select<SortKey>
-          label={t.sortBy}
-          size="small"
-          value={sort}
-          onChange={onSort}
-          options={[
-            { id: "yield", label: t.sortYield },
-            { id: "maturity", label: t.sortMaturity },
-            { id: "rating", label: t.sortRating },
-          ]}
-        />
-      </div>
-      {visible.length === 0 ? (
-        <EmptyState
-          title={t.noMatchesTitle}
-          description={t.noMatchesBody}
-          action={<Button onPress={() => onQuery({ chips: [], search: "" })}>{t.clearFilters}</Button>}
-        />
-      ) : (
-        <RecordList label={t.listCaption} items={records} value={selectedId} onChange={onOpen} />
-      )}
+    <div ref={searchRef} className="issue-list">
+      <FilterBar<ChipId>
+        label={t.filtersLabel}
+        search={{ label: t.search, value: query.search, onChange: (search) => onQuery({ ...query, search }) }}
+        groups={GROUPS.map((group) => ({
+          id: group.id,
+          label: t[GROUP_LABEL[group.id]] as string,
+          chips: group.chips.map((id) => ({ id, label: t[CHIP_LABEL[id]] as string, count: counts[id] })),
+        }))}
+        value={[...query.chips]}
+        onChange={(chips) => onQuery({ ...query, chips })}
+        onClear={() => onQuery(EMPTY_QUERY)}
+        results={{ shown: visible.length, total: all.length }}
+        emptyTitle={t.noMatchesTitle}
+        emptyDescription={t.noMatchesBody}
+      >
+        <div className="issue-list__results">
+          <div className="issue-list__sort">
+            <Select<SortKey>
+              label={t.sortBy}
+              size="small"
+              value={sort}
+              onChange={onSort}
+              options={[
+                { id: "yield", label: t.sortYield },
+                { id: "maturity", label: t.sortMaturity },
+                { id: "rating", label: t.sortRating },
+              ]}
+            />
+          </div>
+          <RecordList label={t.listCaption} items={records} value={selectedId} onChange={onOpen} />
+        </div>
+      </FilterBar>
     </div>
   );
 }

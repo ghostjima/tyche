@@ -56,17 +56,17 @@ export function annualText(t: Strings, f: Formats, b: Breakdown): string {
 
 export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, source }: CalculatorProps) {
   const set = (patch: Partial<PlanInput>) => onPlan({ ...plan, ...patch });
-  const pp = (v: number) => t.shiftValue(f.decimalSigned(v, 1));
+  const pp = (v: number) => t.shiftValue(f.signed(v, 1));
   const horizonText = (day: number) =>
     day >= d.maturityDay ? t.horizonAtMaturity(f.term(day)) : d.offerDay === day ? t.horizonAtOffer(f.term(day)) : t.horizonHint(f.term(day));
   const taxDesc = [
     plan.taxRegime === "standard"
       ? [
-          t.taxStandardDesc(f.percent(TAX_RATE_PCT / 100, 0), f.moneyWhole(TAX_THRESHOLD), f.percent(TAX_HIGHER_RATE_PCT / 100, 0)),
-          plan.horizonDay >= LDV_FIRST_DAY ? t.taxLdvApplies(f.moneyWhole(LDV_CAP_PER_YEAR)) : t.taxLdvLater(f.date(LDV_FIRST_DAY)),
+          t.taxStandardDesc(f.percent(TAX_RATE_PCT / 100, 0), f.money(TAX_THRESHOLD, { fractionDigits: 0 }), f.percent(TAX_HIGHER_RATE_PCT / 100, 0)),
+          plan.horizonDay >= LDV_FIRST_DAY ? t.taxLdvApplies(f.money(LDV_CAP_PER_YEAR, { fractionDigits: 0 })) : t.taxLdvLater(f.day(LDV_FIRST_DAY)),
         ].join(" ")
-      : t.taxIisDesc(f.date(IIS_B_LAST_OPEN_DAY)),
-    t.taxSource(f.date(TAX_RULES_DAY)),
+      : t.taxIisDesc(f.day(IIS_B_LAST_OPEN_DAY)),
+    t.taxSource(f.day(TAX_RULES_DAY)),
   ].join(" ");
 
   return (
@@ -82,7 +82,7 @@ export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, so
             min={1}
             max={d.maturityDay}
             step={1}
-            format={(day) => f.date(day)}
+            format={(day) => f.day(day)}
             hint={horizonText(plan.horizonDay)}
           />
           <ButtonGroup label={t.presets}>
@@ -115,7 +115,7 @@ export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, so
               aria-describedby="other-income-desc"
             />
             <p id="other-income-desc" className="muted">
-              {t.otherIncomeDesc(f.moneyWhole(TAX_THRESHOLD))}
+              {t.otherIncomeDesc(f.money(TAX_THRESHOLD, { fractionDigits: 0 }))}
             </p>
           </div>
         )}
@@ -188,15 +188,15 @@ function Results({
   const b = c.plan;
   const lineColumns: TableColumn<Line>[] = [
     { id: "label", header: t.colItem, cell: (l) => (l.total ? <strong>{l.label}</strong> : l.label) },
-    { id: "value", header: t.colAmount, numeric: true, cell: (l) => (l.total ? <strong>{f.money(l.value)}</strong> : f.moneySigned(l.value)) },
+    { id: "value", header: t.colAmount, numeric: true, cell: (l) => (l.total ? <strong>{f.money(l.value)}</strong> : f.money(l.value, { signed: true })) },
   ];
-  const scenarioName = (shift: number) => (shift === 0 ? t.scenarioUnchanged : t.scenarioShift(f.decimalSigned(shift, 0)));
+  const scenarioName = (shift: number) => (shift === 0 ? t.scenarioUnchanged : t.scenarioShift(f.signed(shift, 0)));
 
   return (
     <>
       <div className="metrics">
-        <Metric label={t.total} value={f.money(b.total)} basis={t.totalBasis(f.date(b.horizonDay))} />
-        <Metric label={t.profit} value={f.moneySigned(b.profit)} basis={t.profitBasis(f.money(b.invested))} />
+        <Metric label={t.total} value={f.money(b.total)} basis={t.totalBasis(f.day(b.horizonDay))} />
+        <Metric label={t.profit} value={f.money(b.profit, { signed: true })} basis={t.profitBasis(f.money(b.invested))} />
         {b.annualPct === null ? (
           <Metric label={t.periodReturn} value={f.percent(b.periodPct / 100)} basis={t.periodReturnBasis} />
         ) : (
@@ -205,6 +205,7 @@ function Results({
         <Metric label={t.bonds} value={f.integer(b.qty)} basis={t.bondsBasis(f.money(d.dirtyPrice))} />
       </div>
       <Table<Line>
+        wrapHeaders
         caption={t.breakdownCaption}
         columns={lineColumns}
         rows={breakdownLines(t, f, b, b.horizonDay >= d.maturityDay)}
@@ -220,7 +221,7 @@ function Results({
         {c.earlyExit.applicable ? (
           <div className="metrics">
             <Metric label={t.earlyTotal(pp(plan.rateShiftPct))} value={f.money(c.earlyExit.result.total)} />
-            <Metric label={t.earlyDiff} value={f.moneySigned(c.earlyExit.diff)} />
+            <Metric label={t.earlyDiff} value={f.money(c.earlyExit.diff, { signed: true })} />
             {c.earlyExit.modDurationAtHorizon !== null && <Metric label={t.earlyDuration} value={f.decimal(c.earlyExit.modDurationAtHorizon, 2)} />}
           </div>
         ) : (
@@ -236,6 +237,7 @@ function Results({
           </h4>
           <p className="muted">{t.floaterDesc}</p>
           <Table
+            wrapHeaders
             caption={t.floaterCaption}
             columns={[
               { id: "scenario", header: t.colScenario, cell: (s: (typeof c.floater.scenarios)[number]) => scenarioName(s.shiftPct) },
@@ -252,7 +254,7 @@ function Results({
             description={t.couponsDesc}
             xLabel={t.colDate}
             yLabel={t.axisCoupon}
-            formatX={(x) => f.date(Math.round((x - dayToMs(0)) / 86_400_000))}
+            formatX={(x) => f.day(Math.round((x - dayToMs(0)) / 86_400_000))}
             formatY={(y) => f.money(y)}
             series={c.floater.scenarios.map((s) => ({
               id: String(s.shiftPct),
@@ -271,6 +273,7 @@ function Results({
           </h4>
           <p className="muted">{t.offerDesc(f.percent(WORST_CASE_COUPON_PCT / 100, 1))}</p>
           <Table
+            wrapHeaders
             caption={t.offerCaption}
             columns={[
               { id: "way", header: t.colItem, cell: (r: { id: string; label: string; b: Breakdown }) => r.label },
@@ -278,8 +281,8 @@ function Results({
               { id: "annual", header: t.colAnnual, numeric: true, cell: (r) => annualText(t, f, r.b) },
             ]}
             rows={[
-              { id: "before", label: t.rowSellBack(f.date(d.offerDay)), b: c.offer.before },
-              { id: "after", label: t.rowHoldOn(f.date(d.maturityDay)), b: c.offer.after },
+              { id: "before", label: t.rowSellBack(f.day(d.offerDay)), b: c.offer.before },
+              { id: "after", label: t.rowHoldOn(f.day(d.maturityDay)), b: c.offer.after },
             ]}
             rowKey={(r) => r.id}
             rowHeader="way"
