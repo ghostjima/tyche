@@ -185,9 +185,9 @@ export function readAxe(report) {
 
 const CATEGORIES = { accessibility: "accessibility", "best-practices": "best practices", seo: "SEO" };
 
-/** Lighthouse 12 category scores, 0 to 100, from one JSON report. */
+/** Lighthouse 13 category scores, 0 to 100, from one JSON report. */
 export function readLighthouse(report, formFactor) {
-  if (!String(report?.lighthouseVersion ?? "").startsWith("12.")) fail(`the ${formFactor} report is not from Lighthouse 12`);
+  if (!String(report?.lighthouseVersion ?? "").startsWith("13.")) fail(`the ${formFactor} report is not from Lighthouse 13`);
   if (report.runtimeError) fail(`Lighthouse ${formFactor}: ${report.runtimeError.message ?? report.runtimeError.code}`);
   if (report.configSettings?.formFactor !== formFactor) fail(`the ${formFactor} report was run as ${report.configSettings?.formFactor}`);
   const scores = {};
