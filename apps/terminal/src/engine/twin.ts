@@ -1,6 +1,6 @@
 // The TypeScript twin of tyche-yield behind the Engine contract. It needs
 // no loading, so it is always there.
-import { calculate, derive_bond, explain, price_from_yield } from "@tyche/yield-twin";
+import { calculate, derive_bond, explain, macaulay_duration, price_from_yield } from "@tyche/yield-twin";
 import type { Engine } from "./types";
 
 export const twinEngine: Engine = {
@@ -9,4 +9,5 @@ export const twinEngine: Engine = {
   calculate,
   explain,
   price_from_yield,
+  macaulay_duration,
 };

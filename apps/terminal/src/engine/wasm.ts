@@ -246,6 +246,9 @@ export const wasmEngine: Engine = {
   price_from_yield(amounts, days, y) {
     return glue.price_from_yield(Float64Array.from(amounts), Float64Array.from(days), y);
   },
+  macaulay_duration(amounts, days, y) {
+    return glue.macaulay_duration(Float64Array.from(amounts), Float64Array.from(days), y);
+  },
 };
 
 /** Fetches, compiles and instantiates the module; resolves with the

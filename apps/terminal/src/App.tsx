@@ -39,6 +39,7 @@ import { Diagnostics } from "./ui/Diagnostics";
 import { BorSource, SimSource, dataHref } from "./ui/Sources";
 import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
+import { COMPARE_MAX, Compare } from "./ui/Compare";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
  * once the universe is ready. */
@@ -58,6 +59,10 @@ function writeIssue(id: string | null, push = false) {
   if (push) history.pushState({ ...history.state, [PUSHED]: id }, "", url);
   else history.replaceState(history.state, "", url);
 }
+
+/** The issues in ?cmp=, once each, three at most; whether the universe
+ * has them is known once it is ready. */
+const readCompared = (): string[] => [...new Set(new URLSearchParams(location.search).getAll("cmp"))].slice(0, COMPARE_MAX);
 
 const pushedIssue = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED];
 
@@ -97,6 +102,7 @@ const TERM_KEYS = [
   "ldv",
   "iis",
   "rating",
+  "gSpread",
   "liquidity",
 ] as const;
 
@@ -125,6 +131,16 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   }, [query, sort]);
   const [selectedId, setSelectedId] = useState<string | null>(readIssue);
   const [plans, setPlans] = useState<Record<string, PlanInput>>({});
+  // The issues in the comparison, in ?cmp= once each, three at most.
+  const [compared, setCompared] = useState<string[]>(readCompared);
+  useEffect(() => {
+    const url = new URL(location.href);
+    url.searchParams.delete("cmp");
+    for (const id of compared) url.searchParams.append("cmp", id);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [compared]);
+  const compare = (id: string, on: boolean) =>
+    setCompared((all) => (on ? (all.includes(id) || all.length >= COMPARE_MAX ? all : [...all, id]) : all.filter((x) => x !== id)));
   const [diagOpen, setDiagOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [wasmNoticeDismissed, setWasmNoticeDismissed] = useState(false);
@@ -155,6 +171,12 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
       return "ok" in r ? [{ bond, derived: r.ok }] : [];
     });
   }, [engine, bonds]);
+
+  // A link may name issues the universe does not have: they leave the
+  // comparison.
+  useEffect(() => {
+    if (items) setCompared((all) => (all.every((id) => items.some((i) => i.bond.id === id)) ? all : all.filter((id) => items.some((i) => i.bond.id === id))));
+  }, [items]);
 
   // A link to an issue the universe does not have opens the list.
   useEffect(() => {
@@ -350,6 +372,10 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           }
           explanation={explanation}
           plan={plan}
+          items={items ?? []}
+          compared={compared}
+          onCompare={compare}
+          onOpen={open}
         />
         <Calculator
           t={t}
@@ -498,6 +524,24 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
             <SimSource t={t} onData={openData} />
             {list}
           </Panel>
+        )}
+
+        {!dataOpen && !loading && !marketFailed && items && engine && compared.length > 0 && (
+          <Compare
+            t={t}
+            f={f}
+            engine={engine}
+            items={compared.flatMap((id) => items.filter((i) => i.bond.id === id))}
+            planOf={(i) => plans[i.bond.id] ?? defaultPlan(i.derived)}
+            onRemove={(id) => compare(id, false)}
+            nameOf={(i) => nameOf(i.bond)}
+            source={
+              <>
+                <SimSource t={t} onData={openData} />
+                <BorSource t={t} f={f} curve />
+              </>
+            }
+          />
         )}
 
         {!dataOpen && <Benchmarks t={t} f={f} />}

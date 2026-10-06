@@ -82,6 +82,9 @@ describe("WebAssembly and twin through the app's adapters", () => {
   it("price the same flows the same", () => {
     const amounts = [70, 70, 1070];
     const days = [100, 282, 464];
-    for (const y of [0.05, 0.15, 0.35]) close(wasm.price_from_yield(amounts, days, y), twinEngine.price_from_yield(amounts, days, y), `y=${y}`);
+    for (const y of [0.05, 0.15, 0.35]) {
+      close(wasm.price_from_yield(amounts, days, y), twinEngine.price_from_yield(amounts, days, y), `y=${y}`);
+      close(wasm.macaulay_duration(amounts, days, y), twinEngine.macaulay_duration(amounts, days, y), `duration y=${y}`);
+    }
   });
 });
