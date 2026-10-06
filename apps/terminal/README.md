@@ -69,7 +69,22 @@ Status: early. Performance record, with stamps:
   yield over the term, Macaulay and modified duration; the payment
   schedule as an event strip (coupons, amortisation, offer, maturity)
   and as a table per bond; for a fixed coupon, the dirty price against
-  the yield.
+  the yield. Last, its analogues: up to five issues within a notch of
+  the synthetic rating and half a year of Macaulay duration, the closest
+  first, each with its yield and G-spread and a button that opens it,
+  and a map of peers (every issue by duration and rating; this issue,
+  its analogues and the compared issues in their own shapes) with its
+  highlighted points as a table.
+- **The comparison**: up to three issues side by side, added from their
+  cards and kept in the URL (`?cmp=`): yields to maturity and to the
+  offer, after tax and the fee to the nearest exit with nothing
+  reinvested, duration, rating and outlook, coupon, offer, amortisation,
+  liquidity, who can buy, and the G-spread: the issue's yield to the
+  nearest exit less the Bank of Russia's zero-coupon yield of federal
+  loan bonds at the same Macaulay duration, read linearly between the
+  curve's terms (`src/lib/peers.ts`). The map of peers is the app's own
+  scatter chart (Stoa has none yet), in Stoa's chart tokens, with a table
+  alternative.
 - **The calculator**: amount, holding horizon (with presets for one year,
   the offer and maturity), reinvestment of coupons and of principal
   repaid early, the account (an ordinary brokerage account or an
@@ -150,10 +165,12 @@ What the tests cover, and nothing wider:
   Russian and English, each in the light and the dark theme, on:
   the list, a goal with its filters, "Money by a date" with its month,
   the data and licensing page, an issue with an offer (with the Terms
-  and the working open), an issue with every risk, a floater, the
+  and the working open), an issue with every risk, three issues compared
+  with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state, the WebAssembly fallback and the market's failure,
-  at 1440 px; and the list, "Money by a date" and an issue at 375 px.
+  at 1440 px; and the list, "Money by a date", the comparison and an
+  issue at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to

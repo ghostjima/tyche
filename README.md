@@ -75,8 +75,8 @@ Workflows:
 6. **Events**: coupons, offers with an action deadline and a one-step
    request to redeem at the offer, rating changes, defaults.
 
-Today the prototype covers the first two workflows and the single-issue
-calculator: see [What is built](#what-is-built).
+Today the prototype covers the first three workflows and the
+single-issue calculator: see [What is built](#what-is-built).
 
 ## Constraints
 
@@ -154,7 +154,10 @@ calculator: see [What is built](#what-is-built).
   its thresholds), the yield to maturity and to the offer after the fee
   and after tax without reinvestment, with the working shown step by
   step and the Tax Code articles cited, clean and dirty price, accrued
-  interest, durations and the payment schedule; a holding calculator with reinvestment, the
+  interest, durations and the payment schedule; the issue's analogues
+  (a similar rating and duration) on a map of peers, and up to three
+  issues compared side by side, with the G-spread of each to the Bank
+  of Russia's zero-coupon curve of federal loan bonds; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change; the Bank
   of Russia's benchmarks with the yield curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
@@ -188,9 +191,10 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- Comparison; the order ticket against a synthetic order book; events.
+- The order ticket against a synthetic order book; events.
 - In the engine: portfolio and ladder cash flows, the G-spread to the
-  curve, inflation-linked bonds with forecast indexation. In the app: the
+  curve (computed in the app for now), inflation-linked bonds with
+  forecast indexation. In the app: the
   order book and the tape of the synthetic market.
 
 ## Validation plan and target metrics

@@ -3,12 +3,15 @@
 // strip and a table, and for a fixed coupon how its price depends on the
 // yield.
 import type { ReactNode } from "react";
-import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, useBreakpoint, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
+import { Button, EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, useBreakpoint, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
 import type { Derived, Engine, Explanation, Plan, Result } from "../engine/types";
 import type { Strings } from "../i18n";
+import type { Item } from "../lib/filters";
 import type { Formats } from "../lib/format";
+import { COMPARE_MAX } from "./Compare";
+import { Analogues } from "./Analogues";
 import { HonestYield } from "./HonestYield";
 import { Risks } from "./Risks";
 
@@ -24,6 +27,12 @@ export type IssueCardProps = {
   /** The engine's working for the calculator's plan. */
   explanation: Result<Explanation>;
   plan: Plan;
+  /** Every issue, for the analogues and the map of peers. */
+  items: readonly Item[];
+  /** The issues in the comparison. */
+  compared: readonly string[];
+  onCompare: (id: string, on: boolean) => void;
+  onOpen: (id: string) => void;
 };
 
 type Row = { day: number; coupon: number; principal: number; last: boolean };
@@ -51,7 +60,8 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, items, compared, onCompare, onOpen }: IssueCardProps) {
+  const inComparison = compared.includes(bond.id);
   const { issue } = bond;
   const floater = issue.couponType === "floater";
   const narrow = useBreakpoint() === "narrow";
@@ -133,8 +143,16 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source, explan
         {bond.qualifiedOnly && <Tag tone="warning">{t.tagQualified}</Tag>}
       </div>
 
+      <div className="compare-action">
+        {inComparison || compared.length < COMPARE_MAX ? (
+          <Button onPress={() => onCompare(bond.id, !inComparison)}>{inComparison ? t.removeCompare : t.addCompare}</Button>
+        ) : (
+          <p className="muted">{t.compareFull}</p>
+        )}
+      </div>
       <Risks t={t} f={f} bond={bond} derived={d} />
       <HonestYield t={t} f={f} explanation={explanation} plan={plan} />
+      <Analogues t={t} f={f} engine={engine} item={{ bond, derived: d }} items={items} compared={compared} onOpen={onOpen} />
 
       <section className="block" aria-labelledby="figures-h">
         <h3 id="figures-h" className="block__title">

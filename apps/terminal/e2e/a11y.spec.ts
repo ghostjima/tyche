@@ -57,6 +57,13 @@ for (const lang of LANGS) {
       await expect(page.getByTestId("liquidity-warning")).toBeVisible();
       await expectNoSeriousViolations(page, "issue with every risk", { lang, theme });
 
+      // Three issues compared, with the analogues and the map's table open.
+      await open(page, lang, theme, `&issue=BELB-02&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=NEVB-01`);
+      await ready(page);
+      await page.getByTestId("analogues").locator(".peer-map__data summary").click();
+      await expect(page.locator(".compare")).toBeVisible();
+      await expectNoSeriousViolations(page, "comparison and analogues", { lang, theme });
+
       // A floater with amortisation: scenarios and the coupon chart.
       await open(page, lang, theme, `&issue=${ISSUES.floater}`);
       await ready(page);
@@ -120,6 +127,10 @@ for (const lang of LANGS) {
       await ready(page);
       await expectNoHorizontalScroll(page, "money by a date at 375");
       await expectNoSeriousViolations(page, "money by a date on a phone", { lang, theme });
+      await open(page, lang, theme, `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`);
+      await ready(page);
+      await expectNoHorizontalScroll(page, "comparison at 375");
+      await expectNoSeriousViolations(page, "comparison on a phone", { lang, theme });
       await open(page, lang, theme, `&issue=${ISSUES.floater}`);
       await ready(page);
       await expectNoHorizontalScroll(page, "issue at 375");

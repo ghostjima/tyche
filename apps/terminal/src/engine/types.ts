@@ -20,6 +20,8 @@ export type Engine = {
   /** Dirty price of a bond from its flows at an annual effective yield
    * (a fraction). */
   price_from_yield(amounts: number[], days: number[], y: number): number;
+  /** Macaulay duration of flows at an annual effective yield, years. */
+  macaulay_duration(amounts: number[], days: number[], y: number): number;
 };
 
 /** Every code the engine can return, in its documented order of checks. */
