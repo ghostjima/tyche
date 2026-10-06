@@ -406,6 +406,7 @@ const en = {
     invalid_other_income: "Other investment income must be zero or more.",
     invalid_price: "This issue has no valid price, so a plan cannot be calculated.",
     amount_below_one_bond: "The amount does not buy one bond at the dirty price.",
+    invalid_fee: "The broker's fee must be a number of at least zero.",
   } satisfies Record<ErrorCode, string>,
 };
 
@@ -793,6 +794,7 @@ const ru: Strings = {
     invalid_other_income: "Другой инвестиционный доход должен быть нулём или больше.",
     invalid_price: "У выпуска нет корректной цены, поэтому план посчитать нельзя.",
     amount_below_one_bond: "На эту сумму не купить ни одной облигации по полной цене.",
+    invalid_fee: "Комиссия брокера должна быть числом не меньше нуля.",
   },
 };
 
