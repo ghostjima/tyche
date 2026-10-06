@@ -59,6 +59,11 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .event-cell { display: grid; gap: var(--stoa-space-1); justify-items: start; }
 .cell-note { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); font-family: var(--stoa-font-family-sans); }
 
+/* The risk block's descriptions: a sentence, then a countdown or a table. */
+.risk { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.risk > * { max-inline-size: 100%; }
+.risk--inline { display: flex; flex-wrap: wrap; align-items: center; }
+.working__tables { display: grid; gap: var(--stoa-space-4); }
 .issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
 .tags { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1); }
 .block { display: grid; gap: var(--stoa-space-3); margin-block-start: var(--stoa-space-4); min-inline-size: 0; }
@@ -95,7 +100,7 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .source-note { margin: 0 0 var(--stoa-space-3); color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); line-height: var(--stoa-font-line-height-normal); }
 .source-note .stoa-tag { vertical-align: top; }
 .source-note a { color: inherit; }
-.calculator .source-note + .source-note { margin-block-start: calc(-1 * var(--stoa-space-2)); }
+.source-note + .source-note { margin-block-start: calc(-1 * var(--stoa-space-2)); }
 
 /* The demo banner sits in the header on every screen. */
 .demo-banner { font-weight: var(--stoa-font-weight-semibold); color: var(--stoa-color-text); }

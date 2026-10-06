@@ -42,11 +42,20 @@ for (const lang of LANGS) {
       await expect(page.locator(".data-page")).toBeVisible();
       await expectNoSeriousViolations(page, "data and licensing", { lang, theme });
 
-      // A fixed issue with an offer, the glossary open.
+      // A fixed issue with an offer, the glossary and the working open.
       await open(page, lang, theme, `&issue=${ISSUES.offer}`);
       await ready(page);
       await page.locator(".glossary summary").click();
+      await page.getByTestId("working").locator("summary").click();
+      await expect(page.locator(".working .stoa-table").first()).toBeVisible();
       await expectNoSeriousViolations(page, "fixed issue with an offer", { lang, theme });
+
+      // The risks at their fullest: subordinated, qualified only, a
+      // negative outlook, a thin market.
+      await open(page, lang, theme, "&issue=BELB-02");
+      await ready(page);
+      await expect(page.getByTestId("liquidity-warning")).toBeVisible();
+      await expectNoSeriousViolations(page, "issue with every risk", { lang, theme });
 
       // A floater with amortisation: scenarios and the coupon chart.
       await open(page, lang, theme, `&issue=${ISSUES.floater}`);

@@ -64,6 +64,21 @@ describe("WebAssembly and twin through the app's adapters", () => {
     }
   });
 
+  it("explain the same working for every issue, plan and fee", () => {
+    for (const b of BONDS) {
+      const d = twinEngine.derive_bond(b.issue, MARKET);
+      if (!("ok" in d)) throw new Error(b.id);
+      const maturity = d.ok.maturityDay;
+      const plans: [Plan, number][] = [
+        [{ amount: 100_000, horizonDay: Math.min(200, maturity), reinvest: true, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 }, 0.05],
+        [{ amount: 1_000_000, horizonDay: maturity, reinvest: false, taxRegime: "standard", otherIncome: 2_390_000, rateShiftPct: 0 }, 0.3],
+        [{ amount: 100_000, horizonDay: maturity, reinvest: false, taxRegime: "iis_b", otherIncome: 0, rateShiftPct: 0 }, 0],
+        [{ amount: 100_000, horizonDay: maturity, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 }, -1],
+      ];
+      for (const [n, [plan, fee]] of plans.entries()) close(wasm.explain(b.issue, MARKET, plan, fee), twinEngine.explain(b.issue, MARKET, plan, fee), `${b.id} explain ${n}`);
+    }
+  });
+
   it("price the same flows the same", () => {
     const amounts = [70, 70, 1070];
     const days = [100, 282, 464];

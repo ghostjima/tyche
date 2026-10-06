@@ -4,12 +4,33 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
-/** Every table region in `scope` that is wider than its box. */
+/** Every table region in `scope` that is wider than its box. The
+ * working's derivation tables are left out: a formula is one run that does
+ * not break, so on a phone they scroll inside their own region (checked
+ * below). */
 async function overflowing(scope: Locator): Promise<string[]> {
   return scope.locator(".stoa-table-region").evaluateAll((regions) =>
-    regions.filter((r) => r.scrollWidth > r.clientWidth + 1).map((r) => `${r.getAttribute("aria-label") ?? r.textContent?.slice(0, 40)}: ${r.scrollWidth} > ${r.clientWidth}`),
+    regions
+      .filter((r) => !r.closest(".working"))
+      .filter((r) => r.scrollWidth > r.clientWidth + 1)
+      .map((r) => `${r.getAttribute("aria-label") ?? r.textContent?.slice(0, 40)}: ${r.scrollWidth} > ${r.clientWidth}`),
   );
 }
+
+test("at 375 px the working's derivation tables scroll inside their own regions, from the keyboard, and the page does not", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/?lang=ru&issue=${ISSUES.offer}`);
+  await ready(page);
+  await page.getByTestId("working").locator("summary").click();
+  const region = page.locator(".working .stoa-table-region").nth(1);
+  const wide = await region.evaluate((r) => ({ scroll: r.scrollWidth, client: r.clientWidth, tab: (r as HTMLElement).tabIndex }));
+  expect(wide.scroll).toBeGreaterThan(wide.client);
+  expect(wide.tab).toBe(0);
+  await region.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => region.evaluate((r) => r.scrollLeft)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});
 
 for (const lang of ["ru", "en"] as const) {
   test(`at 375 px every table on an issue fits its box (${lang})`, async ({ page }) => {
