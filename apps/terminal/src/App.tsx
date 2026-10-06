@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   AppHeader,
   Button,
@@ -30,7 +30,10 @@ import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
 import { useUniverse } from "./market/useUniverse";
+import { Benchmarks } from "./ui/Benchmarks";
+import { DataPage } from "./ui/DataPage";
 import { Diagnostics } from "./ui/Diagnostics";
+import { BorSource, SimSource, dataHref } from "./ui/Sources";
 import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
 import { WIDE, useMediaQuery } from "./ui/useMediaQuery";
@@ -55,6 +58,12 @@ function writeIssue(id: string | null, push = false) {
 }
 
 const pushedIssue = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED];
+
+/** Whether ?page=data asks for the data and licensing page. */
+const readPage = (): boolean => new URLSearchParams(location.search).get("page") === "data";
+/** The history entry's mark for the data page opened from the app. */
+const PUSHED_PAGE = "tychePage";
+const pushedPage = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED_PAGE];
 
 /** Focuses an issue's row in the list. The record list draws its rows a
  * frame or two after it mounts, so this waits for the row, for a few
@@ -107,6 +116,13 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const search = useRef<HTMLDivElement>(null);
   const back = useRef<HTMLDivElement>(null);
   const returnTo = useRef<string | null>(null);
+  const [dataOpen, setDataOpen] = useState(readPage);
+  const dataHeading = useRef<HTMLHeadingElement>(null);
+  const dataLink = useRef<HTMLAnchorElement>(null);
+  /** Where the link that opened the data page sits, to take the focus
+   * back to the same link when the terminal is drawn again; `false` when
+   * the focus goes elsewhere (the search shortcut). */
+  const dataOpener = useRef<string | null | false>(null);
 
   useEffect(() => {
     document.title = t.title;
@@ -168,10 +184,58 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
     writeIssue(null);
   };
   useEffect(() => {
-    const follow = () => setSelectedId(readIssue());
+    const follow = () => {
+      setSelectedId(readIssue());
+      setDataOpen(readPage());
+    };
     addEventListener("popstate", follow);
     return () => removeEventListener("popstate", follow);
   }, []);
+
+  // The data page replaces the terminal like a page: opening it adds a
+  // history entry, so the browser's Back returns, and the page's own Back
+  // goes back the same way.
+  const openData = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    // The widget's label link, by the widget, since the widget is drawn
+    // anew when the terminal comes back.
+    const widget = ["pane-list", "issue-card", "calculator"].find((c) => e.currentTarget.closest(`.${c}`));
+    dataOpener.current = widget ? `.${widget} .source-note a` : null;
+    history.pushState({ ...history.state, [PUSHED_PAGE]: "data" }, "", dataHref());
+    setDataOpen(true);
+  };
+  const closeData = () => {
+    if (pushedPage() !== undefined) {
+      history.back();
+      return;
+    }
+    const url = new URL(location.href);
+    url.searchParams.delete("page");
+    history.replaceState(history.state, "", url);
+    setDataOpen(false);
+  };
+  // The focus goes to the page's heading when it opens from the app, and
+  // back to the link that opened it (or the foot's link) when it closes. A
+  // page loaded as it is keeps the browser's own start.
+  const wasOpen = useRef(dataOpen);
+  useEffect(() => {
+    if (dataOpen === wasOpen.current) return;
+    wasOpen.current = dataOpen;
+    if (dataOpen) requestAnimationFrame(() => dataHeading.current?.focus());
+    else {
+      const opener = dataOpener.current;
+      dataOpener.current = null;
+      // The terminal draws its widgets a frame or two later: wait for them.
+      const focusBack = (frames: number) => {
+        const target = opener ? document.querySelector<HTMLElement>(opener) : dataLink.current;
+        if (target) target.focus();
+        else if (frames > 0) requestAnimationFrame(() => focusBack(frames - 1));
+        else dataLink.current?.focus();
+      };
+      if (opener !== false) requestAnimationFrame(() => focusBack(10));
+    }
+  }, [dataOpen]);
 
   // On a narrow screen the issue replaces the list: focus goes to the
   // Back button when it opens, and back to the issue's row when it closes.
@@ -190,6 +254,10 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       description: t.scSearch,
       group: t.scGeneral,
       onTrigger: () => {
+        if (dataOpen) {
+          dataOpener.current = false;
+          closeData();
+        }
         if (!wide && selectedId !== null) {
           // The focus goes to the search, not back to the issue's row.
           returnTo.current = null;
@@ -233,10 +301,25 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const detail =
     selected && engine && plan && calc ? (
       <div className="detail" data-issue-open={selected.bond.id}>
-        <IssueCard key={selected.bond.id} t={t} f={f} bond={selected.bond} derived={selected.derived} engine={engine} name={nameOf(selected.bond)} />
+        <IssueCard
+          key={selected.bond.id}
+          t={t}
+          f={f}
+          bond={selected.bond}
+          derived={selected.derived}
+          engine={engine}
+          name={nameOf(selected.bond)}
+          source={<SimSource t={t} onData={openData} />}
+        />
         <Calculator
           t={t}
           f={f}
+          source={
+            <>
+              <SimSource t={t} onData={openData} />
+              <BorSource t={t} f={f} />
+            </>
+          }
           derived={selected.derived}
           floater={selected.bond.issue.couponType === "floater"}
           plan={plan}
@@ -252,6 +335,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         <AppHeader
           title={t.title}
           subtitle={t.subtitle}
+          note={<span className="demo-banner">{t.demoBanner}</span>}
           actions={
             <>
               <ThemeSwitch value={theme.choice} onChange={theme.setChoice} />
@@ -267,6 +351,9 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
             <a href="https://www.cbr.ru/">cbr.ru</a>
           </p>
           <div className="foot__actions">
+            <a ref={dataLink} className="foot__link" href={dataHref()} onClick={openData}>
+              {t.dataPage}
+            </a>
             <Button variant="ghost" onPress={() => setDiagOpen(true)}>
               {t.openDiagnostics}
             </Button>
@@ -288,7 +375,15 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
             {t.wasmFailedBody}
           </Callout>
         )}
-        {marketFailed ? (
+        {dataOpen ? (
+          <DataPage
+            ref={dataHeading}
+            t={t}
+            f={f}
+            counts={bonds && market.status === "ready" ? { issues: bonds.length, issuers: new Set(bonds.map((b) => b.issuer.code)).size } : null}
+            onBack={closeData}
+          />
+        ) : marketFailed ? (
           <Callout
             tone="negative"
             title={t.marketFailedTitle}
@@ -310,6 +405,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         ) : loading ? (
           <div className="workspace" aria-busy="true">
             <Panel title={t.issues} className="pane-list">
+              <SimSource t={t} onData={openData} />
               {/* As tall as the list will be, so what follows the
                   workspace does not move when the list arrives. */}
               <div className="pane-list__placeholder">
@@ -327,6 +423,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         ) : wide ? (
           <div className="workspace">
             <Panel title={t.issues} className="pane-list">
+              <SimSource t={t} onData={openData} />
               <ScrollArea className="pane-list__scroll">{list}</ScrollArea>
             </Panel>
             {detail ?? (
@@ -346,23 +443,28 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
           </div>
         ) : (
           <Panel title={t.issues} className="pane-list">
+            <SimSource t={t} onData={openData} />
             {list}
           </Panel>
         )}
 
-        <Disclosure summary={t.glossary} className="glossary">
-          <dl className="glossary__list">
-            {TERM_KEYS.map((k) => {
-              const [term, text] = t.terms[k];
-              return (
-                <div key={k} className="glossary__item">
-                  <dt>{term}</dt>
-                  <dd>{typeof text === "function" ? text(f.date(IIS_B_LAST_OPEN_DAY)) : text}</dd>
-                </div>
-              );
-            })}
-          </dl>
-        </Disclosure>
+        {!dataOpen && <Benchmarks t={t} f={f} />}
+
+        {!dataOpen && (
+          <Disclosure summary={t.glossary} className="glossary">
+            <dl className="glossary__list">
+              {TERM_KEYS.map((k) => {
+                const [term, text] = t.terms[k];
+                return (
+                  <div key={k} className="glossary__item">
+                    <dt>{term}</dt>
+                    <dd>{typeof text === "function" ? text(f.date(IIS_B_LAST_OPEN_DAY)) : text}</dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </Disclosure>
+        )}
       </div>
 
       <Diagnostics

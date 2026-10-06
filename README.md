@@ -87,9 +87,8 @@ single-issue calculator: see [What is built](#what-is-built).
   revision the engine follows named in the interface; the 13 and 15
   percent rates, the 2.4 million rouble threshold shared with the
   holder's other investment income, and the long-term holding relief.
-- **Data and licensing.** The rules the terminal's data follows. The
-  universe is already synthetic; the source labels, the banner and the
-  licensing page are next.
+- **Data and licensing.** The rules the terminal's data follows, and
+  what the interface shows of them.
   - The bond universe is fully synthetic: fictional issuers, calibrated
     on aggregate statistics only. No per-security series from an
     exchange is committed.
@@ -148,8 +147,13 @@ single-issue calculator: see [What is built](#what-is-built).
   qualified-only issues) to search, filter and sort; an issue card with clean and dirty price,
   accrued interest, yields to maturity and to the offer, durations and
   the payment schedule; a holding calculator with reinvestment, the
-  account type, tax per calendar year and a key-rate change. Russian
-  first, English second; light and dark themes. It will be served at
+  account type, tax per calendar year and a key-rate change; the Bank
+  of Russia's benchmarks with the yield curve. Every widget names its
+  source (SIM, or the Bank of Russia with the date and a link to
+  cbr.ru), a banner in the header says the terminal is a demonstration
+  with synthetic data and not investment advice, and a "Data and
+  licensing" page lists every source, its terms and what is synthetic.
+  Russian first, English second; light and dark themes. It will be served at
   ghostjima.github.io/tyche once Pages is enabled.
 - **The bond engine** ([`crates/tyche-yield`](crates/tyche-yield)) and
   its **TypeScript twin** ([`packages/yield-twin`](packages/yield-twin)):
@@ -173,8 +177,6 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The source on every widget, the demo banner and the "Data and
-  licensing" page.
 - Goal-first selection; the issue card with the risk and the yield after
   tax and fees, with the working shown; comparison; the order ticket
   against a synthetic order book; events.

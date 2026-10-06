@@ -26,6 +26,12 @@ for (const lang of LANGS) {
       await ready(page);
       await expectNoSeriousViolations(page, "list", { lang, theme });
 
+      // The data and licensing page.
+      await open(page, lang, theme, "&page=data");
+      await ready(page);
+      await expect(page.locator(".data-page")).toBeVisible();
+      await expectNoSeriousViolations(page, "data and licensing", { lang, theme });
+
       // A fixed issue with an offer, the glossary open.
       await open(page, lang, theme, `&issue=${ISSUES.offer}`);
       await ready(page);
