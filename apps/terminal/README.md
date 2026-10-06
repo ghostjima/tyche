@@ -29,12 +29,24 @@ Status: early. Performance record, with stamps:
   subordinated and qualified-only issues, synthetic ratings. Search by
   issuer or ticker, word by word, with or without the ticker's hyphen,
   and for a synthetic government bond by its code in the interface's
-  language ("СГ 143" in Russian); filter chips in groups (issuer,
-  coupon, maturity, features),
-  each with the count it would leave, folded into a sheet on a phone;
-  how many issues are shown, and Clear all; sort by yield, maturity or
-  rating. The filters are Stoa's FilterBar. A search with no match says
-  so and offers to clear the filters.
+  language ("СГ 143" in Russian). Three goals at the top set the
+  filters: "Instead of a deposit" (ratings from AA- up, a duration up to
+  a year, a fixed or key-rate coupon, open to every investor, liquid),
+  "Monthly income" (monthly coupons, no offer, no amortisation) and
+  "Money by a date" (a month and a year; the issue matures by the end of
+  that month, or has a put offer by then). Each says in one sentence what
+  it sets; its chips stay visible and can be changed, and the goal is
+  shown as on while they are exactly what it set. Below them, filter
+  chips in groups, each with the count it would leave: issuer, yield to
+  the offer or maturity, duration, synthetic rating, coupon type,
+  coupon frequency, offer, amortisation, who can buy, liquidity (a
+  quoted spread up to 0.5 percent and at least 10,000 bonds on each side
+  of the synthetic book, `src/lib/liquidity.ts`), maturity, and the
+  date; folded into a sheet on a phone; how many issues are shown, and
+  Clear all; sort by yield, maturity or rating. The goal, the chips, the
+  search, the date and the sort are kept in the URL (`?f=`, `?q=`,
+  `?by=`, `?sort=`). The filters are Stoa's FilterBar. A search with no
+  match says so and offers to clear the filters.
 - **The issue**: clean and dirty price, accrued interest, yields to
   maturity and to the offer, the simple yield over the term, Macaulay
   and modified duration; the payment schedule as an event strip
@@ -118,11 +130,12 @@ What the tests cover, and nothing wider:
 
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
   Russian and English, each in the light and the dark theme, on:
-  the list, the data and licensing page, an issue with an offer (with
+  the list, a goal with its filters, "Money by a date" with its month,
+  the data and licensing page, an issue with an offer (with
   the Terms open), a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state, the WebAssembly fallback and the market's failure,
-  at 1440 px; and the list and an issue at 375 px.
+  at 1440 px; and the list, "Money by a date" and an issue at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to

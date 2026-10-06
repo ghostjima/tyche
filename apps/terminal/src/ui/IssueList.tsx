@@ -5,27 +5,79 @@ import type { RefObject } from "react";
 import { FilterBar, Ltr, RecordList, Select, type RecordListItem } from "@ghostjima/stoa-react";
 import type { Bond } from "../data/issues";
 import type { Strings } from "../i18n";
-import { EMPTY_QUERY, GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
+import { VALUATION_DATE } from "../data/market";
+import { EMPTY_QUERY, GROUPS, YIELD_BOUNDS, applyQuery, chipCounts, defaultMonth, monthEndDay, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
 import type { Formats } from "../lib/format";
+import { Goals } from "./Goals";
 
-const CHIP_LABEL: Record<ChipId, keyof Strings> = {
+type YieldChip = "yieldLow" | "yieldMid" | "yieldHigh" | "yieldTop";
+
+const CHIP_LABEL: Record<Exclude<ChipId, YieldChip>, keyof Strings> = {
   gov: "chipGov",
   corporate: "chipCorporate",
+  durShort: "chipShort",
+  durMedium: "chipMedium",
+  durLong: "chipLong",
+  ratingHigh: "chipRatingHigh",
+  ratingA: "chipRatingA",
+  ratingBbb: "chipRatingBbb",
+  ratingLow: "chipRatingLow",
   fixed: "chipFixed",
-  floater: "chipFloater",
+  keyRate: "chipKeyRate",
+  ruonia: "chipRuonia",
   linker: "chipLinker",
+  monthly: "chipMonthly",
+  quarterly: "chipQuarterly",
+  semiannual: "chipSemiannual",
+  noOffer: "chipNoOffer",
+  put: "chipPut",
+  call: "chipCall",
+  noAmortisation: "chipNoAmortisation",
+  amortising: "chipAmortising",
+  open: "chipOpen",
+  qualified: "chipQualified",
+  liquid: "chipLiquid",
+  illiquid: "chipIlliquid",
   short: "chipShort",
   medium: "chipMedium",
   long: "chipLong",
-  amortising: "chipAmortising",
-  offer: "chipOffer",
 };
+
+/** A chip's words; the yield bands take their bounds. */
+function chipLabel(id: ChipId, t: Strings, f: Formats): string {
+  const [low, mid, high] = YIELD_BOUNDS.map((x) => f.percent(x, 0)) as [string, string, string];
+  switch (id) {
+    case "yieldLow":
+      return t.chipYieldBelow(low);
+    case "yieldMid":
+      return t.chipYieldBetween(low, mid);
+    case "yieldHigh":
+      return t.chipYieldBetween(mid, high);
+    case "yieldTop":
+      return t.chipYieldFrom(high);
+    default:
+      return t[CHIP_LABEL[id]] as string;
+  }
+}
+
 const GROUP_LABEL: Record<GroupId, keyof Strings> = {
   sector: "groupSector",
+  yield: "groupYield",
+  duration: "groupDuration",
+  rating: "groupRating",
   coupon: "groupCoupon",
+  frequency: "groupFrequency",
+  offer: "groupOffer",
+  amortisation: "groupAmortisation",
+  access: "groupAccess",
+  liquidity: "groupLiquidity",
   term: "groupTerm",
-  features: "groupFeatures",
 };
+
+/** The date filter's own chip in the bar, so the bar counts it, shows
+ * Clear all for it, and turns it off. */
+const BY = "by" as const;
+type BarChip = ChipId | typeof BY;
 
 export type IssueListProps = {
   t: Strings;
@@ -46,7 +98,8 @@ export type IssueListProps = {
 };
 
 export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef }: IssueListProps) {
-  const counts = chipCounts(all, query, textsOf);
+  const counts = chipCounts(all, query, textsOf, VALUATION_DATE);
+  const by = query.by ?? defaultMonth(VALUATION_DATE);
   // The ticker names the record (typing it jumps there); the issuer, the
   // rating, the coupon and the maturity describe it; the yield is its value.
   const records: RecordListItem[] = visible.map(({ bond, derived }) => ({
@@ -72,21 +125,30 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
     ),
   }));
 
-  // Stoa's FilterBar: the search, the chip groups with their counts (in a
-  // sheet on a phone), how many issues are shown, Clear all, and the empty
-  // state in the list's place. The sort sits over the list.
+  // The goals on top; then Stoa's FilterBar: the search, the chip groups
+  // with their counts (in a sheet on a phone), the date when one is set,
+  // how many issues are shown, Clear all, and the empty state in the
+  // list's place. The sort sits over the list.
   return (
     <div ref={searchRef} className="issue-list">
-      <FilterBar<ChipId>
+      <Goals t={t} f={f} all={all} query={query} onQuery={onQuery} textsOf={textsOf} />
+      <FilterBar<BarChip>
         label={t.filtersLabel}
         search={{ label: t.search, value: query.search, onChange: (search) => onQuery({ ...query, search }) }}
-        groups={GROUPS.map((group) => ({
-          id: group.id,
-          label: t[GROUP_LABEL[group.id]] as string,
-          chips: group.chips.map((id) => ({ id, label: t[CHIP_LABEL[id]] as string, count: counts[id] })),
-        }))}
-        value={[...query.chips]}
-        onChange={(chips) => onQuery({ ...query, chips })}
+        groups={[
+          ...GROUPS.map((group) => ({
+            id: group.id,
+            label: t[GROUP_LABEL[group.id]] as string,
+            chips: group.chips.map((id) => ({ id: id as BarChip, label: chipLabel(id, t, f), count: counts[id] })),
+          })),
+          {
+            id: "date",
+            label: t.groupDate,
+            chips: [{ id: BY, label: t.chipBy(f.day(monthEndDay(by, VALUATION_DATE))), count: applyQuery(all, { ...query, by }, textsOf, VALUATION_DATE).length }],
+          },
+        ]}
+        value={[...query.chips, ...(query.by === null ? [] : [BY])]}
+        onChange={(on) => onQuery({ ...query, chips: on.filter((c): c is ChipId => c !== BY), by: on.includes(BY) ? by : null })}
         onClear={() => onQuery(EMPTY_QUERY)}
         results={{ shown: visible.length, total: all.length }}
         emptyTitle={t.noMatchesTitle}

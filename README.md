@@ -75,8 +75,8 @@ Workflows:
 6. **Events**: coupons, offers with an action deadline and a one-step
    request to redeem at the offer, rating changes, defaults.
 
-Today the prototype covers part of the second workflow and the
-single-issue calculator: see [What is built](#what-is-built).
+Today the prototype covers the first workflow, part of the second and
+the single-issue calculator: see [What is built](#what-is-built).
 
 ## Constraints
 
@@ -144,7 +144,10 @@ single-issue calculator: see [What is built](#what-is-built).
   synthetic universe (synthetic government bonds and corporates; fixed
   coupons, floaters on the key rate and on RUONIA, inflation-linked and
   amortising issues, put and call offers, subordinated and
-  qualified-only issues) to search, filter and sort; an issue card with clean and dirty price,
+  qualified-only issues) to choose from by goal ("instead of a deposit",
+  "monthly income", "money by a date"), each setting filters that stay
+  visible and can be changed, with the professional filters below them,
+  and to search and sort; an issue card with clean and dirty price,
   accrued interest, yields to maturity and to the offer, durations and
   the payment schedule; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change; the Bank
@@ -177,7 +180,7 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- Goal-first selection; the issue card with the risk and the yield after
+- The issue card with the risk and the yield after
   tax and fees, with the working shown; comparison; the order ticket
   against a synthetic order book; events.
 - In the engine: a per-year trace of tax and accrued interest, portfolio

@@ -40,7 +40,15 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .narrow > .detail { justify-self: stretch; }
 
+.issue-list { display: grid; gap: var(--stoa-space-4); }
 .issue-list__results { display: grid; gap: var(--stoa-space-3); }
+/* The goals over the filters: the chips, the goal's sentence, and the
+   month for "Money by a date". */
+.goals { display: grid; gap: var(--stoa-space-2); }
+.goals__note { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
+.goals__by { display: grid; gap: var(--stoa-space-2); }
+.goals__by-label { margin: 0; font-size: var(--stoa-font-size-sm); }
+.goals__by-fields { display: flex; flex-wrap: wrap; gap: var(--stoa-space-3); align-items: end; }
 .issue-list__sort { display: flex; justify-content: flex-end; }
 
 .issue-desc { display: grid; }

@@ -21,12 +21,13 @@ import {
   type ThemePreference,
 } from "@ghostjima/stoa-react";
 import type { Bond } from "./data/issues";
-import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET } from "./data/market";
+import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET, VALUATION_DATE } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
 import { LANGS, strings, type Lang } from "./i18n";
-import { EMPTY_QUERY, applyQuery, sortItems, type Item, type Query, type SortKey } from "./lib/filters";
+import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
 import { useAppFormats } from "./lib/format";
+import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH } from "./lib/liquidity";
 import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
@@ -75,6 +76,9 @@ function focusRecord(id: string, frames = 10) {
   else if (frames > 0) requestAnimationFrame(() => focusRecord(id, frames - 1));
 }
 
+/** A glossary entry's text, given the values its sentence takes. */
+const termText = (text: string | ((...values: string[]) => string), values: string[]) => (typeof text === "function" ? text(...values) : text);
+
 const TERM_KEYS = [
   "keyRate",
   "ruonia",
@@ -92,6 +96,7 @@ const TERM_KEYS = [
   "ldv",
   "iis",
   "rating",
+  "liquidity",
 ] as const;
 
 /** The screen. Rendered inside an I18nProvider set to the language's
@@ -107,8 +112,16 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   // Side by side from Stoa's wide breakpoint, as the stylesheet lays it out.
   const wide = useBreakpoint() === "wide";
 
-  const [query, setQuery] = useState<Query>(EMPTY_QUERY);
-  const [sort, setSort] = useState<SortKey>("yield");
+  // The goal, the filters, the search and the sort live in the URL, so a
+  // reload or a link keeps them.
+  const [initialList] = useState(() => readListState(new URLSearchParams(location.search), VALUATION_DATE));
+  const [query, setQuery] = useState<Query>(initialList.query);
+  const [sort, setSort] = useState<SortKey>(initialList.sort);
+  useEffect(() => {
+    const url = new URL(location.href);
+    writeListState(url.searchParams, query, sort);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [query, sort]);
   const [selectedId, setSelectedId] = useState<string | null>(readIssue);
   const [plans, setPlans] = useState<Record<string, PlanInput>>({});
   const [diagOpen, setDiagOpen] = useState(false);
@@ -154,7 +167,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     if (items && performance.getEntriesByName("tyche:list-ready").length === 0) performance.mark("tyche:list-ready");
   }, [items]);
 
-  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, textsOf), sort) : []), [items, query, sort, t]);
+  const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, textsOf, VALUATION_DATE), sort) : []), [items, query, sort, t]);
   const selected = items?.find((i) => i.bond.id === selectedId) ?? null;
   const plan = selected ? (plans[selected.bond.id] ?? defaultPlan(selected.derived)) : null;
   const enginePlan: Plan | null = plan;
@@ -248,6 +261,13 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     if (selectedId !== null) back.current?.querySelector("button")?.focus();
     else if (returnTo.current) focusRecord(returnTo.current);
   }, [selectedId, wide]);
+
+  // What the glossary's sentences take: the last day an account of type B
+  // could be opened, and the liquidity thresholds.
+  const termValues: Partial<Record<(typeof TERM_KEYS)[number], string[]>> = {
+    iis: [f.day(IIS_B_LAST_OPEN_DAY)],
+    liquidity: [f.percent(LIQUID_MAX_SPREAD_BP / 10_000, 1), f.integer(LIQUID_MIN_DEPTH)],
+  };
 
   const help = useShortcuts([
     {
@@ -471,7 +491,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
                 return (
                   <div key={k} className="glossary__item">
                     <dt>{term}</dt>
-                    <dd>{typeof text === "function" ? text(f.day(IIS_B_LAST_OPEN_DAY)) : text}</dd>
+                    <dd>{termText(text, termValues[k] ?? [])}</dd>
                   </div>
                 );
               })}
