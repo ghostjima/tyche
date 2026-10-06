@@ -36,8 +36,9 @@ describe("interface strings", () => {
       }
   });
 
-  it("Arabic has no Latin letters", () => {
-    for (const [k, v] of rendered(strings.ar)) expect(v.replace(/@\d/g, ""), `ar.${k}`).not.toMatch(/[A-Za-z]/);
+  // The product name is never translated; every other Arabic string is Arabic.
+  it("Arabic has no Latin letters apart from the product name", () => {
+    for (const [k, v] of rendered(strings.ar)) expect(v.replace(/@\d/g, "").replace(/\bTyche\b/g, ""), `ar.${k}`).not.toMatch(/[A-Za-z]/);
   });
 
   it("every engine error code has a message in each language", () => {
