@@ -67,13 +67,13 @@ test("the language survives a reload and the next visit, in each of three langua
   await page.getByRole("radio", { name: "RU", exact: true }).click();
   await expect(html).toHaveAttribute("lang", "ru");
   await expect(html).toHaveAttribute("dir", "ltr");
-  await expect(page).toHaveTitle("Tyche: облигации");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tyche: облигации");
+  await expect(page).toHaveTitle("Tyche Облигации");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tyche Облигации");
   await page.reload();
   await expect(html).toHaveAttribute("lang", "ru");
   await page.getByRole("radio", { name: "AR", exact: true }).click();
   await expect(html).toHaveAttribute("dir", "rtl");
-  await expect(page).toHaveTitle("Tyche: السندات");
+  await expect(page).toHaveTitle("Tyche السندات");
   await page.goto("/");
   await expect(html).toHaveAttribute("lang", "ar");
   expect(await page.evaluate(() => localStorage.getItem("horkos-bonds.lang"))).toBe("ar");

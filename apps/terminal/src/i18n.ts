@@ -290,7 +290,7 @@ const en = {
 export type Strings = typeof en;
 
 const ru: Strings = {
-  title: "Tyche: облигации",
+  title: "Tyche Облигации",
   subtitle: "Доходность, график выплат и калькулятор владения облигациями",
   footer: (date, rate) => `Все выпуски вымышленные. Цены на ${date}, ключевая ставка ${rate}.`,
   openDiagnostics: "Диагностика движка",
@@ -552,7 +552,7 @@ const ru: Strings = {
 };
 
 const ar: Strings = {
-  title: "Tyche: السندات",
+  title: "Tyche السندات",
   subtitle: "العوائد وجداول المدفوعات وحاسبة الاحتفاظ بالسندات",
   footer: (date, rate) => `جميع الإصدارات خيالية. الأسعار بتاريخ ${date}، وسعر الفائدة الرئيسي ${rate}.`,
   openDiagnostics: "تشخيص المحرّك",
