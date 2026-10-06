@@ -228,6 +228,20 @@ test("without WebAssembly the TypeScript engine takes over, and WebAssembly can 
   await ready(page, "wasm");
   await expect(page.getByText("WebAssembly did not load")).toHaveCount(0);
   await expect(page.getByTestId("figures")).toContainText("15.79%");
+  // The notice left with the retry: the focus moved on to the next stop
+  // where it was, the list's source link, instead of falling to the page.
+  await expect(page.locator(".pane-list .source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
+});
+
+test("on a phone, after WebAssembly loads on a retry, the focus moves on to the Back button", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.route("**/tyche_yield_bg*.wasm", (route) => route.abort());
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
+  await ready(page, "twin");
+  await page.unroute("**/tyche_yield_bg*.wasm");
+  await page.getByRole("button", { name: "Try WebAssembly again" }).click();
+  await ready(page, "wasm");
+  await expect(page.getByRole("button", { name: "Back to the list" })).toBeFocused();
 });
 
 test("without the market's WebAssembly the page says the market did not load, and loads it again", async ({ page }) => {

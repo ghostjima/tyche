@@ -130,7 +130,8 @@ What the tests cover, and nothing wider:
   the focus on the Back button, and the page's Back button and the
   browser's Back both return to the list, with focus on the issue's row;
   on a phone the filters open in a sheet that returns the focus to its
-  button; a source
+  button; after "Try WebAssembly again" succeeds, the focus moves on to
+  the next stop where the notice was; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.

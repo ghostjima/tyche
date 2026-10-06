@@ -371,7 +371,19 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
             tone="warning"
             title={t.wasmFailedTitle}
             onDismiss={() => setWasmNoticeDismissed(true)}
-            action={<Button onPress={retry}>{t.wasmRetry}</Button>}
+            action={
+              <Button
+                onPress={(e) => {
+                  // The notice leaves once the WebAssembly loads; the focus
+                  // moves on to the next stop where it was instead of
+                  // falling to the page.
+                  keepFocusInPlace(e.target);
+                  retry();
+                }}
+              >
+                {t.wasmRetry}
+              </Button>
+            }
           >
             {t.wasmFailedBody}
           </Callout>
