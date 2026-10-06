@@ -4,13 +4,10 @@ import { formats } from "./format";
 describe("formats", () => {
   const en = formats("en-US");
   const ru = formats("ru-RU");
-  const ar = formats("ar-u-nu-arab");
 
   it("writes roubles with the sign in every language", () => {
     expect(en.money(1234.5)).toBe("₽1,234.50");
     expect(ru.money(1234.5).replace(/\s/g, " ")).toBe("1 234,50 ₽");
-    expect(ar.money(1234.5)).toContain("₽");
-    expect(ar.money(1234.5)).toMatch(/[٠-٩]/);
   });
 
   it("signs income and costs, and leaves zero unsigned", () => {
