@@ -4,6 +4,7 @@
   rates are annual effective fractions unless the name ends in Pct.
 */
 
+import { curveBracket } from "./bracket.js";
 import type { Num } from "./types.js";
 
 export const YEAR = 365;
@@ -223,4 +224,19 @@ export function value_along_path(days: Num, amounts: Num, horizonDay: number, pe
 
 export function price_after_rate_shift(price: number, modDuration: number, deltaPct: number): number {
   return Math.max(price * (1 - (modDuration * deltaPct) / 100), 0);
+}
+
+/*
+  The zero-coupon yield at a term, percent, from yields in percent at
+  ascending terms in years: linear in the yield between the two published
+  terms around it, flat beyond the first and the last. NaN without terms,
+  with slices of different lengths, or for a NaN term
+*/
+export function curve_yield_pct(termsYears: Num, yieldsPct: Num, years: number): number {
+  if (termsYears.length !== yieldsPct.length) return Number.NaN;
+  const b = curveBracket(termsYears, years);
+  if (b === null) return Number.NaN;
+  const [lo, hi, w] = b;
+  if (lo === hi) return at(yieldsPct, lo);
+  return at(yieldsPct, lo) + w * (at(yieldsPct, hi) - at(yieldsPct, lo));
 }

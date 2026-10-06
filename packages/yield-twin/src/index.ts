@@ -19,5 +19,6 @@ export {
   effective_annual_pct,
 } from "./calculate.js";
 export { explain } from "./explain.js";
+export { g_spread } from "./spread.js";
 export { addYears, civilFromDays, dayOffset, fullYears, parseIsoDate } from "./dates.js";
 export type * from "./types.js";

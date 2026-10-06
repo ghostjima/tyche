@@ -2,12 +2,17 @@
 // the arithmetic in the comments. The same examples run against the Rust
 // crate in tests/worked.rs.
 import { describe, expect, it } from "vitest";
-import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, hold_value, income_tax } from "../src/index.js";
-import type { Calculation, Explanation, Issue, Market, Plan } from "../src/index.js";
+import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, g_spread, hold_value, income_tax } from "../src/index.js";
+import type { Calculation, Curve, Explanation, GSpreads, Issue, Market, Plan } from "../src/index.js";
 
 const close = (got: number, want: number) => expect(Math.abs(got - want)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(want), 1));
 
 const market = (valuationDate: string): Market => ({ valuationDate, keyRatePct: 16 });
+
+// A zero-coupon curve of two published terms: 9 percent at one year, 12 at
+// three. Read linearly between them, it rises 1.5 percentage points a year;
+// before one year it stays at 9, after three at 12.
+const curve: Curve = { termsYears: [1, 3], yieldsPct: [9, 12] };
 
 function ok(r: ReturnType<typeof calculate>): Calculation {
   if (!("ok" in r)) throw new Error(r.error);
@@ -282,7 +287,7 @@ const midPeriod: Issue = { ...bullet, couponRatePct: 7.3, periodDays: 180, matur
 
 describe("explain", () => {
   it("works out the yield and the fee", () => {
-    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1));
+    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1, curve));
     close(e.price.clean, 1000);
     close(e.price.accrued, 0);
     close(e.price.dirty, 1000);
@@ -300,7 +305,7 @@ describe("explain", () => {
   });
 
   it("traces the tax and the yield after it", () => {
-    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1));
+    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1, curve));
     const held = e.toMaturity.held;
     close(held.invested, 10_000);
     close(held.commission, -100);
@@ -322,7 +327,7 @@ describe("explain", () => {
     close(held.total, 10_783);
     close(held.annualPct!, 7.83);
     // With 2,399,900 of other income: 100 at 13 percent, 800 at 15: 133.
-    const high = explained(explain(bullet, market("2026-01-01"), bulletPlan(TAX_THRESHOLD - 100), 1)).toMaturity.tax[0]!;
+    const high = explained(explain(bullet, market("2026-01-01"), bulletPlan(TAX_THRESHOLD - 100), 1, curve)).toMaturity.tax[0]!;
     close(high.taxedLow, 100);
     close(high.taxedHigh, 800);
     close(high.tax, 133);
@@ -330,7 +335,7 @@ describe("explain", () => {
 
   it("shows accrued interest paid and received", () => {
     const plan: Plan = { amount: 10_180, horizonDay: 180, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
-    const e = explained(explain(midPeriod, market("2026-01-01"), plan, COMMISSION_PCT));
+    const e = explained(explain(midPeriod, market("2026-01-01"), plan, COMMISSION_PCT, curve));
     close(e.price.couponAmount, 36);
     close(e.price.daysSinceLast, 90);
     close(e.price.accrued, 18);
@@ -355,8 +360,81 @@ describe("explain", () => {
 
   it("refuses a fee it cannot use, after the plan's own errors", () => {
     for (const fee of [-0.01, Number.NaN, Number.POSITIVE_INFINITY]) {
-      expect(explain(bullet, market("2026-01-01"), bulletPlan(0), fee)).toEqual({ error: "invalid_fee" });
+      expect(explain(bullet, market("2026-01-01"), bulletPlan(0), fee, curve)).toEqual({ error: "invalid_fee" });
     }
-    expect(explain(bullet, market("2026-01-01"), { ...bulletPlan(0), amount: 0 }, -1)).toEqual({ error: "amount_not_positive" });
+    expect(explain(bullet, market("2026-01-01"), { ...bulletPlan(0), amount: 0 }, -1, curve)).toEqual({ error: "amount_not_positive" });
+  });
+});
+
+function spreads(r: ReturnType<typeof g_spread>): GSpreads {
+  if (!("ok" in r)) throw new Error(r.error);
+  return r.ok;
+}
+
+// A three-year bond, 10 percent annual coupon, at par on 2029-01-01, with a
+// put offer on its first coupon day, 2030-01-01. Coupons on days 365, 730
+// and 1,095, whole years; the dirty price is 1,000 and both yields are 10
+// percent.
+const withOffer: Issue = { ...bullet, maturity: "2032-01-01", offers: ["2030-01-01"] };
+
+describe("g_spread", () => {
+  it("reads the curve at each duration", () => {
+    const g = spreads(g_spread(withOffer, market("2029-01-01"), curve));
+    // To maturity: 100 / 1.1 + 100 / 1.21 + 1,100 / 1.331 = 1,000; weighted
+    // by their years, 3,641 / 1,331 = 2.7355 years. The curve there: 9 +
+    // 1.5 x (3,641 / 1,331 - 1) = 9 + 3,465 / 1,331 = 11.6033 percent; the
+    // spread (10 - 11.6033) x 100 = -2,134 / 1,331 x 100 = -160.33 bp.
+    const m = g.toMaturity;
+    expect(Math.abs(m.yieldPct - 10)).toBeLessThan(1e-9);
+    expect(Math.abs(m.durationYears - 3641 / 1331)).toBeLessThan(1e-9);
+    expect([m.termBelowYears, m.yieldBelowPct, m.termAboveYears, m.yieldAbovePct]).toEqual([1, 9, 3, 12]);
+    expect(Math.abs(m.curvePct - (9 + 3465 / 1331))).toBeLessThan(1e-9);
+    expect(Math.abs(m.spreadBp - (-2134 / 1331) * 100)).toBeLessThan(1e-6);
+    // To the offer: 1,100 in a year at 10 percent, duration one year, the
+    // curve's first term at 9 percent: +100 bp.
+    const o = g.toOffer!;
+    expect(Math.abs(o.durationYears - 1)).toBeLessThan(1e-12);
+    expect(Math.abs(o.curvePct - 9)).toBeLessThan(1e-9);
+    expect(Math.abs(o.spreadBp - 100)).toBeLessThan(1e-6);
+    // explain carries the same spreads.
+    const plan: Plan = { amount: 10_000, horizonDay: 365, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
+    const e = explained(explain(withOffer, market("2029-01-01"), plan, COMMISSION_PCT, curve));
+    expect(e.toMaturity.gSpread).toEqual(m);
+    expect(e.toOffer!.gSpread).toEqual(o);
+  });
+
+  it("holds the curve flat beyond its terms", () => {
+    // The one-year bullet: duration one year, yield 10 percent. Beyond the
+    // half-year term the curve stays at 9: +100 bp; before the two-year term
+    // it stays at 11: -100 bp.
+    const short = spreads(g_spread(bullet, market("2026-01-01"), { termsYears: [0.25, 0.5], yieldsPct: [8, 9] })).toMaturity;
+    expect([short.termBelowYears, short.termAboveYears, short.curvePct]).toEqual([0.5, 0.5, 9]);
+    expect(Math.abs(short.spreadBp - 100)).toBeLessThan(1e-6);
+    const long = spreads(g_spread(bullet, market("2026-01-01"), { termsYears: [2, 5], yieldsPct: [11, 13] }));
+    expect([long.toMaturity.termBelowYears, long.toMaturity.termAboveYears, long.toMaturity.curvePct]).toEqual([2, 2, 11]);
+    expect(Math.abs(long.toMaturity.spreadBp + 100)).toBeLessThan(1e-6);
+    expect(long.toOffer).toBeNull();
+  });
+
+  it("refuses a curve it cannot read, after the issue's errors and, in explain, the fee", () => {
+    const m = market("2026-01-01");
+    for (const missing of [null, undefined, { termsYears: [], yieldsPct: [] }]) {
+      expect(g_spread(bullet, m, missing)).toEqual({ error: "curve_missing" });
+    }
+    for (const bad of [
+      { termsYears: [1, 2], yieldsPct: [10] },
+      { termsYears: [], yieldsPct: [10] },
+      { termsYears: [2, 1], yieldsPct: [10, 11] },
+      { termsYears: [1, 1], yieldsPct: [10, 11] },
+      { termsYears: [0, 1], yieldsPct: [10, 11] },
+      { termsYears: [-1, 1], yieldsPct: [10, 11] },
+      { termsYears: [1, Number.POSITIVE_INFINITY], yieldsPct: [10, 11] },
+      { termsYears: [1, 2], yieldsPct: [10, Number.NaN] },
+    ]) {
+      expect(g_spread(bullet, m, bad), JSON.stringify(bad)).toEqual({ error: "invalid_curve" });
+    }
+    expect(g_spread({ ...bullet, maturity: "2025-01-01" }, m, null)).toEqual({ error: "matured" });
+    expect(explain(bullet, m, bulletPlan(0), -1, null)).toEqual({ error: "invalid_fee" });
+    expect(explain(bullet, m, bulletPlan(0), 1, null)).toEqual({ error: "curve_missing" });
   });
 });
