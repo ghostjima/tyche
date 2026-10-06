@@ -13,7 +13,9 @@ function leaves(value: unknown, path = ""): [string, Leaf][] {
 }
 
 const shape = (s: Strings) => leaves(s).map(([k, v]) => `${k}:${typeof v}${typeof v === "function" ? v.length : ""}`).sort();
-const rendered = (s: Strings) => leaves(s).map(([k, v]) => [k, typeof v === "function" ? v("@1", "@2", "@3") : v] as const);
+/** Placeholders for a function's arguments: "@1", "@2", and so on. */
+const args = (n: number) => Array.from({ length: Math.max(n, 3) }, (_, i) => `@${i + 1}`);
+const rendered = (s: Strings) => leaves(s).map(([k, v]) => [k, typeof v === "function" ? v(...args(v.length)) : v] as const);
 
 describe("interface strings", () => {
   it("Russian is the first language and the default, English the second, and there is no other", () => {
@@ -36,7 +38,7 @@ describe("interface strings", () => {
     for (const lang of LANGS)
       for (const [k, v] of leaves(strings[lang]))
         if (typeof v === "function") {
-          const out = v("@1", "@2", "@3");
+          const out = v(...args(v.length));
           for (let i = 1; i <= v.length; i++) expect(out, `${lang}.${k}`).toContain(`@${i}`);
         }
   });

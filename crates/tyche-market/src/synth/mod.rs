@@ -29,8 +29,8 @@ pub mod universe;
 pub use day::{simulate, Aggressor, Day, Print, Session, SessionKind, Snapshot};
 pub use inputs::{Curve, Inputs};
 pub use universe::{
-    generate, CouponKind, InputError, Issuer, Liquidity, Offer, OfferKind, Sector, Segment,
-    SynthIssue, Universe, RATINGS,
+    generate, CouponKind, InputError, Issuer, Liquidity, Offer, OfferKind, Outlook, Sector,
+    Segment, SynthIssue, Universe, RATINGS,
 };
 
 /// The seed the app's universe is generated with.

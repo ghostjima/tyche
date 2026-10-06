@@ -4,8 +4,8 @@
 
 use std::sync::OnceLock;
 use tyche_market::synth::{
-    self, calibration as cal, inputs, json, Aggressor, CouponKind, Day, OfferKind, Segment,
-    SessionKind, Universe, RATINGS,
+    self, calibration as cal, inputs, json, Aggressor, CouponKind, Day, OfferKind, Outlook,
+    Segment, SessionKind, Universe, RATINGS,
 };
 use tyche_yield::derive_bond;
 
@@ -52,7 +52,7 @@ fn the_same_seed_gives_the_same_universe_and_day_and_another_seed_does_not() {
     // every platform.
     assert_eq!(
         format!("{:016x}", json::universe_digest(u)),
-        "b4cd2d72f1ea47ba"
+        "f5adfa55cefab800"
     );
     let a = synth::simulate(u.seed, 0, &u.issues[0], 0, None);
     let b = synth::simulate(u.seed, 0, &u.issues[0], 0, None);
@@ -552,4 +552,25 @@ fn nothing_in_the_universe_is_a_real_identifier() {
     for suffix in ["(ru)", "ru)", ".ru\"", "|ru"] {
         assert!(!lower.contains(suffix), "{suffix}");
     }
+}
+
+#[test]
+fn issuers_have_an_outlook_from_a_stream_of_their_own() {
+    let u = universe();
+    assert_eq!(u.issuers[0].outlook, Outlook::Stable);
+    let count = |o: Outlook| u.issuers.iter().filter(|i| i.outlook == o).count();
+    for o in [Outlook::Stable, Outlook::Positive, Outlook::Negative] {
+        assert!(count(o) > 0, "{o:?}");
+    }
+    assert!(count(Outlook::Stable) > u.issuers.len() / 2);
+    // Without the outlooks the JSON is the universe it was before they
+    // were added, digest for digest: nothing else moved.
+    let mut text = json::universe_json(u);
+    for o in [Outlook::Stable, Outlook::Positive, Outlook::Negative] {
+        text = text.replace(&format!(",\"outlook\":\"{}\"", o.code()), "");
+    }
+    assert_eq!(
+        format!("{:016x}", json::fnv1a(text.as_bytes())),
+        "b4cd2d72f1ea47ba"
+    );
 }

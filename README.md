@@ -75,8 +75,8 @@ Workflows:
 6. **Events**: coupons, offers with an action deadline and a one-step
    request to redeem at the offer, rating changes, defaults.
 
-Today the prototype covers the first workflow, part of the second and
-the single-issue calculator: see [What is built](#what-is-built).
+Today the prototype covers the first two workflows and the single-issue
+calculator: see [What is built](#what-is-built).
 
 ## Constraints
 
@@ -147,9 +147,14 @@ the single-issue calculator: see [What is built](#what-is-built).
   qualified-only issues) to choose from by goal ("instead of a deposit",
   "monthly income", "money by a date"), each setting filters that stay
   visible and can be changed, with the professional filters below them,
-  and to search and sort; an issue card with clean and dirty price,
-  accrued interest, yields to maturity and to the offer, durations and
-  the payment schedule; a holding calculator with reinvestment, the
+  and to search and sort; an issue card with its risks where the
+  decision is made (the offer with a countdown, amortisation,
+  subordination, a floater's coupon resets, the rating's outlook, the
+  qualified-investor flag and what it means, a liquidity warning with
+  its thresholds), the yield to maturity and to the offer after the fee
+  and after tax without reinvestment, with the working shown step by
+  step and the Tax Code articles cited, clean and dirty price, accrued
+  interest, durations and the payment schedule; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change; the Bank
   of Russia's benchmarks with the yield curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
@@ -183,9 +188,7 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The issue card with the risk and the yield after
-  tax and fees, with the working shown; comparison; the order ticket
-  against a synthetic order book; events.
+- Comparison; the order ticket against a synthetic order book; events.
 - In the engine: portfolio and ladder cash flows, the G-spread to the
   curve, inflation-linked bonds with forecast indexation. In the app: the
   order book and the tape of the synthetic market.

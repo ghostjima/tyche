@@ -23,6 +23,7 @@ import {
 import type { Bond } from "./data/issues";
 import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET, VALUATION_DATE } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
+import { COMMISSION_PCT } from "@tyche/yield-twin";
 import type { Plan } from "./engine/types";
 import { LANGS, strings, type Lang } from "./i18n";
 import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
@@ -175,6 +176,13 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   // The figures on screen, with the time each call took on the active
   // engine, for the diagnostics.
   const lastDerive = useMemo(() => (engine && selected ? timed(() => engine.derive_bond(selected.bond.issue, MARKET))[1] : null), [engine, selected]);
+  // The working behind the card's figures, for the calculator's plan and
+  // the broker's commission the calculator uses.
+  const explanation = useMemo(
+    () => (engine && selected && enginePlan ? engine.explain(selected.bond.issue, MARKET, enginePlan, COMMISSION_PCT) : null),
+    // The plan object is rebuilt on every render; its fields are what matter.
+    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
+  );
   const calc = useMemo(
     () => (engine && selected && enginePlan ? timed(() => engine.calculate(selected.bond.issue, MARKET, enginePlan)) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
@@ -320,7 +328,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   );
 
   const detail =
-    selected && engine && plan && calc ? (
+    selected && engine && plan && calc && explanation ? (
       <div className="detail" data-issue-open={selected.bond.id}>
         <IssueCard
           key={selected.bond.id}
@@ -330,7 +338,18 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           derived={selected.derived}
           engine={engine}
           name={nameOf(selected.bond)}
-          source={<SimSource t={t} onData={openData} />}
+          source={
+            selected.bond.issue.couponType === "floater" ? (
+              <>
+                <SimSource t={t} onData={openData} />
+                <BorSource t={t} f={f} />
+              </>
+            ) : (
+              <SimSource t={t} onData={openData} />
+            )
+          }
+          explanation={explanation}
+          plan={plan}
         />
         <Calculator
           t={t}

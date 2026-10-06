@@ -68,7 +68,8 @@ test("an issue shows its figures, schedule, payments and price curve", async ({ 
   expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.offer);
   const card = page.locator(".issue-card");
   await expect(card.getByRole("heading", { level: 2 })).toHaveText("Kama Lease Solutions");
-  await expect(card.getByText("Put offer on Aug 29, 2027")).toBeVisible();
+  // The tag; the risks repeat the date in a sentence.
+  await expect(card.locator(".tags").getByText("Put offer on Aug 29, 2027")).toBeVisible();
   const figures = page.getByTestId("figures");
   for (const label of ["Clean price", "Accrued interest", "Dirty price", "Yield to maturity", "Yield to the offer", "Duration"]) {
     await expect(figures.getByText(label, { exact: true })).toBeVisible();

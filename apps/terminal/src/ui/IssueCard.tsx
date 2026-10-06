@@ -1,13 +1,16 @@
-// One issue: what it is, its derived figures, its payment schedule as an
-// event strip and a table, and for a fixed coupon how its price depends on
-// the yield.
+// One issue: what it is, its risks, its yield after tax and fees with the
+// working shown, its derived figures, its payment schedule as an event
+// strip and a table, and for a fixed coupon how its price depends on the
+// yield.
 import type { ReactNode } from "react";
 import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, useBreakpoint, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
-import type { Derived, Engine } from "../engine/types";
+import type { Derived, Engine, Explanation, Plan, Result } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
+import { HonestYield } from "./HonestYield";
+import { Risks } from "./Risks";
 
 export type IssueCardProps = {
   t: Strings;
@@ -18,6 +21,9 @@ export type IssueCardProps = {
   name: string;
   /** Where the figures come from, at the top of the card. */
   source: ReactNode;
+  /** The engine's working for the calculator's plan. */
+  explanation: Result<Explanation>;
+  plan: Plan;
 };
 
 type Row = { day: number; coupon: number; principal: number; last: boolean };
@@ -45,7 +51,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name, source }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan }: IssueCardProps) {
   const { issue } = bond;
   const floater = issue.couponType === "floater";
   const narrow = useBreakpoint() === "narrow";
@@ -126,6 +132,9 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
         {bond.subordinated && <Tag tone="warning">{t.tagSubordinated}</Tag>}
         {bond.qualifiedOnly && <Tag tone="warning">{t.tagQualified}</Tag>}
       </div>
+
+      <Risks t={t} f={f} bond={bond} derived={d} />
+      <HonestYield t={t} f={f} explanation={explanation} plan={plan} />
 
       <section className="block" aria-labelledby="figures-h">
         <h3 id="figures-h" className="block__title">

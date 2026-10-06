@@ -23,6 +23,10 @@ export type Sector = (typeof SECTORS)[number];
 
 export type CouponKind = "fixed" | "key_rate" | "ruonia" | "linker";
 
+export const OUTLOOKS = ["stable", "positive", "negative"] as const;
+/** Where the fictional agency expects the issuer's rating to go. */
+export type Outlook = (typeof OUTLOOKS)[number];
+
 /** Who issued it: the synthetic treasury, or a fictional company named
  * after a place and its line of business. */
 export type Issuer = { code: string; kind: "government" } | { code: string; kind: "corporate"; place: Place; sector: Exclude<Sector, "government"> };
@@ -34,6 +38,8 @@ export type Bond = {
   issuer: Issuer;
   /** On the synthetic scale. */
   rating: Rating;
+  /** The issuer's rating outlook. */
+  outlook: Outlook;
   coupon: {
     kind: CouponKind;
     /** Over the key rate or RUONIA, percent. */
@@ -76,6 +82,7 @@ type RawIssue = {
   place: string;
   sector: string;
   rating: string;
+  outlook: string;
   coupon: Bond["coupon"];
   offer: Bond["offer"];
   subordinated: boolean;
@@ -91,13 +98,15 @@ type RawIssue = {
 const isPlace = (x: string): x is Place => (PLACES as readonly string[]).includes(x);
 const isSector = (x: string): x is Sector => (SECTORS as readonly string[]).includes(x);
 const isRating = (x: string): x is Rating => (RATINGS as readonly string[]).includes(x);
+const isOutlook = (x: string): x is Outlook => (OUTLOOKS as readonly string[]).includes(x);
 
-/** Reads the generator's JSON. Throws on a place, sector or rating the
+/** Reads the generator's JSON. Throws on a place, sector, rating or outlook the
  * interface has no words for, so a generator change cannot show a blank. */
 export function parseUniverse(json: string): Universe {
   const raw = JSON.parse(json) as { seed: number; inputs: MacroInputs; issues: RawIssue[] };
   const bonds = raw.issues.map((r): Bond => {
     if (!isRating(r.rating)) throw new Error(`${r.ticker}: unknown rating ${r.rating}`);
+    if (!isOutlook(r.outlook)) throw new Error(`${r.ticker}: unknown outlook ${r.outlook}`);
     let issuer: Issuer;
     if (r.segment === "government") issuer = { code: r.issuer, kind: "government" };
     else {
@@ -108,6 +117,7 @@ export function parseUniverse(json: string): Universe {
       id: r.ticker,
       issuer,
       rating: r.rating,
+      outlook: r.outlook,
       coupon: r.coupon,
       offer: r.offer,
       subordinated: r.subordinated,

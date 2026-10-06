@@ -47,11 +47,29 @@ Status: early. Performance record, with stamps:
   search, the date and the sort are kept in the URL (`?f=`, `?q=`,
   `?by=`, `?sort=`). The filters are Stoa's FilterBar. A search with no
   match says so and offers to clear the filters.
-- **The issue**: clean and dirty price, accrued interest, yields to
-  maturity and to the offer, the simple yield over the term, Macaulay
-  and modified duration; the payment schedule as an event strip
-  (coupons, amortisation, offer, maturity) and as a table per bond; for
-  a fixed coupon, the dirty price against the yield.
+- **The issue**: first its risks, where the decision is made: the offer
+  (put or call) with its date and a countdown from the valuation date,
+  the schedule of the face value repaid, subordination, a floater's
+  latest coupon resets rebuilt from the Bank of Russia's key rate or
+  RUONIA, the synthetic rating with its outlook (from a fictional
+  agency), who can buy it and what "qualified investors only" means,
+  and liquidity from the synthetic order book against the named
+  thresholds, as a warning when it is thin. Then the yield to maturity
+  and to the offer side by side: as solved from the payments, after the
+  broker's 0.05 percent fee, and after tax and the fee with nothing
+  reinvested, for the calculator's amount, account and other income.
+  "How it is worked out" shows each step: the coupon and the accrued
+  interest, every payment discounted at the solved yield, the yields
+  after the fee and after tax, and the tax per calendar year (coupons,
+  accrued interest paid, the face value repaid, the cost, a loss netted,
+  the base, the parts at 13 and 15 percent), each step citing its rule:
+  the terms of the issue, the engine's convention, or the Tax Code
+  article and the revision it follows. All of it comes from the engine's
+  `explain`. Then clean and dirty price, accrued interest, the simple
+  yield over the term, Macaulay and modified duration; the payment
+  schedule as an event strip (coupons, amortisation, offer, maturity)
+  and as a table per bond; for a fixed coupon, the dirty price against
+  the yield.
 - **The calculator**: amount, holding horizon (with presets for one year,
   the offer and maturity), reinvestment of coupons and of principal
   repaid early, the account (an ordinary brokerage account or an
@@ -131,8 +149,8 @@ What the tests cover, and nothing wider:
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
   Russian and English, each in the light and the dark theme, on:
   the list, a goal with its filters, "Money by a date" with its month,
-  the data and licensing page, an issue with an offer (with
-  the Terms open), a floater, the
+  the data and licensing page, an issue with an offer (with the Terms
+  and the working open), an issue with every risk, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date" and an issue at 375 px.
@@ -149,6 +167,10 @@ What the tests cover, and nothing wider:
   Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
+  At 375 px every table on an issue fits its box, except the working's
+  derivation tables: a formula is one run that does not break, so they
+  scroll inside their own regions, which take the focus and scroll from
+  the keyboard.
 - The header stays in place while the page scrolls under it, and the
   scrollbars are Stoa's.
 
