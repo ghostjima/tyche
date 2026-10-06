@@ -195,7 +195,7 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ runner.temp }}/app/e2e.json
         run: pnpm --filter terminal e2e --reporter=list,json
-      # Lighthouse 12 (a pinned dev dependency) in Playwright's Chromium,
+      # Lighthouse 13 (a pinned dev dependency) in Playwright's Chromium,
       # accessibility, best practices and SEO only: performance on a shared
       # runner measures the runner.
       - name: Lighthouse, desktop and mobile, against vite preview of the build
