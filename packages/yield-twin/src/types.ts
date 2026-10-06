@@ -247,7 +247,7 @@ export type Explanation = {
   price: PriceTrace;
   toMaturity: YieldTrace;
   toOffer: YieldTrace | null;
-  /* The plan as calculate gives it, with the fee as the commission */
+  /* The plan as calculate gives it with the same fee */
   plan: Breakdown;
   planTax: TaxYear[];
 };

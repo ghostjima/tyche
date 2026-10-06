@@ -36,6 +36,7 @@ import type {
   TaxYear,
 } from "./types.js";
 
+/* The usual broker's fee, percent of each trade: what a caller passes when the holder has given none */
 export const COMMISSION_PCT = 0.05;
 export const WORST_CASE_COUPON_PCT = 0.1;
 export const FLOATER_SHIFTS_PCT: readonly number[] = [-2, 0, 2];
@@ -73,7 +74,7 @@ export type Holding = {
   periodDays: number;
   reinvestRate: number;
   exitYield: number;
-  /* The broker's commission, percent of each trade: COMMISSION_PCT in calculate, the fee asked for in explain */
+  /* The broker's commission, percent of each trade: the fee asked for in calculate and in explain */
   commissionPct: number;
   plan: Plan;
 };
@@ -293,7 +294,15 @@ export function checkPlan(d: Derived, plan: Plan): number | ErrorCode {
   return qty < 1 ? "amount_below_one_bond" : qty;
 }
 
-export function calculate(issue: Issue, market: Market, plan: Plan): Result<Calculation> {
+/* A broker's fee in percent must be a finite number of at least zero */
+export const isFee = (feePct: number): boolean => Number.isFinite(feePct) && feePct >= 0;
+
+/*
+  A plan for an issue with a broker's fee in percent of each trade, charged
+  on the purchase and on a sale before redemption. Errors as derive_bond,
+  then the plan's, then invalid_fee
+*/
+export function calculate(issue: Issue, market: Market, plan: Plan, feePct: number): Result<Calculation> {
   if (!isCouponType(issue.couponType) || !isTaxRegime(plan.taxRegime)) {
     return { error: "invalid_code" };
   }
@@ -302,6 +311,7 @@ export function calculate(issue: Issue, market: Market, plan: Plan): Result<Calc
   const d = derived.ok;
   const qty = checkPlan(d, plan);
   if (typeof qty === "string") return { error: qty };
+  if (!isFee(feePct)) return { error: "invalid_fee" };
   const y = d.ytmMaturity;
   const h: Holding = {
     qty,
@@ -312,7 +322,7 @@ export function calculate(issue: Issue, market: Market, plan: Plan): Result<Calc
     periodDays: issue.periodDays,
     reinvestRate: plan.reinvest ? y : 0,
     exitYield: y,
-    commissionPct: COMMISSION_PCT,
+    commissionPct: feePct,
     plan,
   };
 
