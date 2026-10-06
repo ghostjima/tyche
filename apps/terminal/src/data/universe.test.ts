@@ -12,7 +12,7 @@ import { parseUniverse, type Bond } from "./issues";
 import { BONDS, dayJson, fallbackInputs, generate } from "./universe.testing";
 
 /** The digest tests/synth.rs pins for the native build. */
-const DIGEST = "b4cd2d72f1ea47ba";
+const DIGEST = "f5adfa55cefab800";
 
 describe("the synthetic universe", () => {
   it("is the native build's universe, bit for bit, and the same on every run", () => {
@@ -45,6 +45,10 @@ describe("the synthetic universe", () => {
     expect(count((b) => b.offer?.kind === "call")).toBeGreaterThan(2);
     expect(count((b) => b.subordinated)).toBeGreaterThan(2);
     expect(count((b) => b.qualifiedOnly)).toBeGreaterThan(2);
+    // Each issuer's rating has an outlook, mostly stable; the treasury's is.
+    for (const outlook of ["stable", "positive", "negative"] as const) expect(count((b) => b.outlook === outlook), outlook).toBeGreaterThan(0);
+    expect(count((b) => b.outlook === "stable")).toBeGreaterThan(BONDS.length / 2);
+    expect(BONDS.filter((b) => b.issuer.kind === "government").every((b) => b.outlook === "stable")).toBe(true);
   });
 
   it("every issue derives in the twin at the yield it was priced at, within half a price step", () => {

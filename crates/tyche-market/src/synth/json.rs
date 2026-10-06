@@ -66,11 +66,12 @@ pub fn universe_json(u: &Universe) -> String {
         o,
         "\"issuers\":{},",
         list(&u.issuers, |s| format!(
-            "{{\"code\":{},\"place\":{},\"sector\":{},\"rating\":{}}}",
+            "{{\"code\":{},\"place\":{},\"sector\":{},\"rating\":{},\"outlook\":{}}}",
             text(&s.code),
             text(s.place),
             text(s.sector.code()),
-            text(RATINGS[s.rating])
+            text(RATINGS[s.rating]),
+            text(s.outlook.code())
         ))
     );
     o.push_str("\"issues\":[");
@@ -91,7 +92,7 @@ pub fn universe_json(u: &Universe) -> String {
         };
         let _ = write!(
             o,
-            "{{\"ticker\":{},\"segment\":{},\"issuer\":{},\"place\":{},\"sector\":{},\"rating\":{},\
+            "{{\"ticker\":{},\"segment\":{},\"issuer\":{},\"place\":{},\"sector\":{},\"rating\":{},\"outlook\":{},\
 \"coupon\":{{\"kind\":{},\"indexSpreadPct\":{},\"indexRatio\":{}}},\"offer\":{},\"subordinated\":{},\"qualifiedOnly\":{},\
 \"lot\":{},\"tickPct\":{},\"targetYield\":{},\"duration\":{},\
 \"liquidity\":{{\"rank\":{},\"spreadBp\":{},\"depth\":{},\"tradesPerDay\":{},\"morning\":{},\"evening\":{}}},\
@@ -103,6 +104,7 @@ pub fn universe_json(u: &Universe) -> String {
             text(issuer.place),
             text(issuer.sector.code()),
             text(RATINGS[s.rating]),
+            text(issuer.outlook.code()),
             text(s.kind.code()),
             num(s.index_spread_pct, 4),
             num(s.index_ratio, 4),

@@ -23,7 +23,9 @@ on aggregate figures only.
   fictional companies in ten sectors. Fixed coupons, floaters on the key
   rate and on RUONIA, inflation-linked issues, amortising issues, put and
   call offers, subordinated issues, a qualified-investors-only flag, and
-  ratings on a synthetic AAA to B scale with no agency.
+  ratings on a synthetic AAA to B scale with no agency, each issuer's with
+  an outlook (stable, positive or negative, drawn from a stream of its
+  own, a negative one likelier below BBB-).
 - **Prices consistent with yields.** An issue's yield is the
   zero-coupon yield curve of federal loan bonds (the Bank of Russia's
   figures, passed in as `Inputs`) at the issue's duration, plus a

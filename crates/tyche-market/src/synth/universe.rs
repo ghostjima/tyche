@@ -181,6 +181,30 @@ impl CouponKind {
     }
 }
 
+/// Where the fictional agency expects an issuer's synthetic rating to go.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Outlook {
+    Stable,
+    Positive,
+    Negative,
+}
+
+impl Outlook {
+    pub fn code(self) -> &'static str {
+        match self {
+            Outlook::Stable => "stable",
+            Outlook::Positive => "positive",
+            Outlook::Negative => "negative",
+        }
+    }
+}
+
+/// The shares of stable, positive and negative outlooks among corporate
+/// issuers rated BBB- and above, and below it (assumptions: most outlooks
+/// are stable, and a negative one is likelier lower on the scale).
+const OUTLOOK_WEIGHTS: [f64; 3] = [0.78, 0.12, 0.10];
+const OUTLOOK_WEIGHTS_LOW: [f64; 3] = [0.70, 0.08, 0.22];
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OfferKind {
     /// The holder may sell the bond back to the issuer at face value.
@@ -214,6 +238,8 @@ pub struct Issuer {
     pub sector: Sector,
     /// Index into [`RATINGS`].
     pub rating: usize,
+    /// The synthetic rating's outlook; stable for the treasury.
+    pub outlook: Outlook,
 }
 
 /// How an issue trades: the base of the day's simulation and the
@@ -363,6 +389,7 @@ pub fn generate(seed: u64, inputs: &Inputs) -> Result<Universe, InputError> {
         place: "",
         sector: Sector::Government,
         rating: 0,
+        outlook: Outlook::Stable,
     }];
     let mut shapes = Vec::new();
 
@@ -438,6 +465,7 @@ pub fn generate(seed: u64, inputs: &Inputs) -> Result<Universe, InputError> {
             place,
             sector,
             rating: rng.weighted(&weights),
+            outlook: Outlook::Stable,
         });
         let count = 1 + rng.weighted(&[0.35, 0.35, 0.2, 0.1]);
         for n in 0..count {
@@ -475,6 +503,19 @@ pub fn generate(seed: u64, inputs: &Inputs) -> Result<Universe, InputError> {
                 subordinated,
             });
         }
+    }
+
+    // Outlooks from a stream of their own per issuer, so the rest of the
+    // universe is what it was before issuers had one.
+    for (index, issuer) in issuers.iter_mut().enumerate().skip(1) {
+        let mut r = Rng::new(derive(seed, &[5, index as u64]));
+        let weights = if issuer.rating <= 9 {
+            &OUTLOOK_WEIGHTS
+        } else {
+            &OUTLOOK_WEIGHTS_LOW
+        };
+        issuer.outlook =
+            [Outlook::Stable, Outlook::Positive, Outlook::Negative][r.weighted(weights)];
     }
 
     let market = Market {
