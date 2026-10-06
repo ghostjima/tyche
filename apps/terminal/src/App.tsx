@@ -40,7 +40,7 @@ const readIssue = (): string | null => {
 
 /** The history entry's mark for an issue opened over the list on a narrow
  * screen. */
-const PUSHED = "horkosIssue";
+const PUSHED = "tycheIssue";
 
 /** Keeps the open issue in ?issue=, so a reload or a link opens it. With
  * `push`, as a new history entry, so the browser's Back returns to the
@@ -106,7 +106,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   }, [engine]);
 
   useEffect(() => {
-    if (items && performance.getEntriesByName("horkos:list-ready").length === 0) performance.mark("horkos:list-ready");
+    if (items && performance.getEntriesByName("tyche:list-ready").length === 0) performance.mark("tyche:list-ready");
   }, [items]);
 
   const visible = useMemo(() => (items ? sortItems(applyQuery(items, query, textsOf), sort) : []), [items, query, sort, t]);

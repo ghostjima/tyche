@@ -1,17 +1,18 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="ru" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Fictional Russian bond issues: yields, payment schedules and a holding calculator, computed in the browser by a Rust engine in WebAssembly. In English, Russian and Arabic." />
+    <meta name="description" content="Вымышленные выпуски российских облигаций: доходность, график выплат и калькулятор владения, посчитанные в браузере движком на Rust в WebAssembly. На русском и английском." />
     <!-- No icon yet; an empty one keeps the browser from asking for /favicon.ico. -->
     <link rel="icon" href="data:," />
-    <title>Tyche Bonds</title>
+    <title>Tyche Облигации</title>
     <script>
-      // The language, its direction and the theme before the first paint,
-      // read as the app reads them (?lang= and ?theme= first, then the last
-      // visit's choice), so an Arabic page is laid out right to left and a
-      // dark one drawn dark from the start. The app applies them again.
+      // The language and the theme before the first paint, read as the app
+      // reads them (?lang= and ?theme= first, then the last visit's choice,
+      // then Russian and the system theme), so the page is in its language
+      // and a dark one is drawn dark from the start. The app applies them
+      // again.
       (function () {
         var query = new URLSearchParams(location.search);
         var stored = function (key) {
@@ -27,10 +28,8 @@
           return allowed.indexOf(kept) >= 0 ? kept : fallback;
         };
         var root = document.documentElement;
-        var lang = pick(query.get("lang"), "horkos-bonds.lang", ["en", "ru", "ar"], "en");
-        root.lang = lang;
-        root.dir = lang === "ar" ? "rtl" : "ltr";
-        var theme = pick(query.get("theme"), "horkos-bonds.theme", ["system", "light", "dark"], "system");
+        root.lang = pick(query.get("lang"), "tyche.lang", ["ru", "en"], "ru");
+        var theme = pick(query.get("theme"), "tyche.theme", ["system", "light", "dark"], "system");
         if (theme !== "system") root.dataset.theme = theme;
       })();
     </script>

@@ -1,60 +1,56 @@
-// Arabic from the first paint: the page's language and direction are set
-// by the HTML itself, before any script module runs, and the Arabic face
-// is preloaded only when the page is in Arabic.
+// The language from the first paint, and the faces the page loads: the
+// page's language is set by the HTML itself, before any script module
+// runs, Russian unless the link or the last visit says otherwise; only
+// the Latin and Cyrillic faces are fetched.
 import { expect, test } from "@playwright/test";
 import { ready } from "./helpers";
 
-test("lang and dir come from the link or the last visit before the app's script runs", async ({ page }) => {
+test("lang comes from the link or the last visit before the app's script runs, Russian otherwise", async ({ page }) => {
   // No module script at all: what is left is the HTML and its inline script.
   await page.route(/\/assets\/.*\.js$/, (route) => route.abort());
   await page.route(/\/src\/.*$/, (route) => route.abort());
-  await page.goto("/?lang=ar&theme=dark");
   const html = page.locator("html");
-  await expect(html).toHaveAttribute("lang", "ar");
-  await expect(html).toHaveAttribute("dir", "rtl");
-  await expect(html).toHaveAttribute("data-theme", "dark");
-
-  await page.evaluate(() => localStorage.setItem("horkos-bonds.lang", "ru"));
   await page.goto("/");
   await expect(html).toHaveAttribute("lang", "ru");
   await expect(html).toHaveAttribute("dir", "ltr");
-  await page.goto("/?lang=xx");
-  await expect(html).toHaveAttribute("lang", "ru");
-});
 
-test("the Arabic faces are preloaded in Arabic only, and used", async ({ page }) => {
-  const preloads = () => page.locator('link[rel="preload"][as="font"]').evaluateAll((links) => links.map((l) => (l as HTMLLinkElement).href));
+  await page.goto("/?lang=en&theme=dark");
+  await expect(html).toHaveAttribute("lang", "en");
+  await expect(html).toHaveAttribute("data-theme", "dark");
+
+  await page.evaluate(() => localStorage.setItem("tyche.lang", "en"));
+  await page.goto("/");
+  await expect(html).toHaveAttribute("lang", "en");
+  // A language the product does not have is ignored, as is the old key.
   await page.goto("/?lang=ar");
-  await ready(page);
-  // The words' face, and the digits' face of the numeric stack.
-  const ar = await preloads();
-  expect(ar).toHaveLength(2);
-  expect(ar[0]).toMatch(/ibm-plex-sans-arabic-arabic-400-normal.*\.woff2$/);
-  expect(ar[1]).toMatch(/noto-sans-arabic-arabic-400-normal.*\.woff2$/);
-  // Each preloaded file is the one the page's font face uses, so none is
-  // fetched twice.
-  for (const name of ["ibm-plex-sans-arabic-arabic-400-normal", "noto-sans-arabic-arabic-400-normal"]) {
-    const fetched = await page.evaluate((n) => performance.getEntriesByType("resource").filter((e) => e.name.includes(n)).length, name);
-    expect(fetched, name).toBe(1);
-  }
-  await page.goto("/?lang=en");
-  await ready(page);
-  expect(await preloads()).toEqual([]);
+  await expect(html).toHaveAttribute("lang", "en");
+  await page.evaluate(() => {
+    localStorage.removeItem("tyche.lang");
+    localStorage.setItem("horkos-bonds.lang", "en");
+  });
+  await page.goto("/");
+  await expect(html).toHaveAttribute("lang", "ru");
+  await expect(html).toHaveAttribute("dir", "ltr");
 });
 
-test("in Arabic the filter chips keep their height when the numeric face arrives", async ({ page }) => {
-  let release = () => {};
-  const held = new Promise<void>((resolve) => (release = resolve));
-  await page.route(/noto-sans-arabic.*\.woff2$/, async (route) => {
-    await held;
-    await route.continue();
+test("no font is preloaded, and no Arabic face is fetched", async ({ page }) => {
+  const fonts: string[] = [];
+  page.on("request", (request) => {
+    if (request.resourceType() === "font") fonts.push(request.url());
   });
-  await page.goto("/?lang=ar", { waitUntil: "commit" });
-  await ready(page);
-  const chip = page.locator(".stoa-filter-chip").first();
-  const before = (await chip.boundingBox())!.height;
-  release();
-  await page.waitForFunction(() => [...document.fonts].some((f) => f.family.includes("Noto Sans Arabic") && f.status === "loaded"));
-  await page.waitForTimeout(100);
-  expect((await chip.boundingBox())!.height).toBe(before);
+  for (const lang of ["ru", "en"]) {
+    await page.goto(`/?lang=${lang}`);
+    await ready(page);
+    expect(await page.locator('link[rel="preload"][as="font"]').count(), lang).toBe(0);
+  }
+  await page.evaluate(() => document.fonts.ready);
+  expect(fonts.length).toBeGreaterThan(0);
+  expect(fonts.filter((url) => /arabic/i.test(url))).toEqual([]);
+  // The bundle declares no Arabic face to download either. (Stoa's styles
+  // keep local metric fallbacks for Arabic, which fetch nothing.)
+  const faces = await page.evaluate(() =>
+    [...document.styleSheets].flatMap((s) => [...s.cssRules].filter((r) => r instanceof CSSFontFaceRule).map((r) => r.cssText)),
+  );
+  expect(faces.length).toBeGreaterThan(0);
+  expect(faces.filter((f) => /arabic/i.test(f) && /url\(/.test(f))).toEqual([]);
 });

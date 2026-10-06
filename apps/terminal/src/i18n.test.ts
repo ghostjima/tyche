@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ERROR_CODES } from "./engine/types";
-import { LANGS, strings, type Strings } from "./i18n";
+import { LANGS, LANG_STORE, LOCALES, THEME_STORE, strings, type Strings } from "./i18n";
 
 type Leaf = string | ((...a: string[]) => string);
 
@@ -15,7 +15,18 @@ const shape = (s: Strings) => leaves(s).map(([k, v]) => `${k}:${typeof v}${typeo
 const rendered = (s: Strings) => leaves(s).map(([k, v]) => [k, typeof v === "function" ? v("@1", "@2", "@3") : v] as const);
 
 describe("interface strings", () => {
-  it("English, Russian and Arabic have the same keys, with the same kinds of value", () => {
+  it("Russian is the first language and the default, English the second, and there is no other", () => {
+    expect(LANGS).toEqual(["ru", "en"]);
+    expect(Object.keys(strings).sort()).toEqual(["en", "ru"]);
+    expect(LOCALES).toEqual({ ru: "ru-RU", en: "en-US" });
+  });
+
+  it("the choices are kept under the product's own storage keys", () => {
+    expect(LANG_STORE).toEqual({ param: "lang", storageKey: "tyche.lang" });
+    expect(THEME_STORE).toEqual({ param: "theme", storageKey: "tyche.theme" });
+  });
+
+  it("Russian and English have the same keys, with the same kinds of value", () => {
     for (const lang of LANGS) expect(shape(strings[lang]), lang).toEqual(shape(strings.en));
   });
 
@@ -32,13 +43,8 @@ describe("interface strings", () => {
     for (const lang of LANGS)
       for (const [k, v] of rendered(strings[lang])) {
         expect(v.trim(), `${lang}.${k}`).not.toBe("");
-        expect(v.replace(/@\d/g, ""), `${lang}.${k}`).not.toMatch(/[0-9٠-٩]/);
+        expect(v.replace(/@\d/g, ""), `${lang}.${k}`).not.toMatch(/[0-9]/);
       }
-  });
-
-  // The product name is never translated; every other Arabic string is Arabic.
-  it("Arabic has no Latin letters apart from the product name", () => {
-    for (const [k, v] of rendered(strings.ar)) expect(v.replace(/@\d/g, "").replace(/\bTyche\b/g, ""), `ar.${k}`).not.toMatch(/[A-Za-z]/);
   });
 
   it("every engine error code has a message in each language", () => {
@@ -51,8 +57,7 @@ describe("interface strings", () => {
       for (const text of [strings[lang].title, strings[lang].subtitle]) {
         expect(text.endsWith("."), `${lang}: ${text}`).toBe(false);
         const first = text[0]!;
-        // Arabic has no case; Latin and Cyrillic start upper-case.
-        if (lang !== "ar") expect(first, `${lang}: ${text}`).toBe(first.toLocaleUpperCase());
+        expect(first, `${lang}: ${text}`).toBe(first.toLocaleUpperCase());
       }
     }
   });
