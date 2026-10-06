@@ -3,6 +3,7 @@
 // floater's key-rate scenarios and, for an issue with an offer, selling
 // back against holding on. The engine computes everything; an error code
 // it returns is shown as a sentence, with a way back to valid inputs.
+import type { ReactNode } from "react";
 import {
   Button,
   ButtonGroup,
@@ -41,6 +42,8 @@ export type CalculatorProps = {
   plan: PlanInput;
   onPlan: (p: PlanInput) => void;
   result: Result<Calculation>;
+  /** Where the figures come from, at the top of the calculator. */
+  source: ReactNode;
 };
 
 type Line = { id: string; label: string; value: number; total?: boolean };
@@ -51,7 +54,7 @@ export function annualText(t: Strings, f: Formats, b: Breakdown): string {
   return b.annualPct === null ? t.overPeriod(f.percent(b.periodPct / 100)) : f.percent(b.annualPct / 100);
 }
 
-export function Calculator({ t, f, derived: d, floater, plan, onPlan, result }: CalculatorProps) {
+export function Calculator({ t, f, derived: d, floater, plan, onPlan, result, source }: CalculatorProps) {
   const set = (patch: Partial<PlanInput>) => onPlan({ ...plan, ...patch });
   const pp = (v: number) => t.shiftValue(f.decimalSigned(v, 1));
   const horizonText = (day: number) =>
@@ -68,6 +71,7 @@ export function Calculator({ t, f, derived: d, floater, plan, onPlan, result }: 
 
   return (
     <Panel title={t.calculator} className="calculator">
+      {source}
       <div className="calc-inputs">
         <NumberField label={t.amount} value={plan.amount} onChange={(amount) => set({ amount })} minValue={0} />
         <div className="calc-horizon">

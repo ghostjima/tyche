@@ -22,6 +22,8 @@ describe("formats", () => {
   it("writes dates from the valuation date", () => {
     expect(en.date(0)).toBe("Oct 5, 2026");
     expect(en.date(365)).toBe("Oct 5, 2027");
+    expect(en.month("2026-08")).toBe("August 2026");
+    expect(formats("ru-RU").month("2026-08")).toBe("август 2026 г.");
   });
 
   it("writes terms in years and months with the locale's plurals", () => {

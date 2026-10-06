@@ -1,6 +1,7 @@
 // One issue: what it is, its derived figures, its payment schedule as an
 // event strip and a table, and for a fixed coupon how its price depends on
 // the yield.
+import type { ReactNode } from "react";
 import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
@@ -16,6 +17,8 @@ export type IssueCardProps = {
   derived: Derived;
   engine: Engine;
   name: string;
+  /** Where the figures come from, at the top of the card. */
+  source: ReactNode;
 };
 
 type Row = { day: number; coupon: number; principal: number; last: boolean };
@@ -43,7 +46,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source }: IssueCardProps) {
   const { issue } = bond;
   const floater = issue.couponType === "floater";
   const narrow = useMediaQuery(NARROW);
@@ -108,6 +111,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
 
   return (
     <Panel title={name} className="issue-card">
+      {source}
       <p className="issue-card__id">
         <Ltr mono>{bond.id}</Ltr>
       </p>

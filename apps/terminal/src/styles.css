@@ -85,3 +85,17 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .diagnostics { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .diagnostics > * { max-inline-size: 100%; }
 .timing-call { display: grid; }
+
+/* Where a widget's figures come from, at its top. */
+.source-note { margin: 0 0 var(--stoa-space-3); color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
+.source-note a { color: inherit; }
+.calculator .source-note + .source-note { margin-block-start: calc(-1 * var(--stoa-space-2)); }
+
+/* The demo banner sits in the header on every screen. */
+.demo-banner { font-weight: var(--stoa-font-weight-semibold); color: var(--stoa-color-text); }
+
+.benchmarks { display: grid; gap: var(--stoa-space-3); }
+.data-page { display: grid; gap: var(--stoa-space-4); max-inline-size: 72rem; }
+.data-page__title { margin: 0; font-size: var(--stoa-font-size-xl); font-weight: var(--stoa-font-weight-semibold); }
+.data-page__intro, .data-page__text { margin: 0; }
+.data-page__title:focus-visible { outline: 2px solid var(--stoa-color-focus); outline-offset: 2px; }

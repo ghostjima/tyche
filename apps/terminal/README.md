@@ -60,6 +60,17 @@ Status: early. Performance record, with stamps:
   input recalculates at once. An error the engine returns (an amount of
   zero, one that does not buy a bond, one over the limit) is a sentence
   with a way back to valid inputs.
+- **Sources**: a source label at the top of every widget: SIM for the
+  synthetic universe (the list, the issue card, the calculator), the
+  Bank of Russia with the snapshot's date and a link to cbr.ru (the
+  calculator's key rate, and the Bank of Russia benchmarks: the key
+  rate, RUONIA, inflation and the zero-coupon yield curve, with the
+  Moscow Exchange credited for the curve). The header carries a
+  banner on every screen: "Демонстрация. Данные синтетические. Не
+  является инвестиционной рекомендацией." ("Demonstration. The data are
+  synthetic. Not investment advice."). "Данные и лицензии" ("Data and
+  licensing", `?page=data`, linked from every SIM label and the foot)
+  lists every source, its terms and what is synthetic.
 - **Terms**: local terms keep their names (OFZ, key rate, LDV, IIS type
   B, offer); the inputs that use them say what they mean, and a Terms
   section explains each in a line.
@@ -92,7 +103,8 @@ dates are written through Intl in the language's locale. The theme is
 System, Light or Dark, System by default. Both are kept in the URL
 (`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage, under
 `tyche.lang` and `tyche.theme`. `?issue=TICKER` opens an issue,
-`?engine=twin` starts on the TypeScript engine.
+`?page=data` the data and licensing page, `?engine=twin` starts on the
+TypeScript engine.
 
 ## Accessibility
 
@@ -100,7 +112,8 @@ What the tests cover, and nothing wider:
 
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
   Russian and English, each in the light and the dark theme, on:
-  the list, an issue with an offer (with the Terms open), a floater, the
+  the list, the data and licensing page, an issue with an offer (with
+  the Terms open), a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list and an issue at 375 px.
@@ -108,7 +121,9 @@ What the tests cover, and nothing wider:
   stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
   close it; on a phone, the page's Back button and the browser's Back
-  both return to the list, with focus on the issue's row. The
+  both return to the list, with focus on the issue's row; a source
+  label's link opens the data page with focus on its heading, and its
+  Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
 - The header stays in place while the page scrolls under it, and the
