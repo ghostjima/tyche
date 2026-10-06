@@ -2,13 +2,15 @@
 //! the dirty price is made of the clean price and the accrued interest,
 //! how the yields to maturity and to the offer are solved from the cash
 //! flows, the yields after a broker's fee, what holding to each event
-//! leaves after tax and the fee without reinvesting anything, and the tax
-//! year by year.
+//! leaves after tax and the fee without reinvesting anything, the
+//! G-spread of each yield to the zero-coupon curve, and the tax year by
+//! year.
 
 use crate::calculate::{check_plan, Hold, Sale, TaxYear};
 use crate::date::parse_iso_date;
 use crate::issue::{derive_bond, Error, Issue, Market, Schedule};
 use crate::primitives::{ytm_effective, YEAR};
+use crate::spread::{spread_of, Curve, GSpread};
 use crate::{Breakdown, Plan};
 
 /// How the dirty price of one bond is made.
@@ -73,6 +75,9 @@ pub struct YieldTrace {
     pub price_with_fee: f64,
     /// The yield solved at `price_with_fee`.
     pub ytm_after_fee: f64,
+    /// The G-spread of `ytm` to the zero-coupon curve, at the Macaulay
+    /// duration of these flows.
+    pub g_spread: GSpread,
     /// The plan's amount held to the event: nothing reinvested, the fee
     /// on the purchase, tax in the plan's account with the plan's other
     /// income. Its `annual_pct` is the yield after tax and the fee without
@@ -100,21 +105,24 @@ pub struct Explanation {
     pub plan_tax: Vec<TaxYear>,
 }
 
-/// Works out an issue's figures for a plan and a broker's fee in percent
-/// of each trade. Errors as [`calculate`](crate::calculate), then
-/// [`Error::InvalidFee`] for a fee that is not a finite number of at least
-/// zero.
+/// Works out an issue's figures for a plan, a broker's fee in percent of
+/// each trade and the zero-coupon curve the G-spreads are taken against.
+/// Errors as [`calculate`](crate::calculate), then [`Error::InvalidFee`]
+/// for a fee that is not a finite number of at least zero, then the
+/// curve's ([`Curve::check`]).
 pub fn explain(
     issue: &Issue,
     market: &Market,
     plan: &Plan,
     fee_pct: f64,
+    curve: &Curve,
 ) -> Result<Explanation, Error> {
     let d = derive_bond(issue, market)?;
     let qty = check_plan(&d, plan)?;
     if !(fee_pct.is_finite() && fee_pct >= 0.0) {
         return Err(Error::InvalidFee);
     }
+    curve.check()?;
     let today = parse_iso_date(&market.valuation_date).ok_or(Error::InvalidDate)?;
     let ctx = Context {
         qty,
@@ -177,6 +185,7 @@ pub fn explain(
             present_value,
             price_with_fee,
             ytm_after_fee: ytm_effective(&flows.amounts(), &flows.days, price_with_fee),
+            g_spread: spread_of(flows, ytm, curve),
             held,
             tax,
         }

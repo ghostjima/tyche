@@ -11,7 +11,10 @@
 //! - [`explain`]: the working behind those figures, for a screen to show:
 //!   the price and the accrued interest, the yields solved from the
 //!   discounted flows, the yields after a broker's fee and after tax
-//!   without reinvestment, and the tax year by year.
+//!   without reinvestment, the G-spreads, and the tax year by year.
+//! - [`g_spread`]: an issue's yields to maturity and to the offer over the
+//!   zero-coupon yield curve of federal loan bonds, at their Macaulay
+//!   durations, the curve read linearly between its published terms.
 //!
 //! Days are offsets from the valuation date, ACT/365. Invalid inputs give
 //! a typed [`Error`] at the issue level and NaN in the primitives; nothing
@@ -60,6 +63,7 @@ pub mod date;
 mod explain;
 mod issue;
 pub mod primitives;
+mod spread;
 #[cfg(feature = "wasm")]
 mod wasm;
 
@@ -75,3 +79,4 @@ pub use issue::{
     Schedule,
 };
 pub use primitives::*;
+pub use spread::{g_spread, Curve, GSpread, GSpreads};
