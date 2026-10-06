@@ -4,8 +4,10 @@
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 [![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue.svg)](Cargo.toml)
 
-A bond terminal for retail investors in Russian bonds, in the browser:
-from the investor's goal to the order, with the risk of an issue shown at
+## In one minute
+
+Tyche Bonds is a bond terminal for retail investors in Russian bonds, in
+the browser: from the investor's goal to the order, with the risk of an issue shown at
 the moment the decision is made and the yield shown honestly, after tax
 and fees and without hidden reinvestment. It is for a non-qualified
 investor looking for an alternative to a deposit, and for an active
@@ -20,20 +22,30 @@ issues (a list, an issue card and a holding calculator) on the engine;
 the terminal's flows are being built on top of it (see
 [What comes next](#what-comes-next)). Not investment advice.
 
-## The problem
+## Problem
 
-- A study of twelve Russian broker apps (Markswebb, Digital Investment
-  Rank 2025) found no app with a good bond-selection scenario, and
-  pointed to deposit marketplaces as the reference.
-- The Bank of Russia counted 163 thousand retail investors holding
-  defaulted bonds in 2025, against 48 thousand in 2024.
-- The pains investors document are concrete: a missed offer date,
-  amortisation they did not see, a "qualified investors only" flag shown
-  wrongly, an issue they cannot sell, and an effective yield that assumes
-  reinvestment and ignores tax.
-- Independent tools (Dohod, BondRadar) offer goal presets, ladders and
-  coupon calendars, and the Moscow Exchange launched its own screener in
-  July 2026; none of them runs from the goal to the order in one flow.
+- A study of twelve Russian broker apps found that bonds matter more and
+  more to investors, but the market has no good scenario for choosing
+  them, and pointed to financial marketplaces, where choosing a deposit
+  is simple, as the reference
+  ([Markswebb, Digital Investment Rank 2025](https://www.markswebb.ru/upload/iblock/uploads/Markswebb_Digital_Investment_Rank_2025.pdf)).
+- In 2025, 163 thousand individuals made deals in problem bonds, against
+  48 thousand in 2024, according to the Bank of Russia's review of
+  financial instruments for 2025
+  ([Expert, 13 March 2026](https://expert.ru/news/tsb-zafiksiroval-rost-chisla-postradavshikh-chastnykh-investorov-ot-defoltov-po-obligatsiyam/)).
+- The pains investors document are concrete: a missed offer date
+  ([Smart-Lab](https://smart-lab.ru/blog/975506.php)), amortisation and
+  coupon resets they did not see, and an effective yield that assumes
+  reinvestment and ignores tax
+  ([T-Journal](https://t-j.ru/list/hidden-bond-threats/)); a "qualified
+  investors only" flag shown wrongly
+  ([Smart-Lab](https://smart-lab.ru/blog/1020934.php)); an issue they
+  cannot sell.
+- Independent tools ([Dohod](https://dohod.ru/analytic/bonds),
+  [BondRadar](https://bondradar.pro/)) offer goal presets, ladders and
+  coupon calendars, and the Moscow Exchange launched its own screener on
+  13 July 2026 ([Moscow Exchange](https://www.moex.com/n102042)); none of
+  them runs from the goal to the order in one flow.
 
 ## Users and workflows
 
@@ -160,7 +172,7 @@ design system of this product and of Ariadne Desk.
 - Russian as the first language; Arabic leaves the product and stays in
   Stoa.
 
-## Validation plan and target metrics (hypotheses)
+## Validation plan and target metrics
 
 None of these has been measured yet; each is a hypothesis to test on the
 prototype, and its target is set only after a first baseline.
@@ -185,23 +197,23 @@ prototype, and its target is set only after a first baseline.
 
 Published by CI from each green run on `main` to the `badges` branch;
 the commit that branch's latest entry names is the commit measured. What
-each badge counts is under [Badges](#badges).
+each badge counts is under [Badges](#what-each-badge-counts).
 
-[![tyche-yield tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/yield-tests.json)](#badges)
-[![twin tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/twin-tests.json)](#badges)
-[![parity](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/parity.json)](#badges)
-[![tyche-yield wasm gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/yield-wasm-size.json)](#badges)
-[![tyche-market tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/market-tests.json)](#badges)
-[![tyche-market wasm gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/market-wasm-size.json)](#badges)
-[![unit tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/unit-tests.json)](#badges)
-[![e2e](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/e2e.json)](#badges)
-[![axe](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/axe.json)](#badges)
-[![Lighthouse accessibility](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-accessibility.json)](#badges)
-[![Lighthouse best practices](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-best-practices.json)](#badges)
-[![Lighthouse SEO](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-seo.json)](#badges)
-[![bundle gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/bundle-size.json)](#badges)
+[![tyche-yield tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/yield-tests.json)](#what-each-badge-counts)
+[![twin tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/twin-tests.json)](#what-each-badge-counts)
+[![parity](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/parity.json)](#what-each-badge-counts)
+[![tyche-yield wasm gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/yield-wasm-size.json)](#what-each-badge-counts)
+[![tyche-market tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/market-tests.json)](#what-each-badge-counts)
+[![tyche-market wasm gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/market-wasm-size.json)](#what-each-badge-counts)
+[![unit tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/unit-tests.json)](#what-each-badge-counts)
+[![e2e](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/e2e.json)](#what-each-badge-counts)
+[![axe](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/axe.json)](#what-each-badge-counts)
+[![Lighthouse accessibility](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-accessibility.json)](#what-each-badge-counts)
+[![Lighthouse best practices](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-best-practices.json)](#what-each-badge-counts)
+[![Lighthouse SEO](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/lighthouse-seo.json)](#what-each-badge-counts)
+[![bundle gzip](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ghostjima/tyche/badges/bundle-size.json)](#what-each-badge-counts)
 
-### Badges
+### What each badge counts
 
 `scripts/badges.mjs` builds them from the run's own output and stops,
 publishing nothing, when a value cannot be read or a run did not pass.
