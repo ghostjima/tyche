@@ -95,8 +95,10 @@ single-issue calculator: see [What is built](#what-is-built).
     exchange is committed.
   - The Bank of Russia's key rate, RUONIA, the zero-coupon curve of
     federal loan bonds (calculated by the Moscow Exchange) and inflation
-    may be used as snapshots with a link to cbr.ru, crediting the Moscow
-    Exchange for the curve.
+    are used as a snapshot ([`data/cbr`](data/cbr)) with a link to
+    cbr.ru, as its terms of use ask, crediting the Moscow Exchange for
+    the curve. A scheduled job takes a new snapshot every day; the app
+    moves to it through a pull request.
   - No Moscow Exchange market data is stored or displayed, and there is
     no live exchange mode in the browser.
   - No ratings from rating agencies (АКРА, Эксперт РА) and no data from
@@ -160,15 +162,19 @@ single-issue calculator: see [What is built](#what-is-built).
   only; priced by the bond engine from the zero-coupon yield curve. The
   app runs its WebAssembly build in a worker. The IEX decoding stays
   behind a feature for its tests; the product does not use it.
+- **The Bank of Russia snapshot** ([`data/cbr`](data/cbr)): the key
+  rate, RUONIA, the zero-coupon yield curve and inflation, each with the
+  URL it was read from and when, taken by a script
+  (`scripts/cbr-snapshot.mjs`) that a scheduled workflow runs every day
+  into the `cbr-data` branch.
 
 The interface is built on [Stoa](https://github.com/ghostjima/stoa), the
 design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The Bank of Russia snapshot, taken by a scheduled job, with the
-  source on every widget, the demo banner and the "Data and licensing"
-  page.
+- The source on every widget, the demo banner and the "Data and
+  licensing" page.
 - Goal-first selection; the issue card with the risk and the yield after
   tax and fees, with the working shown; comparison; the order ticket
   against a synthetic order book; events.
@@ -258,7 +264,8 @@ CI also checks the minimum supported Rust version, 1.85, with `cargo
 | `crates/tyche-yield` | the bond engine (Rust, WebAssembly) and its parity tests (`node/`) |
 | `packages/yield-twin` | the engine's TypeScript twin, `@tyche/yield-twin` |
 | `crates/tyche-market` | the synthetic market and the order book (Rust, WebAssembly); IEX replay behind a feature |
-| `scripts` | the house-style check and the badge builder |
+| `data/cbr` | the Bank of Russia snapshot the app is built on |
+| `scripts` | the house-style check, the badge builder and the Bank of Russia snapshot |
 
 A Cargo workspace and a pnpm workspace share the root. The app links
 Stoa from a sibling checkout (`../stoa`, built); how to build and test

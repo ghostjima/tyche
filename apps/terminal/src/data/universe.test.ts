@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { derive_bond } from "@tyche/yield-twin";
 import { strings } from "../i18n";
 import { issuerName } from "../lib/names";
-import { MACRO, MARKET, SEED } from "./market";
+import { MACRO, MARKET, SEED, SNAPSHOT } from "./market";
 import { parseUniverse, type Bond } from "./issues";
 import { BONDS, dayJson, fallbackInputs, generate } from "./universe.testing";
 
@@ -16,14 +16,18 @@ const DIGEST = "b4cd2d72f1ea47ba";
 
 describe("the synthetic universe", () => {
   it("is the native build's universe, bit for bit, and the same on every run", () => {
-    expect(generate().digest).toBe(DIGEST);
+    // On the figures the crate's digests are pinned to.
+    expect(generate(SEED, fallbackInputs()).digest).toBe(DIGEST);
     expect(generate()).toEqual(generate());
-    expect(generate(SEED + 1).digest).not.toBe(DIGEST);
+    expect(generate(SEED + 1).digest).not.toBe(generate().digest);
   });
 
-  it("is generated from the same Bank of Russia figures the crate holds", () => {
-    expect(MACRO).toEqual(fallbackInputs());
+  it("is generated from the Bank of Russia snapshot the build carries", () => {
+    const l = SNAPSHOT.latest;
+    expect(MACRO).toEqual({ valuationDate: l.date, keyRatePct: l.keyRatePct, ruoniaPct: l.ruoniaPct, inflationPct: l.inflationPct, curve: l.curve });
     expect(MARKET).toEqual({ valuationDate: MACRO.valuationDate, keyRatePct: MACRO.keyRatePct });
+    expect(SNAPSHOT.terms).toBe("https://www.cbr.ru/user_agreement/");
+    expect(SNAPSHOT.curve.calculatedBy.name).toBe("Moscow Exchange");
   });
 
   it("has 150 to 300 issues with unique tickers", () => {
