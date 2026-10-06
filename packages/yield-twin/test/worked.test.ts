@@ -2,8 +2,8 @@
 // the arithmetic in the comments. The same examples run against the Rust
 // crate in tests/worked.rs.
 import { describe, expect, it } from "vitest";
-import { MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, hold_value, income_tax } from "../src/index.js";
-import type { Calculation, Issue, Market, Plan } from "../src/index.js";
+import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, hold_value, income_tax } from "../src/index.js";
+import type { Calculation, Explanation, Issue, Market, Plan } from "../src/index.js";
 
 const close = (got: number, want: number) => expect(Math.abs(got - want)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(want), 1));
 
@@ -239,5 +239,124 @@ describe("long-term holding relief", () => {
     const b = ok(calculate(issue, market("2026-01-01"), plan)).plan;
     close(b.tax, -520);
     close(b.total, 13_475.5);
+  });
+});
+
+function explained(r: ReturnType<typeof explain>): Explanation {
+  if (!("ok" in r)) throw new Error(r.error);
+  return r.ok;
+}
+
+// A one-year bullet, 10 percent annual coupon, bought at par on the
+// valuation date, 2026-01-01; maturity 2027-01-01 (day 365). The only
+// coupon day is maturity, so the accrued interest is 0 and the dirty price
+// is 1,000. The one flow is 100 + 1,000 = 1,100.
+const bullet: Issue = {
+  nominal: 1000,
+  pricePct: 100,
+  accrued: null,
+  couponType: "fixed",
+  couponRatePct: 10,
+  spreadPct: 0,
+  periodDays: 365,
+  maturity: "2027-01-01",
+  offers: [],
+  amortization: [],
+};
+
+// Ten bonds (10,100 buys floor(10,100 / 1,000) = 10), held a year in a
+// brokerage account.
+const bulletPlan = (otherIncome: number): Plan => ({
+  amount: 10_100,
+  horizonDay: 365,
+  reinvest: false,
+  taxRegime: "standard",
+  otherIncome,
+  rateShiftPct: 0,
+});
+
+// 7.3 percent paid every 180 days: 36 a coupon, on days 90, 270 and 450
+// after 2026-01-01; 90 days since the last coupon, so accrued interest 18
+// and a dirty price of 1,018.
+const midPeriod: Issue = { ...bullet, couponRatePct: 7.3, periodDays: 180, maturity: "2027-03-27" };
+
+describe("explain", () => {
+  it("works out the yield and the fee", () => {
+    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1));
+    close(e.price.clean, 1000);
+    close(e.price.accrued, 0);
+    close(e.price.dirty, 1000);
+    const m = e.toMaturity;
+    expect(m.flows).toHaveLength(1);
+    // 1,100 a year away at 10 percent: 1,100 / 1.1 = 1,000, the price back.
+    close(m.flows[0]!.amount, 1100);
+    close(m.flows[0]!.years, 1);
+    expect(Math.abs(m.ytm - 0.1)).toBeLessThan(1e-9);
+    expect(Math.abs(m.flows[0]!.factor - 1 / 1.1)).toBeLessThan(1e-9);
+    expect(Math.abs(m.presentValue - 1000)).toBeLessThan(1e-6);
+    // A fee of 1 percent: 1,010 for the same 1,100, so 9 / 101 = 8.9109 percent.
+    close(m.priceWithFee, 1010);
+    expect(Math.abs(m.ytmAfterFee - 9 / 101)).toBeLessThan(1e-9);
+  });
+
+  it("traces the tax and the yield after it", () => {
+    const e = explained(explain(bullet, market("2026-01-01"), bulletPlan(0), 1));
+    const held = e.toMaturity.held;
+    close(held.invested, 10_000);
+    close(held.commission, -100);
+    // 2027: coupons 1,000; redemption 10,000 against a cost of 10,100, a
+    // loss of 100 netted; base 900 at 13 percent: 117.
+    expect(e.toMaturity.tax).toHaveLength(1);
+    const t = e.toMaturity.tax[0]!;
+    expect(t.year).toBe(2027);
+    close(t.coupons, 1000);
+    close(t.accruedPaid, 0);
+    close(t.redemptions, 10_000);
+    close(t.cost, 10_100);
+    close(t.result, -100);
+    close(t.base, 900);
+    close(t.taxedLow, 900);
+    close(t.taxedHigh, 0);
+    close(t.tax, 117);
+    // 1,000 + 10,000 - 117 - 100 = 10,783 after exactly a year: 7.83 percent.
+    close(held.total, 10_783);
+    close(held.annualPct!, 7.83);
+    // With 2,399,900 of other income: 100 at 13 percent, 800 at 15: 133.
+    const high = explained(explain(bullet, market("2026-01-01"), bulletPlan(TAX_THRESHOLD - 100), 1)).toMaturity.tax[0]!;
+    close(high.taxedLow, 100);
+    close(high.taxedHigh, 800);
+    close(high.tax, 133);
+  });
+
+  it("shows accrued interest paid and received", () => {
+    const plan: Plan = { amount: 10_180, horizonDay: 180, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
+    const e = explained(explain(midPeriod, market("2026-01-01"), plan, COMMISSION_PCT));
+    close(e.price.couponAmount, 36);
+    close(e.price.daysSinceLast, 90);
+    close(e.price.accrued, 18);
+    close(e.price.dirty, 1018);
+    // 2026: the day-90 coupon, 360, less the 180 of accrued interest paid;
+    // the sale on day 180 holds 18 a bond accrued since day 90: 180.
+    expect(e.planTax).toHaveLength(1);
+    const t = e.planTax[0]!;
+    expect(t.year).toBe(2026);
+    close(t.coupons, 360);
+    close(t.accruedPaid, 180);
+    close(t.income, 180);
+    close(t.accruedReceived, 180);
+    // 10,180 paid, plus 0.05 percent, less the 180 deducted: 10,005.09; and
+    // the sale's own 0.05 percent.
+    close(t.cost, 10_005.09 + t.sale * 0.0005);
+    close(t.result, t.sale - t.cost);
+    const y = e.toMaturity.ytm;
+    close(t.sale, 10 * (36 * Math.pow(1 + y, -90 / 365) + 1036 * Math.pow(1 + y, -270 / 365)));
+    close(ok(calculate(midPeriod, market("2026-01-01"), plan)).plan.tax, -t.tax);
+  });
+
+  it("refuses a fee it cannot use, after the plan's own errors", () => {
+    for (const fee of [-0.01, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(explain(bullet, market("2026-01-01"), bulletPlan(0), fee)).toEqual({ error: "invalid_fee" });
+    }
+    expect(explain(bullet, market("2026-01-01"), { ...bulletPlan(0), amount: 0 }, -1)).toEqual({ error: "amount_not_positive" });
   });
 });

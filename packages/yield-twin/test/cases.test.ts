@@ -56,6 +56,8 @@ function run(fn: string, args: unknown[]): unknown {
       return twin.derive_bond(x[0] as Issue, x[1] as Market);
     case "calculate":
       return twin.calculate(x[0] as Issue, x[1] as Market, x[2] as Plan);
+    case "explain":
+      return twin.explain(x[0] as Issue, x[1] as Market, x[2] as Plan, n(x[3]));
     default:
       throw new Error(`unknown function ${fn}`);
   }
@@ -63,12 +65,41 @@ function run(fn: string, args: unknown[]): unknown {
 
 describe("TypeScript twin against cases.json", () => {
   it("covers every function", () => {
-    expect(new Set(cases.map((c) => c.fn)).size).toBe(16);
+    expect(new Set(cases.map((c) => c.fn)).size).toBe(17);
   });
 
   it.each(cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
     const report = compare(run(c.fn, c.args), c.expect, c.name);
     expect(report.failures).toEqual([]);
+  });
+
+  it("traces the tax calculate computes, year by year, and solves the yields back to the price", () => {
+    let checked = 0;
+    for (const c of cases.filter((x) => x.fn === "explain")) {
+      const r = run(c.fn, c.args) as ReturnType<typeof twin.explain>;
+      if (!("ok" in r)) continue;
+      const e = r.ok;
+      const near = (g: number, w: number) => expect(Math.abs(g - w)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(g), Math.abs(w), 1));
+      near(e.planTax.reduce((s, t) => s + t.tax, 0), -e.plan.tax);
+      for (const t of e.planTax) {
+        near(t.base, t.income + t.result + t.relieved - t.exempt);
+        near(t.redemptions + t.sale - t.cost, t.result + t.relieved);
+        near(t.taxedLow + t.taxedHigh, Math.max(t.base, 0));
+      }
+      if (e.feePct === twin.COMMISSION_PCT) {
+        const calc = twin.calculate(...(decodeNaN(c.args) as [Issue, Market, Plan]));
+        if (!("ok" in calc)) throw new Error(calc.error);
+        expect(e.plan).toEqual(calc.ok.plan);
+      }
+      for (const y of [e.toMaturity, ...(e.toOffer ? [e.toOffer] : [])]) {
+        expect(Math.abs(y.presentValue - e.price.dirty)).toBeLessThan(1e-6 * e.price.dirty);
+        expect(y.ytmAfterFee).toBeLessThanOrEqual(y.ytm);
+        near(y.tax.reduce((s, t) => s + t.tax, 0), -y.held.tax);
+        expect(y.held.reinvest).toBe(0);
+      }
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThanOrEqual(8);
   });
 
   it("adds the breakdown lines up to the total", () => {

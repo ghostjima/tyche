@@ -18,5 +18,6 @@ export {
   calculate,
   effective_annual_pct,
 } from "./calculate.js";
+export { explain } from "./explain.js";
 export { addYears, civilFromDays, dayOffset, fullYears, parseIsoDate } from "./dates.js";
 export type * from "./types.js";
