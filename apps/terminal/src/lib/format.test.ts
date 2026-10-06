@@ -26,6 +26,8 @@ describe("formats", () => {
     expect(en.day(365)).toBe("Oct\u00a05,\u00a02027");
     expect(en.month("2026-08")).toBe("August 2026");
     expect(ru.month("2026-08")).toBe("август 2026 г.");
+    expect(en.monthName(1)).toBe("January");
+    expect(ru.monthName(1)).toBe("январь");
   });
 
   it("writes terms in years and months with the locale's plurals", () => {

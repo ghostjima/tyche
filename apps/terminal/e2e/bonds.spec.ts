@@ -14,9 +14,12 @@ test("the list shows the synthetic universe, filters by chips with counts, and s
   // The filters are one search landmark, named.
   await expect(page.getByRole("search", { name: "Issue filters" })).toBeVisible();
 
-  const floater = page.getByRole("button", { name: "Floater 57" });
-  await floater.click();
-  await expect(floater).toHaveAttribute("aria-pressed", "true");
+  const keyRate = page.getByRole("button", { name: "On the key rate 27" });
+  await keyRate.click();
+  await expect(keyRate).toHaveAttribute("aria-pressed", "true");
+  await expect(rows).toHaveCount(27);
+  // Chips in one group widen the list: with RUONIA, every floater.
+  await page.getByRole("button", { name: "On RUONIA 30" }).click();
   await expect(rows).toHaveCount(57);
   // Counts follow the other groups: synthetic government floaters are
   // eight, four on the key rate and four on RUONIA.
@@ -151,7 +154,7 @@ test("keyboard: search, open an issue and change the plan", async ({ page }) => 
   // Tab leaves the field, then each chip group, the sort and the list are
   // one stop each.
   const link = page.getByRole("option", { name: ISSUES.amortising });
-  for (let i = 0; i < 12 && !(await link.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
+  for (let i = 0; i < 20 && !(await link.evaluate((el) => el === document.activeElement)); i++) await page.keyboard.press("Tab");
   await expect(link).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.locator(".issue-card").getByRole("heading", { level: 2 })).toHaveText("Ilmen Freight Lines");

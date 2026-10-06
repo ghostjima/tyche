@@ -26,6 +26,16 @@ for (const lang of LANGS) {
       await ready(page);
       await expectNoSeriousViolations(page, "list", { lang, theme });
 
+      // A goal on, with its sentence; "Money by a date" with its month.
+      await open(page, lang, theme, "&f=durShort&f=ratingHigh&f=fixed&f=keyRate&f=open&f=liquid");
+      await ready(page);
+      await expect(page.locator(".goals__note")).toBeVisible();
+      await expectNoSeriousViolations(page, "goal with its filters", { lang, theme });
+      await open(page, lang, theme, "&by=2027-10");
+      await ready(page);
+      await expect(page.locator(".goals__by")).toBeVisible();
+      await expectNoSeriousViolations(page, "money by a date", { lang, theme });
+
       // The data and licensing page.
       await open(page, lang, theme, "&page=data");
       await ready(page);
@@ -97,6 +107,10 @@ for (const lang of LANGS) {
       await ready(page);
       await expectNoHorizontalScroll(page, "list at 375");
       await expectNoSeriousViolations(page, "list on a phone", { lang, theme });
+      await open(page, lang, theme, "&by=2027-10");
+      await ready(page);
+      await expectNoHorizontalScroll(page, "money by a date at 375");
+      await expectNoSeriousViolations(page, "money by a date on a phone", { lang, theme });
       await open(page, lang, theme, `&issue=${ISSUES.floater}`);
       await ready(page);
       await expectNoHorizontalScroll(page, "issue at 375");

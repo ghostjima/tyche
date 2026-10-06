@@ -82,14 +82,14 @@ test("on a phone the filters fold into a sheet that the search stays beside", as
   await page.goto("/?lang=en");
   await ready(page);
   await expect(page.getByRole("searchbox", { name: "Search by issuer or ticker" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Floater 57" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Fixed 119" })).toBeHidden();
   const open = page.getByRole("button", { name: "Filters", exact: true });
   await open.click();
   const sheet = page.getByRole("dialog", { name: "Filters" });
-  await sheet.getByRole("button", { name: "Floater 57" }).click();
-  await sheet.getByRole("button", { name: "Show results (57)" }).click();
+  await sheet.getByRole("button", { name: "Fixed 119" }).click();
+  await sheet.getByRole("button", { name: "Show results (119)" }).click();
   await expect(sheet).toHaveCount(0);
-  await expect(page.locator(".pane-list [role=option]")).toHaveCount(57);
+  await expect(page.locator(".pane-list [role=option]")).toHaveCount(119);
   await expect(page.getByRole("button", { name: /^Filters/ })).toBeFocused();
   await expect(page.getByRole("button", { name: /^Filters/ })).toContainText("1");
 });

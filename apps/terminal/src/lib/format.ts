@@ -16,6 +16,8 @@ export type Formats = StoaFormatters & {
   day(day: number): string;
   /** A month, "YYYY-MM", as the month and the year ("August 2026"). */
   month(iso: string): string;
+  /** A month's name on its own, 1 for January ("January", "январь"). */
+  monthName(month: number): string;
   /** A count of days as years and months ("2 years 5 months"); under a
    * month as days. */
   term(days: number): string;
@@ -43,6 +45,7 @@ export function appFormats(stoa: StoaFormatters): Formats {
     return f;
   };
   const month = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", ...ZONE });
+  const monthName = new Intl.DateTimeFormat(locale, { month: "long", ...ZONE });
   const unit = (u: "year" | "month" | "day") => number(`unit-${u}`, { style: "unit", unit: u, unitDisplay: "long" });
   const list = new Intl.ListFormat(locale, { type: "unit", style: "long" });
   const f: Formats = {
@@ -52,6 +55,7 @@ export function appFormats(stoa: StoaFormatters): Formats {
       const [y, m] = iso.split("-").map(Number) as [number, number];
       return month.format(Date.UTC(y, m - 1, 1));
     },
+    monthName: (m) => monthName.format(Date.UTC(2000, m - 1, 1)),
     term: (days) => {
       if (days < 30) return unit("day").format(Math.max(0, Math.round(days)));
       const months = Math.round(days / (365 / 12));
