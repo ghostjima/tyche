@@ -3,8 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
+  # Every pull request, whatever its base: a pull request stacked on another
+  # one is checked before its base merges, not only after.
   pull_request:
-    branches: [main]
     types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
 
