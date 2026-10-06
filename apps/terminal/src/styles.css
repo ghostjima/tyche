@@ -20,7 +20,7 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 
 .app { display: grid; gap: var(--stoa-space-4); }
 
-/* Side by side from 64rem (the same breakpoint as ui/useMediaQuery). */
+/* Side by side from 64rem, Stoa's wide breakpoint (useBreakpoint). */
 .workspace { display: grid; gap: var(--stoa-space-4); align-items: start; }
 @media (min-width: 64rem) {
   .workspace { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
@@ -40,20 +40,14 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .narrow > .detail { justify-self: stretch; }
 
-.issue-list { display: grid; gap: var(--stoa-space-3); }
-.issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
-.issue-list__bar .muted { margin-inline-end: auto; }
+.issue-list__results { display: grid; gap: var(--stoa-space-3); }
+.issue-list__sort { display: flex; justify-content: flex-end; }
 
 .issue-desc { display: grid; }
 .issue-desc__facts { display: flex; flex-wrap: wrap; column-gap: var(--stoa-space-3); }
 .issue-desc__facts > span { white-space: nowrap; }
 .cell-stack { display: grid; justify-items: end; }
 
-/* Stoa keeps a table's headers and row headers on one line. Here the row
-   headers are sentences ("Broker's commission, 0.05% of each trade") and
-   dates, and on a phone that pushed the amounts out of the box: they wrap
-   instead, and the amounts stay on one line. */
-.detail .stoa-table th { white-space: normal; }
 .event-cell { display: grid; gap: var(--stoa-space-1); justify-items: start; }
 .cell-note { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); font-family: var(--stoa-font-family-sans); }
 

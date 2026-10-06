@@ -33,6 +33,17 @@ test("lang comes from the link or the last visit before the app's script runs, R
   await expect(html).toHaveAttribute("dir", "ltr");
 });
 
+test("the first-paint script sits in the head, after the charset, which stays in the first 1,024 bytes", async ({ request }) => {
+  const html = await (await request.get("/")).text();
+  const charset = html.indexOf('<meta charset="UTF-8"');
+  expect(charset).toBeGreaterThanOrEqual(0);
+  expect(charset).toBeLessThan(1024);
+  const script = html.indexOf('"languageKey":"tyche.lang"');
+  expect(script).toBeGreaterThan(charset);
+  expect(script).toBeLessThan(html.indexOf("</head>"));
+  expect(html).toContain('"themeKey":"tyche.theme"');
+});
+
 test("no font is preloaded, and no Arabic face is fetched", async ({ page }) => {
   const fonts: string[] = [];
   page.on("request", (request) => {

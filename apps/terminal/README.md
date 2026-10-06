@@ -31,8 +31,10 @@ Status: early. Performance record, with stamps:
   and for a synthetic government bond by its code in the interface's
   language ("СГ 143" in Russian); filter chips in groups (issuer,
   coupon, maturity, features),
-  each with the count it would leave; sort by yield, maturity or rating.
-  A search with no match says so and offers to clear the filters.
+  each with the count it would leave, folded into a sheet on a phone;
+  how many issues are shown, and Clear all; sort by yield, maturity or
+  rating. The filters are Stoa's FilterBar. A search with no match says
+  so and offers to clear the filters.
 - **The issue**: clean and dirty price, accrued interest, yields to
   maturity and to the offer, the simple yield over the term, Macaulay
   and modified duration; the payment schedule as an event strip
@@ -99,10 +101,14 @@ plans.
 
 Russian first and by default, English second, with the same keys in each
 (checked by a unit test). Numbers, money (roubles, with the sign) and
-dates are written through Intl in the language's locale. The theme is
-System, Light or Dark, System by default. Both are kept in the URL
-(`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage, under
-`tyche.lang` and `tyche.theme`. `?issue=TICKER` opens an issue,
+dates are written in the language's locale by Stoa's formatters, with
+the minus sign (U+2212) for a negative and every value on one line; the
+app adds dates counted from the valuation date, terms and durations. The
+theme is System, Light or Dark, System by default. Both are kept in the
+URL (`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage,
+under `tyche.lang` and `tyche.theme`, and set before the first paint by
+Stoa's first-paint script, built from the same choices the app reads
+(`src/preferences.ts`). `?issue=TICKER` opens an issue,
 `?page=data` the data and licensing page, `?engine=twin` starts on the
 TypeScript engine.
 
@@ -120,8 +126,11 @@ What the tests cover, and nothing wider:
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to
-  close it; on a phone, the page's Back button and the browser's Back
-  both return to the list, with focus on the issue's row; a source
+  close it; on a phone, an issue picked by pointer or by Enter opens with
+  the focus on the Back button, and the page's Back button and the
+  browser's Back both return to the list, with focus on the issue's row;
+  on a phone the filters open in a sheet that returns the focus to its
+  button; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.

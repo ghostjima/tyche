@@ -38,7 +38,7 @@ async function setPlan(page: Page) {
   await page.keyboard.press("ArrowLeft");
   await page.keyboard.press("ArrowLeft");
   await page.keyboard.press("ArrowLeft");
-  await expect(shift).toHaveAttribute("aria-valuetext", "-1.5 pp");
+  await expect(shift).toHaveAttribute("aria-valuetext", "\u22121.5 pp");
 }
 
 for (const [kind, id] of Object.entries(ISSUES)) {

@@ -1,28 +1,19 @@
-// Numbers, money, dates and terms in the interface's locale, through Intl.
-// Currency is the rouble, written with its sign in every language; dates
-// are the valuation date plus a day offset, written in UTC so the day is
-// the same everywhere.
+// Numbers, money and dates in the interface's locale. Money, percents and
+// signed values are Stoa's formatters (useFormatters), which write a
+// negative with the minus sign (U+2212) and keep a value on one line; this
+// module adds what is the app's own: dates as day offsets from the
+// valuation date, written in UTC so the day is the same everywhere, months,
+// terms in years and months, durations in years, and plain numbers.
+import { stoaFormatters, useFormatters, type StoaFormatters } from "@ghostjima/stoa-react";
 import { dayToMs } from "../data/market";
 
-export type Formats = {
-  locale: string;
-  /** Roubles with kopecks. */
-  money(value: number): string;
-  /** Roubles with kopecks and a sign, + for income and - for costs. */
-  moneySigned(value: number): string;
-  /** Whole roubles. */
-  moneyWhole(value: number): string;
-  /** A fraction as a percent (0.153 as 15.30%). */
-  percent(fraction: number, digits?: number): string;
-  /** A fraction as a signed percent. */
-  percentSigned(fraction: number, digits?: number): string;
-  /** A number with a fixed count of decimals. */
-  decimal(value: number, digits: number): string;
-  /** A signed number with a fixed count of decimals, for rate shifts. */
-  decimalSigned(value: number, digits: number): string;
-  integer(value: number): string;
-  /** A day offset from the valuation date as a date ("4 Sep 2026"). */
-  date(day: number): string;
+/** Dates and times in UTC: the valuation date is a calendar day, not an
+ * instant in the viewer's zone. */
+const ZONE = { timeZone: "UTC" } as const;
+
+export type Formats = StoaFormatters & {
+  /** A day offset from the valuation date as a date ("Sep 4, 2026"). */
+  day(day: number): string;
   /** A month, "YYYY-MM", as the month and the year ("August 2026"). */
   month(iso: string): string;
   /** A count of days as years and months ("2 years 5 months"); under a
@@ -30,16 +21,18 @@ export type Formats = {
   term(days: number): string;
   /** Years with two decimals ("2.35 years"), for durations. */
   years(value: number): string;
+  /** A number with a fixed count of decimals. */
+  decimal(value: number, digits: number): string;
+  integer(value: number): string;
 };
 
-const cache = new Map<string, Formats>();
+const cache = new WeakMap<StoaFormatters, Formats>();
 
-export function formats(locale: string): Formats {
-  const hit = cache.get(locale);
+/** Stoa's formatters for a locale with the app's own added. */
+export function appFormats(stoa: StoaFormatters): Formats {
+  const hit = cache.get(stoa);
   if (hit) return hit;
-  const money = new Intl.NumberFormat(locale, { style: "currency", currency: "RUB", currencyDisplay: "narrowSymbol" });
-  const moneySigned = new Intl.NumberFormat(locale, { style: "currency", currency: "RUB", currencyDisplay: "narrowSymbol", signDisplay: "exceptZero" });
-  const moneyWhole = new Intl.NumberFormat(locale, { style: "currency", currency: "RUB", currencyDisplay: "narrowSymbol", maximumFractionDigits: 0, minimumFractionDigits: 0 });
+  const { locale } = stoa;
   const numbers = new Map<string, Intl.NumberFormat>();
   const number = (key: string, options: Intl.NumberFormatOptions) => {
     let f = numbers.get(key);
@@ -49,22 +42,12 @@ export function formats(locale: string): Formats {
     }
     return f;
   };
-  const date = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
-  const month = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", timeZone: "UTC" });
+  const month = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric", ...ZONE });
   const unit = (u: "year" | "month" | "day") => number(`unit-${u}`, { style: "unit", unit: u, unitDisplay: "long" });
   const list = new Intl.ListFormat(locale, { type: "unit", style: "long" });
   const f: Formats = {
-    locale,
-    money: (v) => money.format(v),
-    moneySigned: (v) => moneySigned.format(v),
-    moneyWhole: (v) => moneyWhole.format(v),
-    percent: (v, digits = 2) => number(`pct-${digits}`, { style: "percent", minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v),
-    percentSigned: (v, digits = 2) =>
-      number(`pcts-${digits}`, { style: "percent", minimumFractionDigits: digits, maximumFractionDigits: digits, signDisplay: "exceptZero" }).format(v),
-    decimal: (v, digits) => number(`dec-${digits}`, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v),
-    decimalSigned: (v, digits) => number(`decs-${digits}`, { minimumFractionDigits: digits, maximumFractionDigits: digits, signDisplay: "exceptZero" }).format(v),
-    integer: (v) => number("int", { maximumFractionDigits: 0 }).format(v),
-    date: (day) => date.format(dayToMs(day)),
+    ...stoa,
+    day: (day) => stoa.date(dayToMs(day)),
     month: (iso) => {
       const [y, m] = iso.split("-").map(Number) as [number, number];
       return month.format(Date.UTC(y, m - 1, 1));
@@ -80,7 +63,17 @@ export function formats(locale: string): Formats {
       return list.format(parts);
     },
     years: (v) => number("years", { style: "unit", unit: "year", unitDisplay: "long", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v),
+    decimal: (v, digits) => number(`dec-${digits}`, { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(v),
+    integer: (v) => number("int", { maximumFractionDigits: 0 }).format(v),
   };
-  cache.set(locale, f);
+  cache.set(stoa, f);
   return f;
+}
+
+/** The formats for a locale, outside React (tests). */
+export const formats = (locale: string): Formats => appFormats(stoaFormatters(locale, ZONE));
+
+/** The formats for the locale of the I18nProvider above. */
+export function useAppFormats(): Formats {
+  return appFormats(useFormatters(ZONE));
 }

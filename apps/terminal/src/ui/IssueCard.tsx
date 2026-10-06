@@ -2,13 +2,12 @@
 // event strip and a table, and for a fixed coupon how its price depends on
 // the yield.
 import type { ReactNode } from "react";
-import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
+import { EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, useBreakpoint, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
 import { ratingIndex, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
 import type { Derived, Engine } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
-import { NARROW, useMediaQuery } from "./useMediaQuery";
 
 export type IssueCardProps = {
   t: Strings;
@@ -49,7 +48,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
 export function IssueCard({ t, f, bond, derived: d, engine, name, source }: IssueCardProps) {
   const { issue } = bond;
   const floater = issue.couponType === "floater";
-  const narrow = useMediaQuery(NARROW);
+  const narrow = useBreakpoint() === "narrow";
   const rows: Row[] = d.flows.days.map((day, i) => ({
     day,
     coupon: d.flows.coupons[i] ?? 0,
@@ -88,7 +87,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
           header: t.colDate,
           cell: (r) => (
             <span className="event-cell">
-              {f.date(r.day)}
+              {f.day(r.day)}
               {tags(r)}
             </span>
           ),
@@ -97,7 +96,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
         { id: "principal", header: t.colPrincipal, numeric: true, cell: (r) => (r.principal > 0 ? f.money(r.principal) : "") },
       ]
     : [
-        { id: "date", header: t.colDate, cell: (r) => f.date(r.day) },
+        { id: "date", header: t.colDate, cell: (r) => f.day(r.day) },
         { id: "coupon", header: t.colCoupon, numeric: true, cell: (r) => f.money(r.coupon) },
         { id: "principal", header: t.colPrincipal, numeric: true, cell: (r) => (r.principal > 0 ? f.money(r.principal) : "") },
         { id: "total", header: t.colTotal, numeric: true, cell: (r) => f.money(r.coupon + r.principal) },
@@ -123,7 +122,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
         <Tag>{bond.issuer.kind === "government" ? t.tagGov : t.tagCorporate}</Tag>
         <Tag tone={bond.coupon.kind === "fixed" ? "neutral" : "info"}>{couponTag(bond, t, f)}</Tag>
         {issue.amortization.length > 0 && <Tag tone="info">{t.tagAmortising}</Tag>}
-        {d.offerDay !== null && <Tag tone="warning">{bond.offer?.kind === "call" ? t.tagCall(f.date(d.offerDay)) : t.tagPut(f.date(d.offerDay))}</Tag>}
+        {d.offerDay !== null && <Tag tone="warning">{bond.offer?.kind === "call" ? t.tagCall(f.day(d.offerDay)) : t.tagPut(f.day(d.offerDay))}</Tag>}
         {bond.subordinated && <Tag tone="warning">{t.tagSubordinated}</Tag>}
         {bond.qualifiedOnly && <Tag tone="warning">{t.tagQualified}</Tag>}
       </div>
@@ -139,10 +138,10 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
           <Metric
             label={t.ytm}
             value={f.percent(d.ytmMaturity)}
-            basis={bond.coupon.kind === "linker" ? t.ytmRealBasis(f.date(d.maturityDay)) : t.ytmBasis(f.date(d.maturityDay))}
+            basis={bond.coupon.kind === "linker" ? t.ytmRealBasis(f.day(d.maturityDay)) : t.ytmBasis(f.day(d.maturityDay))}
           />
           {d.ytmOffer !== null && d.offerDay !== null && (
-            <Metric label={t.ytmOffer} value={f.percent(d.ytmOffer)} basis={t.ytmOfferBasis(f.date(d.offerDay))} />
+            <Metric label={t.ytmOffer} value={f.percent(d.ytmOffer)} basis={t.ytmOfferBasis(f.day(d.offerDay))} />
           )}
           <Metric label={t.duration} value={f.years(d.macaulay)} basis={t.durationBasis(f.decimal(d.modified, 2))} />
         </div>
@@ -152,10 +151,10 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
             { label: t.couponRate, value: f.percent((d.ratesPct[0] ?? 0) / 100) },
             { label: t.couponPayment, value: f.money(d.couponAmount) },
             { label: t.paidEvery, value: f.term(issue.periodDays) },
-            { label: t.nextCoupon, value: f.date(d.couponDays[0] ?? d.maturityDay) },
-            { label: t.maturityDate, value: f.date(d.maturityDay) },
+            { label: t.nextCoupon, value: f.day(d.couponDays[0] ?? d.maturityDay) },
+            { label: t.maturityDate, value: f.day(d.maturityDay) },
             { label: t.simpleYield, value: f.percent(d.ytmSimple) },
-            { label: t.faceValue, value: f.moneyWhole(issue.nominal) },
+            { label: t.faceValue, value: f.money(issue.nominal, { fractionDigits: 0 }) },
           ]}
         />
       </section>
@@ -166,6 +165,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
         </h3>
         <EventStrip label={t.stripLabel} events={events} from={dayToMs(0)} />
         <Table<Row>
+          wrapHeaders
           caption={t.paymentsCaption}
           columns={columns}
           rows={rows}
@@ -189,7 +189,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source }: Issu
             xLabel={t.axisYield}
             yLabel={t.axisPrice}
             formatX={(x) => f.percent(x / 100, 1)}
-            formatY={(y) => f.moneyWhole(y)}
+            formatY={(y) => f.money(y, { fractionDigits: 0 })}
             series={[
               { id: "price", name: t.seriesPrice, points: curve, tone: "accent" },
               { id: "today", name: t.seriesToday, points: [{ x: d.ytmMaturity * 100, y: d.dirtyPrice }], tone: "warning" },

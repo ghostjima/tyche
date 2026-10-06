@@ -1,10 +1,23 @@
 import { defineConfig, searchForWorkspaceRoot } from "vite";
 import react from "@vitejs/plugin-react";
+import { firstPaintScript } from "@ghostjima/stoa-react/first-paint";
+import { PREFERENCES } from "./src/preferences";
 
 // Served from GitHub Pages under /tyche/.
 export default defineConfig({
   base: process.env.GITHUB_PAGES ? "/tyche/" : "/",
-  plugins: [react()],
+  plugins: [
+    react(),
+    // The language, direction and theme before the first paint: Stoa's
+    // script, from the same choices the app reads. At the end of the head
+    // rather than its start, so the charset stays in the first 1,024 bytes
+    // where the browser looks for it; it still runs before the body is
+    // drawn, and before the app's module script.
+    {
+      name: "first-paint",
+      transformIndexHtml: () => [{ tag: "script", children: firstPaintScript(PREFERENCES), injectTo: "head" }],
+    },
+  ],
   // Stoa is linked from the sibling repository and has its own
   // node_modules: without dedupe the app would run two copies of React and
   // fail with "Invalid hook call".

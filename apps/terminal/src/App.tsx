@@ -16,16 +16,17 @@ import {
   ThemeSwitch,
   groupShortcuts,
   keepFocusInPlace,
+  useBreakpoint,
   useShortcuts,
-  useThemePreference,
+  type ThemePreference,
 } from "@ghostjima/stoa-react";
 import type { Bond } from "./data/issues";
 import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
-import { LANGS, LOCALES, THEME_STORE, strings, type Lang } from "./i18n";
+import { LANGS, strings, type Lang } from "./i18n";
 import { EMPTY_QUERY, applyQuery, sortItems, type Item, type Query, type SortKey } from "./lib/filters";
-import { formats } from "./lib/format";
+import { useAppFormats } from "./lib/format";
 import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
@@ -36,7 +37,6 @@ import { Diagnostics } from "./ui/Diagnostics";
 import { BorSource, SimSource, dataHref } from "./ui/Sources";
 import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
-import { WIDE, useMediaQuery } from "./ui/useMediaQuery";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
  * once the universe is ready. */
@@ -65,9 +65,10 @@ const readPage = (): boolean => new URLSearchParams(location.search).get("page")
 const PUSHED_PAGE = "tychePage";
 const pushedPage = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED_PAGE];
 
-/** Focuses an issue's row in the list. The record list draws its rows a
- * frame or two after it mounts, so this waits for the row, for a few
- * frames at most. */
+/** Focuses an issue's row in the list. The list's rows can take the
+ * focus only a commit after it mounts: Stoa's RecordList draws them in its
+ * first frame, but as a stand-in until React Aria has built its options,
+ * so this waits for the row, for a few frames at most. */
 function focusRecord(id: string, frames = 10) {
   const row = document.querySelector<HTMLElement>(`.pane-list [role="option"][data-key="${CSS.escape(id)}"]`);
   if (row) row.focus();
@@ -95,16 +96,16 @@ const TERM_KEYS = [
 
 /** The screen. Rendered inside an I18nProvider set to the language's
  * locale, which Stoa's words and digits follow. */
-export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void }) {
+export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) => void; theme: ThemePreference }) {
   const t = strings[lang];
-  const f = formats(LOCALES[lang]);
-  const theme = useThemePreference(THEME_STORE);
+  const f = useAppFormats();
   const { engines, retry } = useEngines();
   const { state: market, retry: retryMarket } = useUniverse();
   const bonds = market.status === "ready" ? market.universe.bonds : null;
   const [choice, setChoice] = useEngineChoice();
   const engine = activeEngine(engines, choice);
-  const wide = useMediaQuery(WIDE);
+  // Side by side from Stoa's wide breakpoint, as the stylesheet lays it out.
+  const wide = useBreakpoint() === "wide";
 
   const [query, setQuery] = useState<Query>(EMPTY_QUERY);
   const [sort, setSort] = useState<SortKey>("yield");
@@ -241,10 +242,10 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   // Back button when it opens, and back to the issue's row when it closes.
   useEffect(() => {
     if (wide) return;
-    // A frame later: the list picks a row on pointer down, and the
-    // browser's own focus on that press would otherwise land after this
-    // one, on the page, since the row is gone.
-    if (selectedId !== null) requestAnimationFrame(() => back.current?.querySelector("button")?.focus());
+    // Stoa's RecordList picks on the pointer's release, after the
+    // browser's own focus for the press, so the Back button can take the
+    // focus at once.
+    if (selectedId !== null) back.current?.querySelector("button")?.focus();
     else if (returnTo.current) focusRecord(returnTo.current);
   }, [selectedId, wide]);
 
@@ -347,7 +348,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       footer={
         <div className="foot">
           <p>
-            {t.footer(f.date(0), f.percent(KEY_RATE_PCT / 100, 0))} {t.footerSource}{" "}
+            {t.footer(f.day(0), f.percent(KEY_RATE_PCT / 100, 0))} {t.footerSource}{" "}
             <a href="https://www.cbr.ru/">cbr.ru</a>
           </p>
           <div className="foot__actions">
@@ -458,7 +459,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
                 return (
                   <div key={k} className="glossary__item">
                     <dt>{term}</dt>
-                    <dd>{typeof text === "function" ? text(f.date(IIS_B_LAST_OPEN_DAY)) : text}</dd>
+                    <dd>{typeof text === "function" ? text(f.day(IIS_B_LAST_OPEN_DAY)) : text}</dd>
                   </div>
                 );
               })}

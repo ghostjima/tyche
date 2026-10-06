@@ -32,7 +32,7 @@ export function SimSource({ t, onData }: { t: Strings; onData: OpenData }) {
 export function BorSource({ t, f, curve = false }: { t: Strings; f: Formats; curve?: boolean }) {
   return (
     <SourceNote tag={t.borTag} kind="official">
-      {t.borNote(f.date(0))} <a href={SNAPSHOT.site}>cbr.ru</a>
+      {t.borNote(f.day(0))} <a href={SNAPSHOT.site}>cbr.ru</a>
       {curve && (
         <>
           . {t.curveCredit} <a href={SNAPSHOT.curve.calculatedBy.url}>moex.com</a>

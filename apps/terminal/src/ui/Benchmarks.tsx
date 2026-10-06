@@ -18,14 +18,14 @@ export function Benchmarks({ t, f }: { t: Strings; f: Formats }) {
         label={t.benchmarksLabel}
         items={[
           { label: t.bmKeyRate, value: f.percent(MACRO.keyRatePct / 100) },
-          { label: t.bmRuonia(f.date(dayOf(l.ruoniaDate))), value: f.percent(MACRO.ruoniaPct / 100) },
+          { label: t.bmRuonia(f.day(dayOf(l.ruoniaDate))), value: f.percent(MACRO.ruoniaPct / 100) },
           { label: t.bmInflation(f.month(l.inflationMonth)), value: f.percent(MACRO.inflationPct / 100) },
           ...(target === undefined ? [] : [{ label: t.bmTarget, value: f.percent(target / 100) }]),
         ]}
       />
       <LineChart
         label={t.curveTitle}
-        description={t.curveDesc(f.date(0))}
+        description={t.curveDesc(f.day(0))}
         xType="number"
         xLabel={t.axisTerm}
         yLabel={t.axisCurveYield}

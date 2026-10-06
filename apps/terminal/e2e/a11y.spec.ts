@@ -45,7 +45,7 @@ for (const lang of LANGS) {
       await expectNoSeriousViolations(page, "floater", { lang, theme });
 
       // A filter with no match: the empty state.
-      await page.locator(".issue-list__search input").fill("zzzz");
+      await page.getByRole("searchbox").fill("zzzz");
       await expect(page.locator(".pane-list .stoa-empty-state")).toBeVisible();
       await expectNoSeriousViolations(page, "empty list", { lang, theme });
 
