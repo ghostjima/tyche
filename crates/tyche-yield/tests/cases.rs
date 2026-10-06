@@ -174,6 +174,74 @@ fn calculation(c: &Calculation) -> Value {
     })
 }
 
+fn tax_year(t: &TaxYear) -> Value {
+    json!({
+        "year": t.year,
+        "coupons": f(t.coupons),
+        "accruedPaid": f(t.accrued_paid),
+        "accruedReceived": f(t.accrued_received),
+        "redemptions": f(t.redemptions),
+        "sale": f(t.sale),
+        "cost": f(t.cost),
+        "reinvest": f(t.reinvest),
+        "income": f(t.income),
+        "result": f(t.result),
+        "relieved": f(t.relieved),
+        "relievedProceeds": f(t.relieved_proceeds),
+        "relievedYears": f(t.relieved_years),
+        "exempt": f(t.exempt),
+        "base": f(t.base),
+        "taxedLow": f(t.taxed_low),
+        "taxedHigh": f(t.taxed_high),
+        "tax": f(t.tax),
+    })
+}
+
+fn yield_trace(y: &YieldTrace) -> Value {
+    json!({
+        "eventDay": f(y.event_day),
+        "flows": y.flows.iter().map(|x| json!({
+            "day": f(x.day),
+            "years": f(x.years),
+            "coupon": f(x.coupon),
+            "principal": f(x.principal),
+            "amount": f(x.amount),
+            "factor": f(x.factor),
+            "presentValue": f(x.present_value),
+        })).collect::<Vec<_>>(),
+        "ytm": f(y.ytm),
+        "presentValue": f(y.present_value),
+        "priceWithFee": f(y.price_with_fee),
+        "ytmAfterFee": f(y.ytm_after_fee),
+        "held": breakdown(&y.held),
+        "tax": y.tax.iter().map(tax_year).collect::<Vec<_>>(),
+    })
+}
+
+fn explanation(e: &Explanation) -> Value {
+    let p = &e.price;
+    json!({
+        "feePct": f(e.fee_pct),
+        "price": {
+            "nominal": f(p.nominal),
+            "cleanPct": f(p.clean_pct),
+            "clean": f(p.clean),
+            "couponRatePct": f(p.coupon_rate_pct),
+            "periodDays": f(p.period_days),
+            "couponAmount": f(p.coupon_amount),
+            "daysSinceLast": f(p.days_since_last),
+            "accruedComputed": f(p.accrued_computed),
+            "accruedQuoted": opt(p.accrued_quoted),
+            "accrued": f(p.accrued),
+            "dirty": f(p.dirty),
+        },
+        "toMaturity": yield_trace(&e.to_maturity),
+        "toOffer": e.to_offer.as_ref().map_or(Value::Null, yield_trace),
+        "plan": breakdown(&e.plan),
+        "planTax": e.plan_tax.iter().map(tax_year).collect::<Vec<_>>(),
+    })
+}
+
 fn outcome<T>(r: Result<T, Error>, ok: impl Fn(&T) -> Value) -> Value {
     let mut m = Map::new();
     match r {
@@ -241,6 +309,12 @@ fn run(name: &str, a: &[Value]) -> Value {
                 .and_then(|i| Ok((i, plan(&a[2])?)))
                 .and_then(|(i, p)| calculate(&i, &market(&a[1]), &p)),
             calculation,
+        ),
+        "explain" => outcome(
+            issue(&a[0])
+                .and_then(|i| Ok((i, plan(&a[2])?)))
+                .and_then(|(i, p)| explain(&i, &market(&a[1]), &p, num(&a[3]))),
+            explanation,
         ),
         other => panic!("unknown function {other}"),
     }
@@ -331,8 +405,48 @@ fn every_case_matches() {
     );
     // Every function has cases; the table keeps the 30 original primitive
     // cases at its head.
-    assert_eq!(seen.len(), 16, "{seen:?}");
-    assert!(cases.len() >= 30 + seen["derive_bond"] + seen["calculate"]);
+    assert_eq!(seen.len(), 17, "{seen:?}");
+    assert!(cases.len() >= 30 + seen["derive_bond"] + seen["calculate"] + seen["explain"]);
+}
+
+#[test]
+fn explain_traces_what_calculate_computes() {
+    let cases: Vec<Value> = serde_json::from_str(CASES).expect("valid cases.json");
+    let mut checked = 0;
+    for case in cases.iter().filter(|c| c["fn"] == "explain") {
+        let a = case["args"].as_array().expect("args");
+        let (Ok(i), Ok(p)) = (issue(&a[0]), plan(&a[2])) else {
+            continue;
+        };
+        let m = market(&a[1]);
+        let Ok(e) = explain(&i, &m, &p, num(&a[3])) else {
+            continue;
+        };
+        let near = |g: f64, w: f64| (g - w).abs() <= 1e-9 * g.abs().max(w.abs()).max(1.0);
+        // The years' tax adds up to the breakdown's; at the standard
+        // commission the plan is calculate's.
+        let years: f64 = e.plan_tax.iter().map(|t| t.tax).sum();
+        assert!(near(years, -e.plan.tax), "{}", case["name"]);
+        for t in &e.plan_tax {
+            assert!(near(t.base, t.income + t.result + t.relieved - t.exempt));
+            assert!(near(t.redemptions + t.sale - t.cost, t.result + t.relieved));
+            assert!(near(t.taxed_low + t.taxed_high, t.base.max(0.0)));
+        }
+        if e.fee_pct == COMMISSION_PCT {
+            let c = calculate(&i, &m, &p).expect("calculates");
+            assert_eq!(e.plan, c.plan, "{}", case["name"]);
+        }
+        // The flows discounted at the solved yield give the dirty price.
+        for y in std::iter::once(&e.to_maturity).chain(e.to_offer.as_ref()) {
+            assert!((y.present_value - e.price.dirty).abs() < 1e-6 * e.price.dirty);
+            assert!(y.ytm_after_fee <= y.ytm);
+            let years: f64 = y.tax.iter().map(|t| t.tax).sum();
+            assert!(near(years, -y.held.tax));
+            assert_eq!(y.held.reinvest, 0.0);
+        }
+        checked += 1;
+    }
+    assert!(checked >= 8, "{checked}");
 }
 
 #[test]

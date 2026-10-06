@@ -8,6 +8,10 @@
 //!   schedule, yields and durations out; an issue and a plan in, the
 //!   plan's totals, the early exit, floater scenarios and the offer pair
 //!   out.
+//! - [`explain`]: the working behind those figures, for a screen to show:
+//!   the price and the accrued interest, the yields solved from the
+//!   discounted flows, the yields after a broker's fee and after tax
+//!   without reinvestment, and the tax year by year.
 //!
 //! Days are offsets from the valuation date, ACT/365. Invalid inputs give
 //! a typed [`Error`] at the issue level and NaN in the primitives; nothing
@@ -53,6 +57,7 @@
 
 mod calculate;
 pub mod date;
+mod explain;
 mod issue;
 pub mod primitives;
 #[cfg(feature = "wasm")]
@@ -60,10 +65,11 @@ mod wasm;
 
 pub use calculate::{
     calculate, effective_annual_pct, Breakdown, Calculation, EarlyExit, FloaterScenario,
-    FloaterScenarios, OfferPair, Plan, TaxRegime, COMMISSION_PCT, FLOATER_RAMP_STEPS,
+    FloaterScenarios, OfferPair, Plan, TaxRegime, TaxYear, COMMISSION_PCT, FLOATER_RAMP_STEPS,
     FLOATER_SHIFTS_PCT, LDV_CAP_PER_YEAR, LDV_YEARS, MAX_AMOUNT, MIN_ANNUALISED_DAYS,
     WORST_CASE_COUPON_PCT,
 };
+pub use explain::{explain, Explanation, FlowTrace, PriceTrace, YieldTrace};
 pub use issue::{
     coupon_schedule, derive_bond, Amortization, CouponType, Derived, Error, Event, Issue, Market,
     Schedule,

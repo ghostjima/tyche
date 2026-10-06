@@ -3861,5 +3861,3798 @@
       }
     ],
     "expect": {"error": "invalid_code"}
+  },
+  {
+    "name": "explain: fixed, sold after a year with accrued interest received, standard 13",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 98.12,
+          "clean": 981.2,
+          "couponRatePct": 12.03,
+          "periodDays": 182,
+          "couponAmount": 59.98520547945205,
+          "daysSinceLast": 49,
+          "accruedComputed": 16.149863013698628,
+          "accruedQuoted": 16.15,
+          "accrued": 16.15,
+          "dirty": 997.35
+        },
+        "toMaturity": {
+          "eventDay": 861,
+          "flows": [
+            {
+              "day": 133,
+              "years": 0.3643835616438356,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.9552646794327834,
+              "presentValue": 57.301748083038405
+            },
+            {
+              "day": 315,
+              "years": 0.863013698630137,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8972730017866367,
+              "presentValue": 53.82310538333615
+            },
+            {
+              "day": 497,
+              "years": 1.3616438356164384,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8428018507009523,
+              "presentValue": 50.55564219275909
+            },
+            {
+              "day": 679,
+              "years": 1.8602739726027397,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.7916375040044465,
+              "presentValue": 47.48653834294727
+            },
+            {
+              "day": 861,
+              "years": 2.3589041095890413,
+              "coupon": 59.98520547945205,
+              "principal": 1000,
+              "amount": 1059.9852054794521,
+              "factor": 0.7435792140527177,
+              "presentValue": 788.1829659979195
+            }
+          ],
+          "ytm": 0.1338293250500341,
+          "presentValue": 997.3500000000004,
+          "priceWithFee": 997.848675,
+          "ytmAfterFee": 0.13355808752993525,
+          "held": {
+            "qty": 250,
+            "invested": 249337.5,
+            "coupons": 74981.50684931505,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 250000,
+            "tax": -9817.513952910958,
+            "commission": -124.66875,
+            "total": 315039.32414640405,
+            "profit": 65701.82414640405,
+            "periodPct": 26.35055863895485,
+            "annualPct": 10.423413456835217,
+            "horizonDay": 861
+          },
+          "tax": [
+            {
+              "year": 2027,
+              "coupons": 29992.602739726026,
+              "accruedPaid": 4037.4999999999995,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 25955.102739726026,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 25955.102739726026,
+              "taxedLow": 25955.102739726026,
+              "taxedHigh": 0,
+              "tax": 3374.1633561643835
+            },
+            {
+              "year": 2028,
+              "coupons": 29992.602739726026,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 29992.602739726026,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 29992.602739726026,
+              "taxedLow": 29992.602739726026,
+              "taxedHigh": 0,
+              "tax": 3899.0383561643835
+            },
+            {
+              "year": 2029,
+              "coupons": 14996.301369863013,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 250000,
+              "sale": 0,
+              "cost": 245424.66875,
+              "reinvest": 0,
+              "income": 14996.301369863013,
+              "result": 4575.331249999988,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 19571.632619863,
+              "taxedLow": 19571.632619863,
+              "taxedHigh": 0,
+              "tax": 2544.3122405821905
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 250,
+          "invested": 249337.5,
+          "coupons": 14996.301369863013,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 260569.67347701787,
+          "tax": -3376.5577638185064,
+          "commission": -254.95358673850896,
+          "total": 271934.46349632385,
+          "profit": 22596.96349632385,
+          "periodPct": 9.062801823361449,
+          "annualPct": 11.132203318055556,
+          "horizonDay": 300
+        },
+        "planTax": [
+          {
+            "year": 2027,
+            "coupons": 14996.301369863013,
+            "accruedPaid": 4037.4999999999995,
+            "accruedReceived": 13760.342465753423,
+            "redemptions": 0,
+            "sale": 260569.67347701787,
+            "cost": 245554.95358673853,
+            "reinvest": 0,
+            "income": 10958.801369863013,
+            "result": 15014.719890279346,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 25973.52126014236,
+            "taxedLow": 25973.52126014236,
+            "taxedHigh": 0,
+            "tax": 3376.5577638185064
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: fixed, one year, no fee",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 98.12,
+          "clean": 981.2,
+          "couponRatePct": 12.03,
+          "periodDays": 182,
+          "couponAmount": 59.98520547945205,
+          "daysSinceLast": 49,
+          "accruedComputed": 16.149863013698628,
+          "accruedQuoted": 16.15,
+          "accrued": 16.15,
+          "dirty": 997.35
+        },
+        "toMaturity": {
+          "eventDay": 861,
+          "flows": [
+            {
+              "day": 133,
+              "years": 0.3643835616438356,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.9552646794327834,
+              "presentValue": 57.301748083038405
+            },
+            {
+              "day": 315,
+              "years": 0.863013698630137,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8972730017866367,
+              "presentValue": 53.82310538333615
+            },
+            {
+              "day": 497,
+              "years": 1.3616438356164384,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8428018507009523,
+              "presentValue": 50.55564219275909
+            },
+            {
+              "day": 679,
+              "years": 1.8602739726027397,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.7916375040044465,
+              "presentValue": 47.48653834294727
+            },
+            {
+              "day": 861,
+              "years": 2.3589041095890413,
+              "coupon": 59.98520547945205,
+              "principal": 1000,
+              "amount": 1059.9852054794521,
+              "factor": 0.7435792140527177,
+              "presentValue": 788.1829659979195
+            }
+          ],
+          "ytm": 0.1338293250500341,
+          "presentValue": 997.3500000000004,
+          "priceWithFee": 997.35,
+          "ytmAfterFee": 0.1338293250500341,
+          "held": {
+            "qty": 100,
+            "invested": 99735,
+            "coupons": 29992.602739726022,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 100000,
+            "tax": -3933.4883561643833,
+            "commission": 0,
+            "total": 126059.11438356164,
+            "profit": 26324.11438356164,
+            "periodPct": 26.39405863895487,
+            "annualPct": 10.439528070951365,
+            "horizonDay": 861
+          },
+          "tax": [
+            {
+              "year": 2027,
+              "coupons": 11997.04109589041,
+              "accruedPaid": 1614.9999999999998,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 10382.04109589041,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 10382.04109589041,
+              "taxedLow": 10382.04109589041,
+              "taxedHigh": 0,
+              "tax": 1349.6653424657532
+            },
+            {
+              "year": 2028,
+              "coupons": 11997.04109589041,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11997.04109589041,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11997.04109589041,
+              "taxedLow": 11997.04109589041,
+              "taxedHigh": 0,
+              "tax": 1559.6153424657532
+            },
+            {
+              "year": 2029,
+              "coupons": 5998.520547945205,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 100000,
+              "sale": 0,
+              "cost": 98120,
+              "reinvest": 0,
+              "income": 5998.520547945205,
+              "result": 1880,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 7878.520547945205,
+              "taxedLow": 7878.520547945205,
+              "taxedHigh": 0,
+              "tax": 1024.2076712328767
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 100,
+          "invested": 99735,
+          "coupons": 11997.04109589041,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 100482.80597365885,
+          "tax": -1656.8301190414036,
+          "commission": 0,
+          "total": 110823.01695050785,
+          "profit": 11088.016950507852,
+          "periodPct": 11.117478267917834,
+          "annualPct": 11.117478267917825,
+          "horizonDay": 365
+        },
+        "planTax": [
+          {
+            "year": 2027,
+            "coupons": 11997.04109589041,
+            "accruedPaid": 1614.9999999999998,
+            "accruedReceived": 1647.9452054794522,
+            "redemptions": 0,
+            "sale": 100482.80597365885,
+            "cost": 98120,
+            "reinvest": 0,
+            "income": 10382.04109589041,
+            "result": 2362.8059736588475,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 12744.847069549258,
+            "taxedLow": 12744.847069549258,
+            "taxedHigh": 0,
+            "tax": 1656.8301190414036
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: fixed, reinvested, other income at the threshold, fee 0.3",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 2400000,
+        "rateShiftPct": 2
+      },
+      0.3
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.3,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 98.12,
+          "clean": 981.2,
+          "couponRatePct": 12.03,
+          "periodDays": 182,
+          "couponAmount": 59.98520547945205,
+          "daysSinceLast": 49,
+          "accruedComputed": 16.149863013698628,
+          "accruedQuoted": 16.15,
+          "accrued": 16.15,
+          "dirty": 997.35
+        },
+        "toMaturity": {
+          "eventDay": 861,
+          "flows": [
+            {
+              "day": 133,
+              "years": 0.3643835616438356,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.9552646794327834,
+              "presentValue": 57.301748083038405
+            },
+            {
+              "day": 315,
+              "years": 0.863013698630137,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8972730017866367,
+              "presentValue": 53.82310538333615
+            },
+            {
+              "day": 497,
+              "years": 1.3616438356164384,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.8428018507009523,
+              "presentValue": 50.55564219275909
+            },
+            {
+              "day": 679,
+              "years": 1.8602739726027397,
+              "coupon": 59.98520547945205,
+              "principal": 0,
+              "amount": 59.98520547945205,
+              "factor": 0.7916375040044465,
+              "presentValue": 47.48653834294727
+            },
+            {
+              "day": 861,
+              "years": 2.3589041095890413,
+              "coupon": 59.98520547945205,
+              "principal": 1000,
+              "amount": 1059.9852054794521,
+              "factor": 0.7435792140527177,
+              "presentValue": 788.1829659979195
+            }
+          ],
+          "ytm": 0.1338293250500341,
+          "presentValue": 997.3500000000004,
+          "priceWithFee": 1000.3420499999999,
+          "ytmAfterFee": 0.13220505740092403,
+          "held": {
+            "qty": 100,
+            "invested": 99735,
+            "coupons": 29992.602739726022,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 100000,
+            "tax": -4493.759660958904,
+            "commission": -299.205,
+            "total": 125199.63807876711,
+            "profit": 25464.638078767108,
+            "periodPct": 25.532298670243254,
+            "annualPct": 10.119690832908933,
+            "horizonDay": 861
+          },
+          "tax": [
+            {
+              "year": 2027,
+              "coupons": 11997.04109589041,
+              "accruedPaid": 1614.9999999999998,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 10382.04109589041,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 10382.04109589041,
+              "taxedLow": 0,
+              "taxedHigh": 10382.04109589041,
+              "tax": 1557.3061643835617
+            },
+            {
+              "year": 2028,
+              "coupons": 11997.04109589041,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11997.04109589041,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11997.04109589041,
+              "taxedLow": 0,
+              "taxedHigh": 11997.04109589041,
+              "tax": 1799.5561643835617
+            },
+            {
+              "year": 2029,
+              "coupons": 5998.520547945205,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 100000,
+              "sale": 0,
+              "cost": 98419.205,
+              "reinvest": 0,
+              "income": 5998.520547945205,
+              "result": 1580.7949999999983,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 7579.315547945203,
+              "taxedLow": 0,
+              "taxedHigh": 7579.315547945203,
+              "tax": 1136.8973321917804
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 100,
+          "invested": 99735,
+          "coupons": 11997.04109589041,
+          "reinvest": 602.6206643159292,
+          "amort": 0,
+          "body": 100482.80597365885,
+          "tax": -1912.0221473916304,
+          "commission": -600.6534179209766,
+          "total": 110569.79216855258,
+          "profit": 10834.79216855258,
+          "periodPct": 10.86358065729441,
+          "annualPct": 10.863580657294403,
+          "horizonDay": 365
+        },
+        "planTax": [
+          {
+            "year": 2027,
+            "coupons": 11997.04109589041,
+            "accruedPaid": 1614.9999999999998,
+            "accruedReceived": 1647.9452054794522,
+            "redemptions": 0,
+            "sale": 100482.80597365885,
+            "cost": 98720.65341792098,
+            "reinvest": 602.6206643159292,
+            "income": 10984.66176020634,
+            "result": 1762.1525557378627,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 12746.814315944202,
+            "taxedLow": 0,
+            "taxedHigh": 12746.814315944202,
+            "tax": 1912.0221473916304
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: held more than three years, the gain relieved",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": 51.51,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 1200,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 95.64,
+          "clean": 956.4,
+          "couponRatePct": 11.75,
+          "periodDays": 182,
+          "couponAmount": 58.58904109589041,
+          "daysSinceLast": 160,
+          "accruedComputed": 51.50684931506849,
+          "accruedQuoted": 51.51,
+          "accrued": 51.51,
+          "dirty": 1007.91
+        },
+        "toMaturity": {
+          "eventDay": 2570,
+          "flows": [
+            {
+              "day": 22,
+              "years": 0.06027397260273973,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.9926048715162522,
+              "presentValue": 58.155767609246716
+            },
+            {
+              "day": 204,
+              "years": 0.5589041095890411,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.9334873943836456,
+              "presentValue": 54.692131312039066
+            },
+            {
+              "day": 386,
+              "years": 1.0575342465753426,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.8778908309628422,
+              "presentValue": 51.43478197298734
+            },
+            {
+              "day": 568,
+              "years": 1.5561643835616439,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.8256054829722635,
+              "presentValue": 48.3714335708544
+            },
+            {
+              "day": 750,
+              "years": 2.0547945205479454,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.7764341413228807,
+              "presentValue": 45.490531814218635
+            },
+            {
+              "day": 932,
+              "years": 2.5534246575342467,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.7301913422879387,
+              "presentValue": 42.78121056117142
+            },
+            {
+              "day": 1114,
+              "years": 3.052054794520548,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.6867026679736622,
+              "presentValue": 40.23325083456648
+            },
+            {
+              "day": 1296,
+              "years": 3.5506849315068494,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.6458040884524673,
+              "presentValue": 37.83704227823565
+            },
+            {
+              "day": 1478,
+              "years": 4.049315068493151,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.607341343077348,
+              "presentValue": 35.583546908792016
+            },
+            {
+              "day": 1660,
+              "years": 4.5479452054794525,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.5711693586438887,
+              "presentValue": 33.46426502630016
+            },
+            {
+              "day": 1842,
+              "years": 5.046575342465753,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.537151702205334,
+              "presentValue": 31.471203155235802
+            },
+            {
+              "day": 2024,
+              "years": 5.545205479452055,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.5051600664768521,
+              "presentValue": 29.596843894815017
+            },
+            {
+              "day": 2206,
+              "years": 6.043835616438356,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.47507378588804844,
+              "presentValue": 27.83411756497511
+            },
+            {
+              "day": 2388,
+              "years": 6.542465753424658,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.44677938145838236,
+              "presentValue": 26.176375541061663
+            },
+            {
+              "day": 2570,
+              "years": 7.041095890410959,
+              "coupon": 58.58904109589041,
+              "principal": 1000,
+              "amount": 1058.5890410958905,
+              "factor": 0.42017013277885523,
+              "presentValue": 444.78749795550135
+            }
+          ],
+          "ytm": 0.1310515945932914,
+          "presentValue": 1007.9100000000008,
+          "priceWithFee": 1008.4139549999999,
+          "ytmAfterFee": 0.13093072655156412,
+          "held": {
+            "qty": 99,
+            "invested": 99783.09,
+            "coupons": 87004.72602739724,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -10647.680683561644,
+            "commission": -49.89154500000001,
+            "total": 175307.1537988356,
+            "profit": 75524.06379883562,
+            "periodPct": 75.68823915839408,
+            "annualPct": 8.332602351104068,
+            "horizonDay": 2570
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 5800.315068493151,
+              "accruedPaid": 5099.49,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 700.8250684931509,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 700.8250684931509,
+              "taxedLow": 700.8250684931509,
+              "taxedHigh": 0,
+              "tax": 91.10725890410963
+            },
+            {
+              "year": 2027,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2028,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2029,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2030,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2031,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2032,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2033,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 99000,
+              "sale": 0,
+              "cost": 94733.491545,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 4266.508455000003,
+              "relievedProceeds": 99000,
+              "relievedYears": 693000,
+              "exempt": 4266.508455000003,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 99,
+          "invested": 99783.09,
+          "coupons": 40602.20547945206,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 98953.55515121117,
+          "tax": -4615.353012328767,
+          "commission": -99.3683225756056,
+          "total": 134841.03929575885,
+          "profit": 35057.94929575885,
+          "periodPct": 35.134158799611086,
+          "annualPct": 9.59087577277893,
+          "horizonDay": 1200
+        },
+        "planTax": [
+          {
+            "year": 2026,
+            "coupons": 5800.315068493151,
+            "accruedPaid": 5099.49,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 700.8250684931509,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 700.8250684931509,
+            "taxedLow": 700.8250684931509,
+            "taxedHigh": 0,
+            "tax": 91.10725890410963
+          },
+          {
+            "year": 2027,
+            "coupons": 11600.630136986301,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 11600.630136986301,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 11600.630136986301,
+            "taxedLow": 11600.630136986301,
+            "taxedHigh": 0,
+            "tax": 1508.0819178082193
+          },
+          {
+            "year": 2028,
+            "coupons": 11600.630136986301,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 11600.630136986301,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 11600.630136986301,
+            "taxedLow": 11600.630136986301,
+            "taxedHigh": 0,
+            "tax": 1508.0819178082193
+          },
+          {
+            "year": 2029,
+            "coupons": 11600.630136986301,
+            "accruedPaid": 0,
+            "accruedReceived": 2740.808219178082,
+            "redemptions": 0,
+            "sale": 98953.55515121117,
+            "cost": 94782.9683225756,
+            "reinvest": 0,
+            "income": 11600.630136986301,
+            "result": 0,
+            "relieved": 4170.586828635569,
+            "relievedProceeds": 98953.55515121117,
+            "relievedYears": 296860.6654536335,
+            "exempt": 4170.586828635569,
+            "base": 11600.630136986301,
+            "taxedLow": 11600.630136986301,
+            "taxedHigh": 0,
+            "tax": 1508.0819178082193
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: amortising, to maturity, reinvested",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {
+            "date": "2027-07-11",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2028-01-09",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2028-07-09",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2029-01-07",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2029-07-08",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2030-01-06",
+            "fractionPct": 16.67
+          }
+        ]
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 1220,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 96.9,
+          "clean": 969,
+          "couponRatePct": 11.08,
+          "periodDays": 182,
+          "couponAmount": 55.24821917808219,
+          "daysSinceLast": 54,
+          "accruedComputed": 16.39232876712329,
+          "accruedQuoted": 16.39,
+          "accrued": 16.39,
+          "dirty": 985.3900000000001
+        },
+        "toMaturity": {
+          "eventDay": 1220,
+          "flows": [
+            {
+              "day": 128,
+              "years": 0.3506849315068493,
+              "coupon": 55.24821917808219,
+              "principal": 0,
+              "amount": 55.24821917808219,
+              "factor": 0.957335540123363,
+              "presentValue": 52.89108374770325
+            },
+            {
+              "day": 310,
+              "years": 0.8493150684931506,
+              "coupon": 55.24821917808219,
+              "principal": 166.70000000000002,
+              "amount": 221.9482191780822,
+              "factor": 0.899787210162092,
+              "presentValue": 199.7061689346911
+            },
+            {
+              "day": 492,
+              "years": 1.347945205479452,
+              "coupon": 46.03834104109589,
+              "principal": 166.70000000000002,
+              "amount": 212.7383410410959,
+              "factor": 0.8456982840801595,
+              "presentValue": 179.91244997651458
+            },
+            {
+              "day": 674,
+              "years": 1.8465753424657534,
+              "coupon": 36.82846290410958,
+              "principal": 166.70000000000002,
+              "amount": 203.5284629041096,
+              "factor": 0.7948608066648175,
+              "presentValue": 161.77679820321094
+            },
+            {
+              "day": 856,
+              "years": 2.345205479452055,
+              "coupon": 27.618584767123284,
+              "principal": 166.70000000000002,
+              "amount": 194.3185847671233,
+              "factor": 0.7470793235190707,
+              "presentValue": 145.17139685500567
+            },
+            {
+              "day": 1038,
+              "years": 2.8438356164383563,
+              "coupon": 18.408706630136976,
+              "principal": 166.70000000000002,
+              "amount": 185.108706630137,
+              "factor": 0.7021701295998953,
+              "presentValue": 129.97780452455228
+            },
+            {
+              "day": 1220,
+              "years": 3.3424657534246576,
+              "coupon": 9.198828493150673,
+              "principal": 166.4999999999998,
+              "amount": 175.69882849315047,
+              "factor": 0.6599605629290957,
+              "presentValue": 115.95429775832221
+            }
+          ],
+          "ytm": 0.13239167689158127,
+          "presentValue": 985.3900000000002,
+          "priceWithFee": 985.882695,
+          "ytmAfterFee": 0.13208644717665174,
+          "held": {
+            "qty": 101,
+            "invested": 99524.39000000001,
+            "coupons": 25107.525581369857,
+            "reinvest": 0,
+            "amort": 84183.50000000001,
+            "body": 16816.499999999978,
+            "tax": -3382.6451479388543,
+            "commission": -49.76219500000001,
+            "total": 122675.118238431,
+            "profit": 23150.72823843098,
+            "periodPct": 23.261361600338347,
+            "annualPct": 6.456856969130764,
+            "horizonDay": 1220
+          },
+          "tax": [
+            {
+              "year": 2027,
+              "coupons": 11160.140273972602,
+              "accruedPaid": 1655.39,
+              "accruedReceived": 0,
+              "redemptions": 16836.7,
+              "sale": 0,
+              "cost": 16323.057657906504,
+              "reinvest": 0,
+              "income": 9504.7502739726,
+              "result": 513.6423420934971,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 10018.392616066098,
+              "taxedLow": 10018.392616066098,
+              "taxedHigh": 0,
+              "tax": 1302.3910400885927
+            },
+            {
+              "year": 2028,
+              "coupons": 8369.547198465752,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 33673.4,
+              "sale": 0,
+              "cost": 32646.115315813007,
+              "reinvest": 0,
+              "income": 8369.547198465752,
+              "result": 1027.2846841869941,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 9396.831882652747,
+              "taxedLow": 9396.831882652747,
+              "taxedHigh": 0,
+              "tax": 1221.588144744857
+            },
+            {
+              "year": 2029,
+              "coupons": 4648.756431123286,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 33673.4,
+              "sale": 0,
+              "cost": 32646.115315813007,
+              "reinvest": 0,
+              "income": 4648.756431123286,
+              "result": 1027.2846841869941,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 5676.0411153102805,
+              "taxedLow": 5676.0411153102805,
+              "taxedHigh": 0,
+              "tax": 737.8853449903364
+            },
+            {
+              "year": 2030,
+              "coupons": 929.0816778082179,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 16816.499999999978,
+              "sale": 0,
+              "cost": 16303.473905467485,
+              "reinvest": 0,
+              "income": 929.0816778082179,
+              "result": 0,
+              "relieved": 513.0260945324935,
+              "relievedProceeds": 16816.499999999978,
+              "relievedYears": 50449.499999999935,
+              "exempt": 513.0260945324935,
+              "base": 929.081677808218,
+              "taxedLow": 929.081677808218,
+              "taxedHigh": 0,
+              "tax": 120.78061811506835
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 101,
+          "invested": 99524.39000000001,
+          "coupons": 25107.525581369857,
+          "reinvest": 24696.015706433795,
+          "amort": 84183.50000000001,
+          "body": 16816.499999999978,
+          "tax": -6593.127189775249,
+          "commission": -49.76219500000001,
+          "total": 144160.6519030284,
+          "profit": 44636.26190302838,
+          "periodPct": 44.84957094741136,
+          "annualPct": 11.723173817569066,
+          "horizonDay": 1220
+        },
+        "planTax": [
+          {
+            "year": 2027,
+            "coupons": 11160.140273972602,
+            "accruedPaid": 1655.39,
+            "accruedReceived": 0,
+            "redemptions": 16836.7,
+            "sale": 0,
+            "cost": 16323.057657906504,
+            "reinvest": 0,
+            "income": 9504.7502739726,
+            "result": 513.6423420934971,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 10018.392616066098,
+            "taxedLow": 10018.392616066098,
+            "taxedHigh": 0,
+            "tax": 1302.3910400885927
+          },
+          {
+            "year": 2028,
+            "coupons": 8369.547198465752,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 33673.4,
+            "sale": 0,
+            "cost": 32646.115315813007,
+            "reinvest": 0,
+            "income": 8369.547198465752,
+            "result": 1027.2846841869941,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 9396.831882652747,
+            "taxedLow": 9396.831882652747,
+            "taxedHigh": 0,
+            "tax": 1221.588144744857
+          },
+          {
+            "year": 2029,
+            "coupons": 4648.756431123286,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 33673.4,
+            "sale": 0,
+            "cost": 32646.115315813007,
+            "reinvest": 0,
+            "income": 4648.756431123286,
+            "result": 1027.2846841869941,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 5676.0411153102805,
+            "taxedLow": 5676.0411153102805,
+            "taxedHigh": 0,
+            "tax": 737.8853449903364
+          },
+          {
+            "year": 2030,
+            "coupons": 929.0816778082179,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 16816.499999999978,
+            "sale": 0,
+            "cost": 16303.473905467485,
+            "reinvest": 24696.015706433795,
+            "income": 25625.097384242014,
+            "result": 0,
+            "relieved": 513.0260945324935,
+            "relievedProceeds": 16816.499999999978,
+            "relievedYears": 50449.499999999935,
+            "exempt": 513.0260945324935,
+            "base": 25625.097384242014,
+            "taxedLow": 25625.097384242014,
+            "taxedHigh": 0,
+            "tax": 3331.262659951462
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: floater with an offer, other income at the threshold",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.78,
+        "accrued": 29.46,
+        "couponType": "floater",
+        "couponRatePct": 17.07,
+        "spreadPct": 1.07,
+        "periodDays": 91,
+        "maturity": "2027-04-02",
+        "offers": [
+          "2027-01-01"
+        ],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 100,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 2400000,
+        "rateShiftPct": 2
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 100.78,
+          "clean": 1007.8,
+          "couponRatePct": 17.07,
+          "periodDays": 91,
+          "couponAmount": 42.55808219178082,
+          "daysSinceLast": 63,
+          "accruedComputed": 29.463287671232877,
+          "accruedQuoted": 29.46,
+          "accrued": 29.46,
+          "dirty": 1037.26
+        },
+        "toMaturity": {
+          "eventDay": 210,
+          "flows": [
+            {
+              "day": 28,
+              "years": 0.07671232876712329,
+              "coupon": 42.55808219178082,
+              "principal": 0,
+              "amount": 42.55808219178082,
+              "factor": 0.9883320905538432,
+              "presentValue": 42.06151834256502
+            },
+            {
+              "day": 119,
+              "years": 0.32602739726027397,
+              "coupon": 42.55808219178082,
+              "principal": 0,
+              "amount": 42.55808219178082,
+              "factor": 0.9513434046964161,
+              "presentValue": 40.48735080967868
+            },
+            {
+              "day": 210,
+              "years": 0.5753424657534246,
+              "coupon": 42.55808219178082,
+              "principal": 1000,
+              "amount": 1042.5580821917808,
+              "factor": 0.9157390337818466,
+              "presentValue": 954.7111308477564
+            }
+          ],
+          "ytm": 0.165317799279722,
+          "presentValue": 1037.2600000000002,
+          "priceWithFee": 1037.77863,
+          "ytmAfterFee": 0.16425023395150296,
+          "held": {
+            "qty": 96,
+            "invested": 99576.95999999999,
+            "coupons": 12256.727671232877,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 96000,
+            "tax": -1294.4968786849327,
+            "commission": -49.78848,
+            "total": 106912.44231254794,
+            "profit": 7335.482312547945,
+            "periodPct": 7.366646172516159,
+            "annualPct": 13.149837583060897,
+            "horizonDay": 210
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 4085.575890410959,
+              "accruedPaid": 2828.16,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 1257.415890410959,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 1257.415890410959,
+              "taxedLow": 0,
+              "taxedHigh": 1257.415890410959,
+              "tax": 188.61238356164387
+            },
+            {
+              "year": 2027,
+              "coupons": 8171.151780821918,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 96000,
+              "sale": 0,
+              "cost": 96798.58847999999,
+              "reinvest": 0,
+              "income": 8171.151780821918,
+              "result": -798.5884799999913,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 7372.5633008219265,
+              "taxedLow": 0,
+              "taxedHigh": 7372.5633008219265,
+              "tax": 1105.8844951232888
+            }
+          ]
+        },
+        "toOffer": {
+          "eventDay": 119,
+          "flows": [
+            {
+              "day": 28,
+              "years": 0.07671232876712329,
+              "coupon": 42.55808219178082,
+              "principal": 0,
+              "amount": 42.55808219178082,
+              "factor": 0.9891129072401926,
+              "presentValue": 42.0947484032794
+            },
+            {
+              "day": 119,
+              "years": 0.32602739726027397,
+              "coupon": 42.55808219178082,
+              "principal": 1000,
+              "amount": 1042.5580821917808,
+              "factor": 0.954541783901933,
+              "presentValue": 995.1652515967206
+            }
+          ],
+          "ytm": 0.1533828554848301,
+          "presentValue": 1037.26,
+          "priceWithFee": 1037.77863,
+          "ytmAfterFee": 0.15155927041528205,
+          "held": {
+            "qty": 96,
+            "invested": 99576.95999999999,
+            "coupons": 8171.151780821918,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 96000,
+            "tax": -681.6604951232889,
+            "commission": -49.78848,
+            "total": 103439.70280569863,
+            "profit": 3862.742805698639,
+            "periodPct": 3.879153175291392,
+            "annualPct": 12.38189598573356,
+            "horizonDay": 119
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 4085.575890410959,
+              "accruedPaid": 2828.16,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 1257.415890410959,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 1257.415890410959,
+              "taxedLow": 0,
+              "taxedHigh": 1257.415890410959,
+              "tax": 188.61238356164387
+            },
+            {
+              "year": 2027,
+              "coupons": 4085.575890410959,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 96000,
+              "sale": 0,
+              "cost": 96798.58847999999,
+              "reinvest": 0,
+              "income": 4085.575890410959,
+              "result": -798.5884799999913,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 3286.9874104109676,
+              "taxedLow": 0,
+              "taxedHigh": 3286.9874104109676,
+              "tax": 493.0481115616451
+            }
+          ]
+        },
+        "plan": {
+          "qty": 96,
+          "invested": 99576.95999999999,
+          "coupons": 4085.575890410959,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99628.79498175686,
+          "tax": -605.6711992015429,
+          "commission": -99.60287749087844,
+          "total": 103009.09679547539,
+          "profit": 3432.136795475395,
+          "periodPct": 3.4467177904159705,
+          "annualPct": 13.166012214205548,
+          "horizonDay": 100
+        },
+        "planTax": [
+          {
+            "year": 2026,
+            "coupons": 4085.575890410959,
+            "accruedPaid": 2828.16,
+            "accruedReceived": 3232.543561643836,
+            "redemptions": 0,
+            "sale": 99628.79498175686,
+            "cost": 96848.40287749087,
+            "reinvest": 0,
+            "income": 1257.415890410959,
+            "result": 2780.392104265993,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 4037.807994676952,
+            "taxedLow": 0,
+            "taxedHigh": 4037.807994676952,
+            "tax": 605.6711992015429
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: floater with amortisation, IIS type B, no tax years",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 102.6,
+        "accrued": 44.86,
+        "couponType": "floater",
+        "couponRatePct": 22.74,
+        "spreadPct": 6.74,
+        "periodDays": 91,
+        "maturity": "2028-03-22",
+        "offers": [],
+        "amortization": [
+          {
+            "date": "2027-06-23",
+            "fractionPct": 25
+          },
+          {
+            "date": "2027-09-22",
+            "fractionPct": 25
+          },
+          {
+            "date": "2027-12-22",
+            "fractionPct": 25
+          },
+          {
+            "date": "2028-03-22",
+            "fractionPct": 25
+          }
+        ]
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 565,
+        "reinvest": false,
+        "taxRegime": "iis_b",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      1
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 1,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 102.6,
+          "clean": 1026,
+          "couponRatePct": 22.740000000000002,
+          "periodDays": 91,
+          "couponAmount": 56.69424657534247,
+          "daysSinceLast": 72,
+          "accruedComputed": 44.856986301369865,
+          "accruedQuoted": 44.86,
+          "accrued": 44.86,
+          "dirty": 1070.86
+        },
+        "toMaturity": {
+          "eventDay": 565,
+          "flows": [
+            {
+              "day": 19,
+              "years": 0.052054794520547946,
+              "coupon": 56.69424657534247,
+              "principal": 0,
+              "amount": 56.69424657534247,
+              "factor": 0.9898131355851931,
+              "presentValue": 56.11670997237982
+            },
+            {
+              "day": 110,
+              "years": 0.3013698630136986,
+              "coupon": 56.69424657534247,
+              "principal": 0,
+              "amount": 56.69424657534247,
+              "factor": 0.9424437600813885,
+              "presentValue": 53.43113891744714
+            },
+            {
+              "day": 201,
+              "years": 0.5506849315068493,
+              "coupon": 56.69424657534247,
+              "principal": 0,
+              "amount": 56.69424657534247,
+              "factor": 0.8973413354342158,
+              "presentValue": 50.87409093335452
+            },
+            {
+              "day": 292,
+              "years": 0.8,
+              "coupon": 56.69424657534247,
+              "principal": 250,
+              "amount": 306.69424657534245,
+              "factor": 0.854397372432413,
+              "presentValue": 262.03875841411116
+            },
+            {
+              "day": 383,
+              "years": 1.0493150684931507,
+              "coupon": 42.52068493150685,
+              "principal": 250,
+              "amount": 292.5206849315068,
+              "factor": 0.8135085738206556,
+              "presentValue": 237.96808521167145
+            },
+            {
+              "day": 474,
+              "years": 1.2986301369863014,
+              "coupon": 28.347123287671234,
+              "principal": 250,
+              "amount": 278.34712328767125,
+              "factor": 0.7745765858287075,
+              "presentValue": 215.60116443140672
+            },
+            {
+              "day": 565,
+              "years": 1.547945205479452,
+              "coupon": 14.173561643835617,
+              "principal": 250,
+              "amount": 264.1735616438356,
+              "factor": 0.7375077615916129,
+              "presentValue": 194.8300521196292
+            }
+          ],
+          "ytm": 0.21737707726678812,
+          "presentValue": 1070.8600000000001,
+          "priceWithFee": 1081.5685999999998,
+          "ytmAfterFee": 0.2055215029482883,
+          "held": {
+            "qty": 93,
+            "invested": 99589.98,
+            "coupons": 28999.107123287675,
+            "reinvest": 0,
+            "amort": 69750,
+            "body": 23250,
+            "tax": 0,
+            "commission": -995.8997999999999,
+            "total": 121003.20732328767,
+            "profit": 21413.227323287676,
+            "periodPct": 21.501387311542462,
+            "annualPct": 13.407290881247569,
+            "horizonDay": 565
+          },
+          "tax": []
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 93,
+          "invested": 99589.98,
+          "coupons": 28999.107123287675,
+          "reinvest": 0,
+          "amort": 69750,
+          "body": 23250,
+          "tax": 0,
+          "commission": -995.8997999999999,
+          "total": 121003.20732328767,
+          "profit": 21413.227323287676,
+          "periodPct": 21.501387311542462,
+          "annualPct": 13.407290881247569,
+          "horizonDay": 565
+        },
+        "planTax": []
+      }
+    }
+  },
+  {
+    "name": "explain: offer pair, both yields traced",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": [
+          "2030-02-05"
+        ],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 99.15,
+          "clean": 991.5,
+          "couponRatePct": 18.14,
+          "periodDays": 91,
+          "couponAmount": 45.22575342465754,
+          "daysSinceLast": 24,
+          "accruedComputed": 11.927671232876714,
+          "accruedQuoted": 11.93,
+          "accrued": 11.93,
+          "dirty": 1003.43
+        },
+        "toMaturity": {
+          "eventDay": 3525,
+          "flows": [
+            {
+              "day": 67,
+              "years": 0.18356164383561643,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.967643324970326,
+              "presentValue": 43.76239841812373
+            },
+            {
+              "day": 158,
+              "years": 0.4328767123287671,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.9253663537848008,
+              "presentValue": 41.85039054374582
+            },
+            {
+              "day": 249,
+              "years": 0.6821917808219178,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.8849364911841218,
+              "presentValue": 40.021919546774726
+            },
+            {
+              "day": 340,
+              "years": 0.9315068493150684,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.846273035783385,
+              "presentValue": 38.273335646275754
+            },
+            {
+              "day": 431,
+              "years": 1.180821917808219,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.8092988120940952,
+              "presentValue": 36.6011485226358
+            },
+            {
+              "day": 522,
+              "years": 1.4301369863013698,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7739400164754399,
+              "presentValue": 35.00202035059364
+            },
+            {
+              "day": 613,
+              "years": 1.6794520547945206,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7401260698160543,
+              "presentValue": 33.47275913666174
+            },
+            {
+              "day": 704,
+              "years": 1.9287671232876713,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7077894766522159,
+              "presentValue": 32.01031234764052
+            },
+            {
+              "day": 795,
+              "years": 2.1780821917808217,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.6768656904412572,
+              "presentValue": 30.61176081750688
+            },
+            {
+              "day": 886,
+              "years": 2.4273972602739726,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.6472929847212718,
+              "presentValue": 29.27431292051486
+            },
+            {
+              "day": 977,
+              "years": 2.6767123287671235,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.6190123298999378,
+              "presentValue": 27.995298998877356
+            },
+            {
+              "day": 1068,
+              "years": 2.926027397260274,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5919672754265171,
+              "presentValue": 26.772166033905997
+            },
+            {
+              "day": 1159,
+              "years": 3.175342465753425,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5661038371118383,
+              "presentValue": 25.602472549972497
+            },
+            {
+              "day": 1250,
+              "years": 3.4246575342465753,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5413703893713433,
+              "presentValue": 24.483883741119215
+            },
+            {
+              "day": 1341,
+              "years": 3.673972602739726,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5177175621761051,
+              "presentValue": 23.41416681059134
+            },
+            {
+              "day": 1432,
+              "years": 3.9232876712328766,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.4950981425061242,
+              "presentValue": 22.391186513987932
+            },
+            {
+              "day": 1523,
+              "years": 4.1726027397260275,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.4734669801091942,
+              "presentValue": 21.412900897135653
+            },
+            {
+              "day": 1614,
+              "years": 4.421917808219178,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.45278089737722493,
+              "presentValue": 20.477357220177545
+            },
+            {
+              "day": 1705,
+              "years": 4.671232876712328,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.4329986031601278,
+              "presentValue": 19.58268805974108
+            },
+            {
+              "day": 1796,
+              "years": 4.920547945205479,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.414080610345229,
+              "presentValue": 18.727107581405026
+            },
+            {
+              "day": 1887,
+              "years": 5.16986301369863,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.39598915703769266,
+              "presentValue": 17.908907975024682
+            },
+            {
+              "day": 1978,
+              "years": 5.419178082191781,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.3786881311846219,
+              "presentValue": 17.12645604580008
+            },
+            {
+              "day": 2069,
+              "years": 5.668493150684932,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.3621429984923837,
+              "presentValue": 16.37818995428267
+            },
+            {
+              "day": 2160,
+              "years": 5.917808219178082,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.3463207334932719,
+              "presentValue": 15.662616098813254
+            },
+            {
+              "day": 2251,
+              "years": 6.167123287671233,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.33118975362391356,
+              "presentValue": 14.978306134168196
+            },
+            {
+              "day": 2342,
+              "years": 6.416438356164384,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.31671985618383275,
+              "presentValue": 14.323894120463018
+            },
+            {
+              "day": 2433,
+              "years": 6.6657534246575345,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.3028821580483362,
+              "presentValue": 13.698073796622207
+            },
+            {
+              "day": 2524,
+              "years": 6.9150684931506845,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.2896490380153821,
+              "presentValue": 13.09959597297293
+            },
+            {
+              "day": 2615,
+              "years": 7.164383561643835,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.2769940816713522,
+              "presentValue": 12.527266037758027
+            },
+            {
+              "day": 2706,
+              "years": 7.413698630136986,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.26489202866567485,
+              "presentValue": 11.979941572591128
+            },
+            {
+              "day": 2797,
+              "years": 7.663013698630137,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.2533187222890536,
+              "presentValue": 11.456530072094038
+            },
+            {
+              "day": 2888,
+              "years": 7.912328767123288,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.24225106125465667,
+              "presentValue": 10.955986763164713
+            },
+            {
+              "day": 2979,
+              "years": 8.161643835616438,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.23166695358601747,
+              "presentValue": 10.477312519522808
+            },
+            {
+              "day": 3070,
+              "years": 8.41095890410959,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.221545272519603,
+              "presentValue": 10.019551867370122
+            },
+            {
+              "day": 3161,
+              "years": 8.66027397260274,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.2118658143340285,
+              "presentValue": 9.581791078185049
+            },
+            {
+              "day": 3252,
+              "years": 8.90958904109589,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.2026092580217404,
+              "presentValue": 9.16315634484405
+            },
+            {
+              "day": 3343,
+              "years": 9.158904109589042,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.19375712672267062,
+              "presentValue": 8.762812037429626
+            },
+            {
+              "day": 3434,
+              "years": 9.408219178082192,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.18529175084287972,
+              "presentValue": 8.379959035243159
+            },
+            {
+              "day": 3525,
+              "years": 9.657534246575343,
+              "coupon": 45.22575342465754,
+              "principal": 1000,
+              "amount": 1045.2257534246576,
+              "factor": 0.17719623278457017,
+              "presentValue": 185.21006591626337
+            }
+          ],
+          "ytm": 0.19624354295510826,
+          "presentValue": 1003.4299999999998,
+          "priceWithFee": 1003.9317149999999,
+          "ytmAfterFee": 0.19611497694123903,
+          "held": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 174616.63397260284,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -22546.623316438363,
+            "commission": -49.669785000000005,
+            "total": 251020.34087116446,
+            "profit": 151680.77087116445,
+            "periodPct": 152.68917599619613,
+            "annualPct": 10.074387138697748,
+            "horizonDay": 3525
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 4477.349589041097,
+              "accruedPaid": 1181.07,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 3296.279589041097,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 3296.279589041097,
+              "taxedLow": 3296.279589041097,
+              "taxedHigh": 0,
+              "tax": 428.5163465753426
+            },
+            {
+              "year": 2027,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2028,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2029,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2030,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2031,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2032,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2033,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2034,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2035,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2036,
+              "coupons": 8954.699178082194,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 99000,
+              "sale": 0,
+              "cost": 98208.16978499999,
+              "reinvest": 0,
+              "income": 8954.699178082194,
+              "result": 0,
+              "relieved": 791.830215000009,
+              "relievedProceeds": 99000,
+              "relievedYears": 891000,
+              "exempt": 791.830215000009,
+              "base": 8954.699178082194,
+              "taxedLow": 8954.699178082194,
+              "taxedHigh": 0,
+              "tax": 1164.1108931506851
+            }
+          ]
+        },
+        "toOffer": {
+          "eventDay": 1250,
+          "flows": [
+            {
+              "day": 67,
+              "years": 0.18356164383561643,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.967392790739662,
+              "presentValue": 43.751067818783284
+            },
+            {
+              "day": 158,
+              "years": 0.4328767123287671,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.9248014540245962,
+              "presentValue": 41.824842526481156
+            },
+            {
+              "day": 249,
+              "years": 0.6821917808219178,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.8840852831992713,
+              "presentValue": 39.98342302433878
+            },
+            {
+              "day": 340,
+              "years": 0.9315068493150684,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.845161720462377,
+              "presentValue": 38.223075573590805
+            },
+            {
+              "day": 431,
+              "years": 1.180821917808219,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.8079518427793165,
+              "presentValue": 36.540230820535044
+            },
+            {
+              "day": 522,
+              "years": 1.4301369863013698,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7723802018545782,
+              "presentValue": 34.93147655916238
+            },
+            {
+              "day": 613,
+              "years": 1.6794520547945206,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7383746711496344,
+              "presentValue": 33.393550812425964
+            },
+            {
+              "day": 704,
+              "years": 1.9287671232876713,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.7058662996361722,
+              "presentValue": 31.92333521812096
+            },
+            {
+              "day": 795,
+              "years": 2.1780821917808217,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.6747891719881203,
+              "presentValue": 30.517848705963555
+            },
+            {
+              "day": 886,
+              "years": 2.4273972602739726,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.645080274928993,
+              "presentValue": 29.174241453048932
+            },
+            {
+              "day": 977,
+              "years": 2.6767123287671235,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.6166793694635502,
+              "presentValue": 27.889789105431806
+            },
+            {
+              "day": 1068,
+              "years": 2.926027397260274,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5895288687347053,
+              "presentValue": 26.661887254113086
+            },
+            {
+              "day": 1159,
+              "years": 3.175342465753425,
+              "coupon": 45.22575342465754,
+              "principal": 0,
+              "amount": 45.22575342465754,
+              "factor": 0.5635737212580184,
+              "presentValue": 25.48804615423182
+            },
+            {
+              "day": 1250,
+              "years": 3.4246575342465753,
+              "coupon": 45.22575342465754,
+              "principal": 1000,
+              "amount": 1045.2257534246576,
+              "factor": 0.5387612992970174,
+              "presentValue": 563.1271849737725
+            }
+          ],
+          "ytm": 0.19793224108733265,
+          "presentValue": 1003.4300000000001,
+          "priceWithFee": 1003.9317149999999,
+          "ytmAfterFee": 0.19770109761502364,
+          "held": {
+            "qty": 99,
+            "invested": 99339.56999999999,
+            "coupons": 62682.894246575364,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -7995.237152054797,
+            "commission": -49.669785000000005,
+            "total": 153637.98730952057,
+            "profit": 54298.41730952058,
+            "periodPct": 54.65940441409257,
+            "annualPct": 13.578960433748488,
+            "horizonDay": 1250
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 4477.349589041097,
+              "accruedPaid": 1181.07,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 3296.279589041097,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 3296.279589041097,
+              "taxedLow": 3296.279589041097,
+              "taxedHigh": 0,
+              "tax": 428.5163465753426
+            },
+            {
+              "year": 2027,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2028,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2029,
+              "coupons": 17909.398356164387,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 17909.398356164387,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 17909.398356164387,
+              "taxedLow": 17909.398356164387,
+              "taxedHigh": 0,
+              "tax": 2328.2217863013702
+            },
+            {
+              "year": 2030,
+              "coupons": 4477.349589041097,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 99000,
+              "sale": 0,
+              "cost": 98208.16978499999,
+              "reinvest": 0,
+              "income": 4477.349589041097,
+              "result": 0,
+              "relieved": 791.830215000009,
+              "relievedProceeds": 99000,
+              "relievedYears": 297000,
+              "exempt": 791.830215000009,
+              "base": 4477.349589041097,
+              "taxedLow": 4477.349589041097,
+              "taxedHigh": 0,
+              "tax": 582.0554465753426
+            }
+          ]
+        },
+        "plan": {
+          "qty": 99,
+          "invested": 99339.56999999999,
+          "coupons": 17909.398356164387,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 99422.99916602334,
+          "tax": -2326.1480108886144,
+          "commission": -99.38128458301168,
+          "total": 114906.86822671609,
+          "profit": 15567.298226716099,
+          "periodPct": 15.670792843895038,
+          "annualPct": 15.670792843895033,
+          "horizonDay": 365
+        },
+        "planTax": [
+          {
+            "year": 2026,
+            "coupons": 4477.349589041097,
+            "accruedPaid": 1181.07,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 3296.279589041097,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 3296.279589041097,
+            "taxedLow": 3296.279589041097,
+            "taxedHigh": 0,
+            "tax": 428.5163465753426
+          },
+          {
+            "year": 2027,
+            "coupons": 13432.048767123291,
+            "accruedPaid": 0,
+            "accruedReceived": 1230.0410958904113,
+            "redemptions": 0,
+            "sale": 99422.99916602334,
+            "cost": 98257.881284583,
+            "reinvest": 0,
+            "income": 13432.048767123291,
+            "result": 1165.1178814403393,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 14597.16664856363,
+            "taxedLow": 14597.16664856363,
+            "taxedHigh": 0,
+            "tax": 1897.631664313272
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: above par, other income just under the threshold, both rates",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 105,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 365,
+        "maturity": "2027-07-02",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-01-01",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 11100,
+        "horizonDay": 547,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 2399700,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 105,
+          "clean": 1050,
+          "couponRatePct": 10,
+          "periodDays": 365,
+          "couponAmount": 100,
+          "daysSinceLast": 183,
+          "accruedComputed": 50.136986301369866,
+          "accruedQuoted": null,
+          "accrued": 50.136986301369866,
+          "dirty": 1100.13698630137
+        },
+        "toMaturity": {
+          "eventDay": 547,
+          "flows": [
+            {
+              "day": 182,
+              "years": 0.4986301369863014,
+              "coupon": 100,
+              "principal": 0,
+              "amount": 100,
+              "factor": 0.9698020532583914,
+              "presentValue": 96.98020532583914
+            },
+            {
+              "day": 547,
+              "years": 1.4986301369863013,
+              "coupon": 100,
+              "principal": 1000,
+              "amount": 1100,
+              "factor": 0.9119607099777554,
+              "presentValue": 1003.1567809755309
+            }
+          ],
+          "ytm": 0.06342525796100007,
+          "presentValue": 1100.13698630137,
+          "priceWithFee": 1100.6870547945205,
+          "ytmAfterFee": 0.06304844920457964,
+          "held": {
+            "qty": 10,
+            "invested": 11001.369863013699,
+            "coupons": 2000,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 10000,
+            "tax": -136.9694178082192,
+            "commission": -5.50068493150685,
+            "total": 11857.529897260274,
+            "profit": 856.1600342465754,
+            "periodPct": 7.782303884945835,
+            "annualPct": 5.127937063579968,
+            "horizonDay": 547
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 1000,
+              "accruedPaid": 501.36986301369865,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 498.63013698630135,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 498.63013698630135,
+              "taxedLow": 300,
+              "taxedHigh": 198.63013698630135,
+              "tax": 68.79452054794521
+            },
+            {
+              "year": 2027,
+              "coupons": 1000,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 10000,
+              "sale": 0,
+              "cost": 10505.500684931507,
+              "reinvest": 0,
+              "income": 1000,
+              "result": -505.50068493150684,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 494.49931506849316,
+              "taxedLow": 300,
+              "taxedHigh": 194.49931506849316,
+              "tax": 68.17489726027398
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 10,
+          "invested": 11001.369863013699,
+          "coupons": 2000,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 10000,
+          "tax": -136.9694178082192,
+          "commission": -5.50068493150685,
+          "total": 11857.529897260274,
+          "profit": 856.1600342465754,
+          "periodPct": 7.782303884945835,
+          "annualPct": 5.127937063579968,
+          "horizonDay": 547
+        },
+        "planTax": [
+          {
+            "year": 2026,
+            "coupons": 1000,
+            "accruedPaid": 501.36986301369865,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 498.63013698630135,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 498.63013698630135,
+            "taxedLow": 300,
+            "taxedHigh": 198.63013698630135,
+            "tax": 68.79452054794521
+          },
+          {
+            "year": 2027,
+            "coupons": 1000,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 10000,
+            "sale": 0,
+            "cost": 10505.500684931507,
+            "reinvest": 0,
+            "income": 1000,
+            "result": -505.50068493150684,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 494.49931506849316,
+            "taxedLow": 300,
+            "taxedHigh": 194.49931506849316,
+            "tax": 68.17489726027398
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: accrued interest computed when not quoted",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 95.64,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 11.75,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2033-09-17",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 900,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 95.64,
+          "clean": 956.4,
+          "couponRatePct": 11.75,
+          "periodDays": 182,
+          "couponAmount": 58.58904109589041,
+          "daysSinceLast": 160,
+          "accruedComputed": 51.50684931506849,
+          "accruedQuoted": null,
+          "accrued": 51.50684931506849,
+          "dirty": 1007.9068493150685
+        },
+        "toMaturity": {
+          "eventDay": 2570,
+          "flows": [
+            {
+              "day": 22,
+              "years": 0.06027397260273973,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.9926048315297117,
+              "presentValue": 58.15576526647365
+            },
+            {
+              "day": 204,
+              "years": 0.5589041095890411,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.933487045682558,
+              "presentValue": 54.69211088197672
+            },
+            {
+              "day": 386,
+              "years": 1.0575342465753426,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.877890210461933,
+              "presentValue": 51.43474561843408
+            },
+            {
+              "day": 568,
+              "years": 1.5561643835616439,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.8256046242841797,
+              "presentValue": 48.37138326114297
+            },
+            {
+              "day": 750,
+              "years": 2.0547945205479454,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.7764330750205783,
+              "presentValue": 45.49046934058922
+            },
+            {
+              "day": 932,
+              "years": 2.5534246575342467,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.7301900961475307,
+              "presentValue": 42.781137550999844
+            },
+            {
+              "day": 1114,
+              "years": 3.052054794520548,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.6867012671991195,
+              "presentValue": 40.23316876452923
+            },
+            {
+              "day": 1296,
+              "years": 3.5506849315068494,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.6458025558834761,
+              "presentValue": 37.836952486488045
+            },
+            {
+              "day": 1478,
+              "years": 4.049315068493151,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.6073396993815319,
+              "presentValue": 35.5834506062303
+            },
+            {
+              "day": 1660,
+              "years": 4.5479452054794525,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.5711676224945201,
+              "presentValue": 33.46416330697346
+            },
+            {
+              "day": 1842,
+              "years": 5.046575342465753,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.5371498904455823,
+              "presentValue": 31.47109700596925
+            },
+            {
+              "day": 2024,
+              "years": 5.545205479452055,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.505158194271541,
+              "presentValue": 29.596734204101104
+            },
+            {
+              "day": 2206,
+              "years": 6.043835616438356,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.4750718668638289,
+              "presentValue": 27.83400513118625
+            },
+            {
+              "day": 2388,
+              "years": 6.542465753424658,
+              "coupon": 58.58904109589041,
+              "principal": 0,
+              "amount": 58.58904109589041,
+              "factor": 0.4467774278331615,
+              "presentValue": 26.17626108003331
+            },
+            {
+              "day": 2570,
+              "years": 7.041095890410959,
+              "coupon": 58.58904109589041,
+              "principal": 1000,
+              "amount": 1058.5890410958905,
+              "factor": 0.4201681554812645,
+              "presentValue": 444.7854048099408
+            }
+          ],
+          "ytm": 0.13105235053826492,
+          "presentValue": 1007.9068493150684,
+          "priceWithFee": 1008.4108027397259,
+          "ytmAfterFee": 0.13093148230196328,
+          "held": {
+            "qty": 99,
+            "invested": 99782.77808219178,
+            "coupons": 87004.72602739724,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 99000,
+            "tax": -10647.721232876713,
+            "commission": -49.8913890410959,
+            "total": 175307.11340547944,
+            "profit": 75524.33532328765,
+            "periodPct": 75.68874787298238,
+            "annualPct": 8.332646901326779,
+            "horizonDay": 2570
+          },
+          "tax": [
+            {
+              "year": 2026,
+              "coupons": 5800.315068493151,
+              "accruedPaid": 5099.178082191781,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 701.1369863013697,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 701.1369863013697,
+              "taxedLow": 701.1369863013697,
+              "taxedHigh": 0,
+              "tax": 91.14780821917806
+            },
+            {
+              "year": 2027,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2028,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2029,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2030,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2031,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2032,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 0,
+              "sale": 0,
+              "cost": 0,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 0,
+              "relievedProceeds": 0,
+              "relievedYears": 0,
+              "exempt": 0,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            },
+            {
+              "year": 2033,
+              "coupons": 11600.630136986301,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 99000,
+              "sale": 0,
+              "cost": 94733.4913890411,
+              "reinvest": 0,
+              "income": 11600.630136986301,
+              "result": 0,
+              "relieved": 4266.508610958903,
+              "relievedProceeds": 99000,
+              "relievedYears": 693000,
+              "exempt": 4266.508610958903,
+              "base": 11600.630136986301,
+              "taxedLow": 11600.630136986301,
+              "taxedHigh": 0,
+              "tax": 1508.0819178082193
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 99,
+          "invested": 99782.77808219178,
+          "coupons": 29001.575342465752,
+          "reinvest": 5622.10224100822,
+          "amort": 0,
+          "body": 100562.02364144674,
+          "tax": -4589.357596442724,
+          "commission": -100.17240086181926,
+          "total": 130496.17122761617,
+          "profit": 30713.393145424387,
+          "periodPct": 30.780254604783146,
+          "annualPct": 11.497294158233174,
+          "horizonDay": 900
+        },
+        "planTax": [
+          {
+            "year": 2026,
+            "coupons": 5800.315068493151,
+            "accruedPaid": 5099.178082191781,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 701.1369863013697,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 701.1369863013697,
+            "taxedLow": 701.1369863013697,
+            "taxedHigh": 0,
+            "tax": 91.14780821917806
+          },
+          {
+            "year": 2027,
+            "coupons": 11600.630136986301,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 11600.630136986301,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 11600.630136986301,
+            "taxedLow": 11600.630136986301,
+            "taxedHigh": 0,
+            "tax": 1508.0819178082193
+          },
+          {
+            "year": 2028,
+            "coupons": 11600.630136986301,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 0,
+            "sale": 0,
+            "cost": 0,
+            "reinvest": 0,
+            "income": 11600.630136986301,
+            "result": 0,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 11600.630136986301,
+            "taxedLow": 11600.630136986301,
+            "taxedHigh": 0,
+            "tax": 1508.0819178082193
+          },
+          {
+            "year": 2029,
+            "coupons": 0,
+            "accruedPaid": 0,
+            "accruedReceived": 4780.479452054795,
+            "redemptions": 0,
+            "sale": 100562.02364144674,
+            "cost": 94783.77240086182,
+            "reinvest": 5622.10224100822,
+            "income": 5622.10224100822,
+            "result": 5778.251240584912,
+            "relieved": 0,
+            "relievedProceeds": 0,
+            "relievedYears": 0,
+            "exempt": 0,
+            "base": 11400.35348159313,
+            "taxedLow": 11400.35348159313,
+            "taxedHigh": 0,
+            "tax": 1482.045952607107
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain: relief capped at three million a year held",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 50,
+        "accrued": null,
+        "couponType": "fixed",
+        "couponRatePct": 0,
+        "spreadPct": 0,
+        "periodDays": 1097,
+        "maturity": "2029-09-05",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 1000000000,
+        "horizonDay": 1097,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "ok": {
+        "feePct": 0.05,
+        "price": {
+          "nominal": 1000,
+          "cleanPct": 50,
+          "clean": 500,
+          "couponRatePct": 0,
+          "periodDays": 1097,
+          "couponAmount": 0,
+          "daysSinceLast": 0,
+          "accruedComputed": 0,
+          "accruedQuoted": null,
+          "accrued": 0,
+          "dirty": 500
+        },
+        "toMaturity": {
+          "eventDay": 1097,
+          "flows": [
+            {
+              "day": 1097,
+              "years": 3.0054794520547947,
+              "coupon": 0,
+              "principal": 1000,
+              "amount": 1000,
+              "factor": 0.4999999999999999,
+              "presentValue": 499.9999999999999
+            }
+          ],
+          "ytm": 0.2593904349976127,
+          "presentValue": 499.9999999999999,
+          "priceWithFee": 500.25,
+          "ytmAfterFee": 0.2591809890485258,
+          "held": {
+            "qty": 2000000,
+            "invested": 1000000000,
+            "coupons": 0,
+            "reinvest": 0,
+            "amort": 0,
+            "body": 2000000000,
+            "tax": -148527000,
+            "commission": -500000,
+            "total": 1850973000,
+            "profit": 850973000,
+            "periodPct": 85.0973,
+            "annualPct": 22.73568687086296,
+            "horizonDay": 1097
+          },
+          "tax": [
+            {
+              "year": 2029,
+              "coupons": 0,
+              "accruedPaid": 0,
+              "accruedReceived": 0,
+              "redemptions": 2000000000,
+              "sale": 0,
+              "cost": 1000500000,
+              "reinvest": 0,
+              "income": 0,
+              "result": 0,
+              "relieved": 999500000,
+              "relievedProceeds": 2000000000,
+              "relievedYears": 6000000000,
+              "exempt": 9000000,
+              "base": 990500000,
+              "taxedLow": 2400000,
+              "taxedHigh": 988100000,
+              "tax": 148527000
+            }
+          ]
+        },
+        "toOffer": null,
+        "plan": {
+          "qty": 2000000,
+          "invested": 1000000000,
+          "coupons": 0,
+          "reinvest": 0,
+          "amort": 0,
+          "body": 2000000000,
+          "tax": -148527000,
+          "commission": -500000,
+          "total": 1850973000,
+          "profit": 850973000,
+          "periodPct": 85.0973,
+          "annualPct": 22.73568687086296,
+          "horizonDay": 1097
+        },
+        "planTax": [
+          {
+            "year": 2029,
+            "coupons": 0,
+            "accruedPaid": 0,
+            "accruedReceived": 0,
+            "redemptions": 2000000000,
+            "sale": 0,
+            "cost": 1000500000,
+            "reinvest": 0,
+            "income": 0,
+            "result": 0,
+            "relieved": 999500000,
+            "relievedProceeds": 2000000000,
+            "relievedYears": 6000000000,
+            "exempt": 9000000,
+            "base": 990500000,
+            "taxedLow": 2400000,
+            "taxedHigh": 988100000,
+            "tax": 148527000
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "explain error: negative fee",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      -0.01
+    ],
+    "expect": {
+      "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "explain error: NaN fee",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      "NaN"
+    ],
+    "expect": {
+      "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "explain error: plan errors come before the fee",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 0,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      -1
+    ],
+    "expect": {
+      "error": "amount_not_positive"
+    }
+  },
+  {
+    "name": "explain error: unknown tax regime first",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "flat",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05
+    ],
+    "expect": {
+      "error": "invalid_code"
+    }
   }
 ]

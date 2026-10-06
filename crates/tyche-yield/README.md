@@ -10,7 +10,7 @@ WebAssembly, with a TypeScript twin in
 of the same functions, written separately and checked against the Rust
 one on every case.
 
-Status: early. Both implementations pass the 109 cases in `cases.json`
+Status: early. Both implementations pass the 124 cases in `cases.json`
 and the hand-computed worked examples,
 and the WebAssembly build agrees with the twin on those cases and on
 1,000 generated issues within 1e-6 relative. Sizes, timings and how the
@@ -54,6 +54,23 @@ For an issue:
   -2, 0 and +2 points, reached over four coupon periods); and, for an
   issue with an offer, holding to the offer against holding through it
   at a 0.1 percent coupon.
+- `explain(issue, market, plan, fee_pct)`: the working behind those
+  figures, for a screen that shows it. The dirty price as the clean
+  price and the accrued interest (the coupon, the days since the last
+  one, the period); for maturity and for the offer, each flow with its
+  time in years, its discount factor and its present value at the solved
+  yield, which add up to the dirty price again; the yield at the dirty
+  price plus a broker's fee in percent; holding the plan's amount to
+  each event with nothing reinvested, after the fee and the tax, whose
+  effective annual return is the yield after tax and the fee without
+  reinvestment; and the tax year by year, for each event and for the
+  plan itself: coupons, accrued interest paid at purchase and received
+  in a sale, redemptions and the sale, the cost written off, the result
+  (a loss is netted against the year's coupons), the long-term holding
+  relief, the base, the parts of it taxed at 13 and at 15 percent with
+  the holder's other income, and the tax. With the fee at the standard
+  commission, the plan is `calculate`'s and the years' tax adds up to
+  its tax.
 
 How `calculate` models the holding:
 
@@ -93,8 +110,8 @@ fractions. In a breakdown, income lines are positive and costs (`tax`,
 percent on the purchase and on a sale before redemption. Outputs are
 numbers, codes and day offsets; there is no human-language text.
 
-Errors are values. `derive_bond` and `calculate` return an error code, in
-this order of checks:
+Errors are values. `derive_bond`, `calculate` and `explain` return an
+error code, in this order of checks:
 
 | code | when |
 |---|---|
@@ -109,6 +126,7 @@ this order of checks:
 | `invalid_other_income` | other investment income is not a finite number of at least zero |
 | `invalid_price` | dirty price is not a positive finite number |
 | `amount_below_one_bond` | the amount does not buy one bond |
+| `invalid_fee` | the broker's fee given to `explain` is not a finite number of at least zero |
 
 The primitives return NaN for invalid inputs (no flows, a price that is
 not positive, a NaN argument), and `derive_bond` keeps that: a price that
@@ -165,7 +183,7 @@ The primitives (`price_from_yield`, `ytm_effective`, `ytm_simple`,
 re-exported at the crate root. Types are plain structs without serde.
 
 JavaScript, from the WebAssembly package: the primitives under the same
-names on `Float64Array`s; `derive_bond` and `calculate` on wasm-bindgen
+names on `Float64Array`s; `derive_bond`, `calculate` and `explain` on wasm-bindgen
 structs with camelCase fields. Results have `ok` or `error` set; arrays
 come back as `Float64Array`; each struct read from a result is a copy to
 `free()` when done.
@@ -230,8 +248,9 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
 
 ## Parity
 
-- `cases.json` holds 109 cases: 42 for the primitives (six of them
-  edge cases), 25 for `derive_bond` and 42 for `calculate`
+- `cases.json` holds 124 cases: 42 for the primitives (six of them
+  edge cases), 25 for `derive_bond`, 42 for `calculate` and 15 for
+  `explain`
   (amortisation, offers, floaters, both accounts, the 15 percent rate,
   the long-term holding relief on either side of the third anniversary
   and at its cap, moved valuation dates and every error code). NaN is
@@ -241,20 +260,26 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
   until the tax, floater and reinvestment model changed; the cases it
   changed were recomputed by the twin and the Rust crate agrees with
   them. The new primitive cases and the error expectations are written by
-  hand.
+  hand. The `explain` cases reuse `calculate`'s issues and plans with a
+  fee; their expected values were computed by the twin, and both runners
+  also check that the years' tax adds up to the breakdown's, that the
+  plan is `calculate`'s at the standard commission, and that the
+  discounted flows give the dirty price.
 - `tests/worked.rs` and `packages/yield-twin/test/worked.test.ts` run the
   same worked examples, each a small issue whose results are computed by
   hand with the arithmetic in comments: a floater under a key-rate change, an
   amortising plan, tax netting with the accrued interest paid, the
-  15 percent rate, the long-term holding relief and its cap, and the
-  shortest annualised horizon.
+  15 percent rate, the long-term holding relief and its cap, the
+  shortest annualised horizon, and `explain`'s yield and fee, its tax
+  year with a loss netted and with both rates, and the accrued interest
+  paid at purchase and received in a sale.
 - `tests/cases.rs` checks the Rust crate against the table;
   `packages/yield-twin/test/cases.test.ts` checks the twin.
 - `node/parity.test.mjs` loads the built package and the built twin and
   checks, on every case, the WebAssembly build against the table, the
   twin against the table and the two against each other; then the two
-  against each other on 1,000 issues and plans from a seeded generator,
-  including invalid inputs. Build `pkg/` and the twin first, then, from
+  against each other on 1,000 issues, plans and fees from a seeded
+  generator, including invalid inputs. Build `pkg/` and the twin first, then, from
   the repository root:
 
   ```bash

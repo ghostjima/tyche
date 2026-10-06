@@ -38,6 +38,8 @@ pub enum Error {
     InvalidPrice,
     /// The amount does not buy a single bond.
     AmountBelowOneBond,
+    /// The broker's fee is not a finite number of at least zero.
+    InvalidFee,
 }
 
 impl Error {
@@ -55,6 +57,7 @@ impl Error {
             Error::InvalidOtherIncome => "invalid_other_income",
             Error::InvalidPrice => "invalid_price",
             Error::AmountBelowOneBond => "amount_below_one_bond",
+            Error::InvalidFee => "invalid_fee",
         }
     }
 }
