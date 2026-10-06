@@ -1,0 +1,64 @@
+name: Bank of Russia snapshot
+
+# Takes the Bank of Russia snapshot (key rate, RUONIA, the zero-coupon
+# yield curve of federal loan bonds and inflation, each with its source
+# URL and retrieval time) every day after the figures of the day are out
+# (RUONIA is published at about 14:20 Moscow time; 11:45 UTC is 14:45),
+# and commits it to the orphan branch `cbr-data`. main is never written:
+# the app builds on the snapshot committed in data/cbr/, which a pull
+# request refreshes from this branch.
+
+on:
+  schedule:
+    - cron: "45 11 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cbr-data
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # This job pushes to the cbr-data branch, so it keeps the credentials.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      # The parsers first, on the saved responses: a failure here means the
+      # code is broken, not cbr.ru.
+      - run: node --test scripts/cbr-snapshot.test.mjs
+      - run: node scripts/cbr-snapshot.mjs --out "$RUNNER_TEMP/snapshot.json"
+      - name: Commit to the cbr-data branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="$RUNNER_TEMP/cbr-data-branch"
+          status=0
+          git ls-remote --exit-code origin refs/heads/cbr-data > /dev/null || status=$?
+          if [ "$status" -eq 0 ]; then
+            git fetch --depth=1 origin cbr-data
+            git worktree add -B cbr-data "$branch" FETCH_HEAD
+          elif [ "$status" -eq 2 ]; then
+            git worktree add --detach "$branch"
+            git -C "$branch" switch --orphan cbr-data
+          else
+            exit "$status"
+          fi
+          cp "$RUNNER_TEMP/snapshot.json" "$branch/snapshot.json"
+          cd "$branch"
+          git add snapshot.json
+          if git diff --cached --quiet; then
+            echo "The snapshot is unchanged."
+            exit 0
+          fi
+          retrieved="$(node -e "console.log(JSON.parse(require('fs').readFileSync('snapshot.json', 'utf8')).retrievedAt)")"
+          git commit -q -m "Bank of Russia snapshot retrieved at ${retrieved}"
+          git push origin HEAD:refs/heads/cbr-data

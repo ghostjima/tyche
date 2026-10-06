@@ -4,22 +4,23 @@
 // is generated. All issues are fictional.
 import { LDV_YEARS, addYears, dayOffset, parseIsoDate, type Market } from "@tyche/yield-twin";
 import type { MacroInputs } from "./issues";
+import SNAPSHOT from "../../../../data/cbr/snapshot.json";
 
-/** As the Bank of Russia published them (cbr.ru, read on 2026-10-06): the
- * key rate on 2026-10-05, RUONIA for 2026-10-05, inflation over twelve
- * months to August 2026 (Rosstat and the Bank of Russia), and the
- * zero-coupon yield curve of federal loan bonds on 2026-10-05, which the
- * Moscow Exchange calculates. The same figures as tyche-market's
- * `inputs::fallback()`, which a unit test checks. */
+export { SNAPSHOT };
+
+/** The Bank of Russia figures of the snapshot this build carries (taken
+ * by scripts/cbr-snapshot.mjs, with every figure's source URL and
+ * retrieval time in the file): the key rate, RUONIA and the zero-coupon
+ * yield curve of federal loan bonds (calculated by the Moscow Exchange)
+ * on the curve's latest date, which is the valuation date, and inflation
+ * over twelve months to the latest month (Rosstat and the Bank of
+ * Russia). */
 export const MACRO: MacroInputs = {
-  valuationDate: "2026-10-05",
-  keyRatePct: 14,
-  ruoniaPct: 13.77,
-  inflationPct: 6.33,
-  curve: {
-    termsYears: [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
-    yieldsPct: [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
-  },
+  valuationDate: SNAPSHOT.latest.date,
+  keyRatePct: SNAPSHOT.latest.keyRatePct,
+  ruoniaPct: SNAPSHOT.latest.ruoniaPct,
+  inflationPct: SNAPSHOT.latest.inflationPct,
+  curve: { termsYears: [...SNAPSHOT.latest.curve.termsYears], yieldsPct: [...SNAPSHOT.latest.curve.yieldsPct] },
 };
 
 /** The seed of the universe: the same issues for every visitor. */
