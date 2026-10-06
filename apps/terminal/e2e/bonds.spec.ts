@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
 test("the list shows sixty issues, filters by chips with counts, and searches", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   const rows = page.locator(".pane-list [role=option]");
   await expect(rows).toHaveCount(60);
@@ -30,7 +30,7 @@ test("the list shows sixty issues, filters by chips with counts, and searches", 
 });
 
 test("a search with no match shows an empty state that clears the filters", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await page.getByLabel("Search by issuer or ticker").fill("no such issuer");
   await expect(page.getByText("No issues match")).toBeVisible();
@@ -41,7 +41,7 @@ test("a search with no match shows an empty state that clears the filters", asyn
 });
 
 test("sorting by maturity puts the soonest first", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await page.getByRole("button", { name: /Sort by/ }).click();
   await page.getByRole("option", { name: "Maturity, soonest first" }).click();
@@ -51,7 +51,7 @@ test("sorting by maturity puts the soonest first", async ({ page }) => {
 });
 
 test("an issue shows its figures, schedule, payments and price curve", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await expect(page.getByText("Choose an issue")).toBeVisible();
   await page.getByRole("option", { name: ISSUES.offer }).click();
@@ -73,7 +73,7 @@ test("an issue shows its figures, schedule, payments and price curve", async ({ 
 });
 
 test("the calculator breaks the total into signed lines and compares the offer", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.offer}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
   await ready(page);
   const result = page.getByTestId("result");
   const breakdown = page.getByRole("table", { name: "Where the total comes from" });
@@ -101,7 +101,7 @@ test("the calculator breaks the total into signed lines and compares the offer",
 });
 
 test("a floater shows three key-rate scenarios with a coupon chart", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.floater}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.floater}`);
   await ready(page);
   const floater = page.getByTestId("floater");
   const rows = floater.getByRole("table", { name: "Totals at the horizon by key rate scenario" }).locator("tbody tr");
@@ -115,7 +115,7 @@ test("a floater shows three key-rate scenarios with a coupon chart", async ({ pa
 });
 
 test("engine error codes become sentences, with a way back", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.ofz}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.ofz}`);
   await ready(page);
   const amount = page.getByLabel("Amount, ₽");
   for (const [value, code, text] of [
@@ -135,7 +135,7 @@ test("engine error codes become sentences, with a way back", async ({ page }) =>
 });
 
 test("keyboard: search, open an issue and change the plan", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await page.keyboard.press("/");
   await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
@@ -170,7 +170,7 @@ test("keyboard: search, open an issue and change the plan", async ({ page }) => 
 });
 
 test("keyboard shortcuts are listed in a dialog", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   await page.keyboard.press("?");
   const dialog = page.getByRole("dialog", { name: "Keyboard shortcuts" });
@@ -181,7 +181,7 @@ test("keyboard shortcuts are listed in a dialog", async ({ page }) => {
 
 test("on a phone the issue replaces the list, and Back returns to its row", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await ready(page);
   const link = page.getByRole("option", { name: ISSUES.ofz });
   await link.click();
@@ -200,7 +200,7 @@ test("while the engine loads the list says so", async ({ page }) => {
     await held;
     await route.continue();
   });
-  await page.goto("/");
+  await page.goto("/?lang=en");
   await expect(page.locator(".app")).toHaveAttribute("data-state", "loading");
   await expect(page.getByText("Loading the bond engine…")).toBeAttached();
   await expect(page.locator(".workspace")).toHaveAttribute("aria-busy", "true");
@@ -211,7 +211,7 @@ test("while the engine loads the list says so", async ({ page }) => {
 
 test("without WebAssembly the TypeScript engine takes over, and WebAssembly can be retried", async ({ page }) => {
   await page.route("**/*.wasm", (route) => route.abort());
-  await page.goto(`/?issue=${ISSUES.offer}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
   await ready(page, "twin");
   await expect(page.getByText("WebAssembly did not load")).toBeVisible();
   await expect(page.getByTestId("figures")).toContainText("20.54%");

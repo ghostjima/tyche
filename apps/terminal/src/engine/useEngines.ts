@@ -1,7 +1,7 @@
 // Loads the WebAssembly engine once, keeps the twin as the fallback, and
 // remembers which one the viewer chose (?engine=twin in the URL; the
 // WebAssembly engine otherwise). The load time is also left on the
-// performance timeline as the measure "horkos:wasm-init", for the
+// performance timeline as the measure "tyche:wasm-init", for the
 // measurement script.
 import { useCallback, useEffect, useState } from "react";
 import { twinEngine } from "./twin";
@@ -16,10 +16,10 @@ let pending: Promise<Engines> | null = null;
 
 function load(): Promise<Engines> {
   pending ??= (async (): Promise<Engines> => {
-    performance.mark("horkos:wasm-start");
+    performance.mark("tyche:wasm-start");
     try {
       const { engine, ms } = await loadWasm();
-      performance.measure("horkos:wasm-init", "horkos:wasm-start");
+      performance.measure("tyche:wasm-init", "tyche:wasm-start");
       return { status: "ready", wasm: engine, wasmMs: ms, wasmError: null };
     } catch (e) {
       // Forgotten, so a retry loads again.

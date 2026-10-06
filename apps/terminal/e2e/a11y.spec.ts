@@ -9,13 +9,13 @@ import { ISSUES, expectNoHorizontalScroll, expectNoSeriousViolations, ready } fr
 // the default five seconds, so the rows get a minute to appear.
 const TIMING_DONE = { timeout: 60_000 };
 
-const LANGS = ["en", "ru", "ar"] as const;
+const LANGS = ["ru", "en"] as const;
 const THEMES = ["light", "dark"] as const;
 
 async function open(page: Page, lang: string, theme: string, query = "") {
   await page.goto(`/?lang=${lang}&theme=${theme}${query}`);
   await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
-  await expect(page.locator("html")).toHaveAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+  await expect(page.locator("html")).toHaveAttribute("lang", lang);
 }
 
 for (const lang of LANGS) {

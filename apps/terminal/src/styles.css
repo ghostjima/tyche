@@ -1,16 +1,10 @@
-/* Every weight the interface uses, in each script, so the browser never
-   synthesises bold: regular, Stoa's medium (badges, panel titles) and
-   semibold (headings and strong text). Plex Sans and Mono carry Latin and
-   Cyrillic; Noto Sans Arabic is in Stoa's numeric stack for tabular
-   Arabic-Indic digits. */
+/* Every weight the interface uses, so the browser never synthesises bold:
+   regular, Stoa's medium (badges, panel titles) and semibold (headings and
+   strong text). Plex Sans and Mono carry Latin and Cyrillic. */
 @import "@fontsource/ibm-plex-sans/400.css";
 @import "@fontsource/ibm-plex-sans/500.css";
 @import "@fontsource/ibm-plex-sans/600.css";
-@import "@fontsource/ibm-plex-sans-arabic/400.css";
-@import "@fontsource/ibm-plex-sans-arabic/500.css";
-@import "@fontsource/ibm-plex-sans-arabic/600.css";
 @import "@fontsource/ibm-plex-mono/400.css";
-@import "@fontsource/noto-sans-arabic/400.css";
 @import "@ghostjima/stoa-react/styles.css";
 
 :root {
@@ -45,13 +39,6 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .detail--empty { padding-block: var(--stoa-space-8); }
 .narrow { display: grid; gap: var(--stoa-space-3); justify-items: start; }
 .narrow > .detail { justify-self: stretch; }
-
-/* Workaround for Stoa: a filter chip's count is in the numeric face, whose
-   first Arabic face is Noto Sans Arabic, with taller line metrics than the
-   fallback drawn before it arrives. In Arabic the chips grew from 24 to 31
-   px when it did, and moved the list. The count's own line box no longer
-   sets the chip's height. */
-.stoa-filter-chip__count { line-height: 1; }
 
 .issue-list { display: grid; gap: var(--stoa-space-3); }
 .issue-list__bar { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }

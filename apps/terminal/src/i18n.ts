@@ -1,28 +1,29 @@
-// Interface strings in English, Russian and Arabic, with the same keys in
-// each (checked by i18n.test.ts). Numbers, money and dates reach these
+// Interface strings in Russian and English, with the same keys in each
+// (checked by i18n.test.ts). Numbers, money and dates reach these
 // functions already formatted for the locale (lib/format.ts), so no string
 // here holds a digit. The engine returns codes, never words; every error
 // code it can return has a sentence here in each language.
 //
 // The domain is the Russian bond market. Its local terms (OFZ, the key
 // rate, the long-term holding relief, the individual investment account)
-// keep their accurate names, and English and Arabic add a short plain
-// explanation where the term first matters.
+// keep their accurate names, and English adds a short plain explanation
+// where the term first matters.
 import type { ErrorCode } from "./engine/types";
 import type { Industry, Place } from "./data/issues";
 
-export type Lang = "en" | "ru" | "ar";
+export type Lang = "ru" | "en";
 
-export const LANGS: Lang[] = ["en", "ru", "ar"];
+/** Russian first: it is the default, for a visitor with no choice in the
+ * link or from a last visit. */
+export const LANGS: Lang[] = ["ru", "en"];
 
-/** The React Aria, Stoa and Intl locale of each language. Arabic asks for
- * Arabic-Indic digits: "ar" alone formats with Latin ones. */
-export const LOCALES: Record<Lang, string> = { en: "en-US", ru: "ru-RU", ar: "ar-u-nu-arab" };
+/** The React Aria, Stoa and Intl locale of each language. */
+export const LOCALES: Record<Lang, string> = { ru: "ru-RU", en: "en-US" };
 
 /** Where the choices are kept: ?theme= and ?lang= in the URL, and these
  * keys in localStorage. */
-export const THEME_STORE = { param: "theme", storageKey: "horkos-bonds.theme" };
-export const LANG_STORE = { param: "lang", storageKey: "horkos-bonds.lang" };
+export const THEME_STORE = { param: "theme", storageKey: "tyche.theme" };
+export const LANG_STORE = { param: "lang", storageKey: "tyche.lang" };
 
 const en = {
   title: "Tyche Bonds",
@@ -551,265 +552,4 @@ const ru: Strings = {
   },
 };
 
-const ar: Strings = {
-  title: "Tyche السندات",
-  subtitle: "العوائد وجداول المدفوعات وحاسبة الاحتفاظ بالسندات",
-  footer: (date, rate) => `جميع الإصدارات خيالية. الأسعار بتاريخ ${date}، وسعر الفائدة الرئيسي ${rate}.`,
-  openDiagnostics: "تشخيص المحرّك",
-  openShortcuts: "اختصارات لوحة المفاتيح",
-
-  loadingEngine: "جارٍ تحميل محرّك حساب السندات…",
-  wasmFailedTitle: "تعذّر تحميل ويب أسمبلي",
-  wasmFailedBody: "يحسب محرّك تايب سكريبت الأرقام بدلًا منه، والنتائج في المحرّكين واحدة.",
-  wasmRetry: "أعد محاولة ويب أسمبلي",
-
-  issues: "الإصدارات",
-  listCount: (shown, total) => `${shown} من ${total} إصدارًا`,
-  search: "ابحث باسم المُصدِر أو الرمز",
-  groupSector: "المُصدِر",
-  groupCoupon: "القسيمة",
-  groupTerm: "الاستحقاق",
-  groupFeatures: "الخصائص",
-  chipOfz: "سندات القرض الفيدرالي",
-  chipCorporate: "سندات الشركات",
-  chipFixed: "ثابتة",
-  chipFloater: "متغيّرة",
-  chipShort: "حتى سنة",
-  chipMedium: "من سنة إلى ثلاث سنوات",
-  chipLong: "أكثر من ثلاث سنوات",
-  chipAmortising: "بإطفاء جزئي",
-  chipOffer: "بعرض إعادة شراء",
-  clearFilters: "امسح عوامل التصفية",
-  sortBy: "الترتيب",
-  sortYield: "العائد، الأعلى أولًا",
-  sortMaturity: "الاستحقاق، الأقرب أولًا",
-  sortRating: "التصنيف، الأفضل أولًا",
-  listCaption: "إصدارات السندات",
-  toOffer: "حتى عرض إعادة الشراء",
-  matures: (date) => `الاستحقاق في ${date}`,
-  toMaturity: "حتى الاستحقاق",
-  noMatchesTitle: "لا توجد إصدارات مطابقة",
-  noMatchesBody: "جرّب بحثًا آخر، أو أوقف بعض عوامل التصفية.",
-  selected: "محدَّد",
-
-  ofzIssuer: "سند قرض فيدرالي روسي",
-  places: {
-    volga: "فولغا", kama: "كاما", oka: "أوكا", neva: "نيفا", ob: "أوب", amur: "آمور", baikal: "بايكال", ural: "الأورال",
-    don: "الدون", angara: "أنغارا", irtysh: "إرتيش", lena: "لينا", pechora: "بيتشورا", onega: "أونيغا", kuban: "كوبان", yenisei: "ينيسي",
-  },
-  companies: {
-    logistics: (place) => `${place} للخدمات اللوجستية`,
-    energy: (place) => `${place} للطاقة`,
-    retail: (place) => `${place} للتجزئة`,
-    metals: (place) => `${place} للمعادن`,
-    leasing: (place) => `${place} للتأجير التمويلي`,
-    agro: (place) => `${place} الزراعية`,
-    development: (place) => `${place} للتطوير العقاري`,
-    telecom: (place) => `${place} للاتصالات`,
-  },
-
-  tagOfz: "قرض فيدرالي",
-  tagCorporate: "شركات",
-  tagFixed: "قسيمة ثابتة",
-  tagFloater: (spread) => `عائد متغيّر: سعر الفائدة الرئيسي + ${spread}`,
-  tagAmortising: "بإطفاء جزئي",
-  tagOffer: (date) => `عرض إعادة شراء في ${date}`,
-  rating: "التصنيف",
-
-  chooseTitle: "اختر إصدارًا",
-  chooseBody: "يظهر هنا جدول مدفوعاته وأرقامه وحاسبة له.",
-  back: "العودة إلى القائمة",
-
-  figures: "الأرقام",
-  cleanPrice: "السعر النظيف",
-  cleanPriceBasis: (money) => `من القيمة الاسمية، ${money} للسند`,
-  accrued: "الفائدة المستحقة",
-  accruedBasis: (days) => `للسند، مكتسبة خلال ${days} منذ آخر قسيمة`,
-  dirtyPrice: "السعر الكامل",
-  dirtyPriceBasis: "السعر النظيف مضافًا إليه الفائدة المستحقة: ثمن السند الواحد",
-  ytm: "العائد حتى الاستحقاق",
-  ytmBasis: (date) => `سنوي فعلي، مع الاحتفاظ حتى ${date}`,
-  ytmOffer: "العائد حتى عرض إعادة الشراء",
-  ytmOfferBasis: (date) => `سنوي فعلي، مع البيع للمُصدِر في ${date}`,
-  duration: "المدة",
-  durationBasis: (modified) => `مدة ماكولي؛ المعدّلة ${modified}: يتغيّر السعر بنحو هذه النسبة المئوية لكل نقطة من العائد`,
-  detailsLabel: "تفاصيل الإصدار",
-  couponRate: "معدل القسيمة",
-  couponPayment: "القسيمة للسند",
-  paidEvery: "تُدفع كل",
-  nextCoupon: "القسيمة التالية",
-  maturityDate: "الاستحقاق",
-  simpleYield: "العائد البسيط على كامل المدة",
-  faceValue: "القيمة الاسمية",
-
-  schedule: "جدول المدفوعات",
-  stripLabel: "المدفوعات حتى الاستحقاق",
-  paymentsCaption: "المدفوعات للسند الواحد",
-  colDate: "التاريخ",
-  colCoupon: "القسيمة",
-  colPrincipal: "أصل الدين",
-  colTotal: "المجموع",
-  colEvent: "الحدث",
-  evCoupon: "قسيمة",
-  evAmortisation: "إطفاء جزئي",
-  evOffer: "عرض إعادة شراء",
-  evMaturity: "استحقاق",
-  noPayments: "لم تبقَ أي مدفوعات.",
-
-  priceYield: "السعر والعائد",
-  priceYieldLabel: "السعر الكامل مقابل العائد حتى الاستحقاق",
-  priceYieldDesc: "كلما ارتفع العائد الذي يطلبه السوق انخفض سعر المدفوعات نفسها. المنحنى مقوّس لأن العائد مركّب.",
-  seriesPrice: "السعر الكامل",
-  seriesToday: "اليوم",
-  axisYield: "العائد حتى الاستحقاق",
-  axisPrice: "السعر الكامل، ₽",
-
-  calculator: "الحاسبة",
-  amount: "المبلغ، ₽",
-  horizon: "أفق الاحتفاظ",
-  horizonHint: (term) => `بعد ${term} من اليوم`,
-  horizonAtOffer: (term) => `بعد ${term} من اليوم: تاريخ عرض إعادة الشراء`,
-  horizonAtMaturity: (term) => `بعد ${term} من اليوم: الاستحقاق`,
-  presets: "آفاق جاهزة",
-  presetYear: "سنة واحدة",
-  presetOffer: "تاريخ عرض إعادة الشراء",
-  presetMaturity: "الاستحقاق",
-  reinvest: "إعادة استثمار المدفوعات",
-  reinvestDesc: (rate) => `تُستثمر كل قسيمة، وكل جزء من أصل الدين يُسدَّد قبل الأفق، من جديد بالعائد حتى الاستحقاق، ${rate}.`,
-  tax: "النظام الضريبي",
-  taxStandard: "حساب وساطة",
-  taxIis: "حساب استثمار فردي من النوع ب",
-  taxStandardDesc: (low, threshold, high) =>
-    `ضريبة دخل الأفراد: ${low} على دخل الاستثمار حتى ${threshold} في السنة، و${high} على ما يزيد. في كل سنة ميلادية تُخفّض خسارة البيع أو السداد ضريبة قسائم السنة نفسها، وتُخصم الفائدة المستحقة المدفوعة عند الشراء من القسيمة الأولى.`,
-  taxLdvApplies: (cap) =>
-    `عند هذا الأفق تكون السندات محتفظًا بها أكثر من ثلاث سنوات: الربح عند السداد أو البيع معفى بموجب إعفاء الحيازة الطويلة، حتى ${cap} عن كل سنة كاملة. أما القسائم فتخضع للضريبة كالمعتاد.`,
-  taxLdvLater: (date) => `لا يُعفى الربح من السعر إلا بعد أكثر من ثلاث سنوات من الحيازة، أي من ${date}.`,
-  taxIisDesc: (date) =>
-    `حساب الاستثمار الفردي من النوع ب: القسائم والأرباح معفاة من الضريبة عند إغلاق الحساب بعد ثلاث سنوات على الأقل. لا يكون من النوع ب إلا حساب فُتح حتى ${date}؛ وللحسابات الأحدث قواعد أخرى لا تحسبها هذه الحاسبة.`,
-  taxSource: (date) => `وفق قواعد قانون الضرائب في الاتحاد الروسي السارية منذ ${date}.`,
-  otherIncome: "دخل استثمار آخر في السنة، ₽",
-  otherIncomeDesc: (threshold) =>
-    `القسائم وأرباح الأسهم وفوائد الودائع والأرباح خارج هذه الخطة: تتقاسم معها حدّ ${threshold} في السنة الخاضع للنسبة الأدنى.`,
-  shift: "تغيّر سعر الفائدة الرئيسي حتى الأفق",
-  shiftValue: (points) => `${points} نقطة مئوية`,
-  shiftHint: "سعر الفائدة الأساسي لبنك روسيا. تغيّره يحرّك سعر البيع قبل الاستحقاق بمقدار المدة المعدّلة.",
-  shiftHintFloater:
-    "سعر الفائدة الأساسي لبنك روسيا. قسائم السند المتغيّر تتبعه، فتغيّره يغيّر القسائم، ويحافظ سعر البيع على الهامش فوق سعر الفائدة الرئيسي فلا يكاد يتحرّك.",
-
-  result: "النتيجة",
-  total: "المجموع عند الأفق",
-  totalBasis: (date) => `في ${date}، بعد الضريبة والعمولة`,
-  profit: "الربح",
-  profitBasis: (invested) => `على ${invested} مستثمرة`,
-  annual: "العائد السنوي الفعلي",
-  annualBasis: "سعر الوديعة السنوية الذي يعطي المجموع نفسه",
-  periodReturn: "العائد عن الفترة",
-  periodReturnBasis: "غير محسوب سنويًا: في أقل من شهر يُظهر المعدل السنوي العمولة في الغالب",
-  overPeriod: (pct) => `${pct} عن الفترة`,
-  bonds: "السندات المشتراة",
-  bondsBasis: (price) => `بسعر ${price} للسند`,
-  breakdownCaption: "مصادر المجموع",
-  colItem: "البند",
-  colAmount: "المبلغ",
-  rowCoupons: "القسائم",
-  rowReinvest: "دخل إعادة استثمار المدفوعات",
-  rowAmort: "الإطفاء الجزئي",
-  rowRedemption: "السداد عند الاستحقاق",
-  rowSale: "البيع عند الأفق",
-  rowTax: "الضريبة",
-  rowCommission: (rate) => `عمولة الوسيط، ${rate} من كل صفقة`,
-  rowTotal: "المجموع",
-  errorTitle: "تعذّر الحساب",
-  resetInputs: "أعد القيم الأولى",
-
-  early: "البيع قبل الاستحقاق",
-  earlyTotal: (shift) => `المجموع إذا تغيّر سعر الفائدة الرئيسي بمقدار ${shift}`,
-  earlyDiff: "الفرق عن الخطة",
-  earlyDuration: "المدة المعدّلة عند الأفق",
-  earlyHeld: "الخطة تحتفظ بالسند حتى الاستحقاق، فلا يغيّرها تغيّر سعر الفائدة الرئيسي. قدّم الأفق لترى البيع.",
-  earlyFloater: "قسيمة السند المتغيّر تتبع سعر الفائدة الرئيسي، فلا يكاد سعره يتحرّك: يأتي الفرق من القسائم.",
-
-  floater: "سيناريوهات سعر الفائدة الرئيسي",
-  floaterDesc: "قسيمة السند المتغيّر هي سعر الفائدة الرئيسي مضافًا إليه هامش ثابت. في كل سيناريو يتحرّك السعر خلال فترات القسائم الأربع التالية ثم يثبت.",
-  floaterCaption: "المجموع عند الأفق بحسب سيناريو سعر الفائدة الرئيسي",
-  colScenario: "سعر الفائدة الرئيسي",
-  scenarioShift: (points) => `${points} نقطة مئوية`,
-  scenarioUnchanged: "دون تغيير",
-  colAnnual: "العائد السنوي",
-  couponsLabel: "القسيمة للسند بحسب تاريخ الدفع",
-  couponsDesc: "القسائم في كل سيناريو لسعر الفائدة الرئيسي.",
-  axisCoupon: "القسيمة، ₽",
-
-  offer: "عرض إعادة الشراء",
-  offerDesc: (rate) =>
-    `في تاريخ عرض إعادة الشراء يحق لحامل السند بيعه للمُصدِر بالقيمة الاسمية. ومن يحتفظ به يحصل على القسيمة التي يحدّدها المُصدِر حينها؛ وتؤخذ هنا ${rate} حالةً منخفضة.`,
-  offerCaption: "البيع للمُصدِر عند العرض مقابل الاحتفاظ حتى الاستحقاق",
-  rowSellBack: (date) => `البيع للمُصدِر في ${date}`,
-  rowHoldOn: (date) => `الاحتفاظ حتى ${date}`,
-
-  diagnostics: "تشخيص المحرّك",
-  engine: "المحرّك",
-  engineWasm: "ويب أسمبلي",
-  engineTwin: "تايب سكريبت",
-  engineNote: "تطبيقان للرياضيات نفسها. ويب أسمبلي هو الافتراضي، ويحلّ تايب سكريبت محلّه إذا تعذّر تحميله.",
-  wasmUnavailable: "ويب أسمبلي غير متاح في هذه الجلسة، فلا يمكن اختيار إلا محرّك تايب سكريبت.",
-  diagLabel: "حالة المحرّك",
-  wasmLoad: "تحميل ويب أسمبلي وتهيئته",
-  notLoaded: "غير محمَّل",
-  lastDerive: "آخر حساب لبيانات الإصدار",
-  lastCalculate: "آخر حساب للخطة",
-  ms: (value) => `${value} ملّي ثانية`,
-  timingCaption: (samples, calls, percentile) =>
-    `زمن الاستدعاء الواحد على هذا الإصدار وهذه الخطة: الوسيط والمئين ${percentile} على ${samples} قياسًا، كل منها متوسط ${calls} استدعاءات`,
-  colCall: "المحرّك والدالة",
-  colMedian: "الوسيط",
-  colP95: (percentile) => `المئين ${percentile}`,
-  timeBoth: "قِس المحرّكين",
-  timing: "جارٍ القياس…",
-  notTimed: "لم يُقَس بعد.",
-
-  shortcutsTitle: "اختصارات لوحة المفاتيح",
-  scGeneral: "عامّة",
-  scSearch: "البحث في الإصدارات",
-  scHelp: "عرض اختصارات لوحة المفاتيح",
-
-  glossary: "المصطلحات",
-  terms: {
-    keyRate: ["سعر الفائدة الرئيسي", "سعر الفائدة الأساسي لبنك روسيا. تدفع السندات المتغيّرة هذا السعر مضافًا إليه هامش ثابت."],
-    ofz: ["سندات القرض الفيدرالي", "سندات وزارة المالية الروسية، أقل المُصدِرين مخاطرة في السوق."],
-    accrued: ["الفائدة المستحقة", "جزء القسيمة التالية المكتسب منذ آخر دفعة. يدفعه المشتري للبائع فوق السعر النظيف."],
-    ytm: ["العائد حتى الاستحقاق", "العائد السنوي الفعلي للشراء بالسعر الكامل اليوم وتلقّي كل المدفوعات حتى الاستحقاق."],
-    offer: ["عرض إعادة الشراء", "تاريخ يحق فيه لحامل السند بيعه للمُصدِر بالقيمة الاسمية."],
-    amortisation: ["الإطفاء الجزئي", "يسدّد المُصدِر القيمة الاسمية على أجزاء قبل الاستحقاق، وتُحسب القسائم اللاحقة على المتبقّي."],
-    duration: ["المدة", "متوسط الزمن حتى المدفوعات، مرجّحًا بقيمتها الحالية. وتبيّن المدة المعدّلة مقدار تغيّر السعر حين يتغيّر العائد."],
-    simpleYield: [
-      "العائد البسيط على كامل المدة",
-      "مجموع المدفوعات مطروحًا منه سعر اليوم، نسبةً إلى السعر، مقسومًا على السنوات حتى آخر دفعة. لا يُركَّب، ويعدّ المال مستثمرًا حتى آخر دفعة، لذا يكون في السند ذي الإطفاء الجزئي، الذي يعيد أصل الدين مبكرًا، أقل بكثير من العائد حتى الاستحقاق.",
-    ],
-    ldv: [
-      "إعفاء الحيازة الطويلة",
-      "إعفاء ضريبي روسي يطبّقه الوسيط تلقائيًا: لا يخضع للضريبة الربحُ من سعر أوراق مالية حيزت أكثر من ثلاث سنوات، محسوبة بالذكرى السنوية، ضمن حدّ عن كل سنة كاملة. أما القسائم فتخضع للضريبة كالمعتاد.",
-    ],
-    iis: [
-      "حساب الاستثمار الفردي من النوع ب",
-      (date) => `حساب وساطة روسي بإعفاء ضريبي: القسائم والأرباح فيه معفاة من الضريبة عند إغلاقه بعد ثلاث سنوات على الأقل. ولا يكون من النوع ب إلا حساب فُتح حتى ${date}.`,
-    ],
-    rating: ["التصنيف", "التصنيفات الائتمانية هنا على المقياس الوطني الروسي، من الأفضل إلى الأدنى."],
-  },
-
-  errors: {
-    invalid_code: "تلقّى المحرّك نوع قسيمة أو نظامًا ضريبيًا لا يعرفه.",
-    invalid_date: "أحد تواريخ هذا الإصدار ليس تاريخًا صحيحًا.",
-    invalid_nominal: "يجب أن تكون القيمة الاسمية عددًا موجبًا.",
-    invalid_period: "يجب ألا تقل فترة القسيمة عن يوم واحد.",
-    matured: "استُحق هذا الإصدار بالفعل.",
-    amount_not_positive: "أدخل مبلغًا أكبر من الصفر.",
-    amount_too_large: "المبلغ يتجاوز حدّ الحاسبة البالغ مليار روبل.",
-    horizon_out_of_range: "يجب أن يقع الأفق بين الغد وتاريخ الاستحقاق.",
-    invalid_other_income: "يجب أن يكون دخل الاستثمار الآخر صفرًا أو أكثر.",
-    invalid_price: "ليس لهذا الإصدار سعر صالح، فلا يمكن حساب خطة له.",
-    amount_below_one_bond: "المبلغ لا يكفي لشراء سند واحد بالسعر الكامل.",
-  },
-};
-
-export const strings: Record<Lang, Strings> = { en, ru, ar };
+export const strings: Record<Lang, Strings> = { ru, en };

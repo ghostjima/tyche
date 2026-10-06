@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
 test("the header stays put while the page region scrolls to the bottom", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.floater}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.floater}`);
   await ready(page);
   const header = page.locator(".stoa-app-header");
   const top = (await header.boundingBox())!.y;
@@ -28,7 +28,7 @@ test("the header stays put while the page region scrolls to the bottom", async (
 });
 
 test("the scroll keys scroll the page region with nothing focused", async ({ page }) => {
-  await page.goto(`/?issue=${ISSUES.floater}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.floater}`);
   await ready(page);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.keyboard.press("PageDown");
@@ -37,7 +37,7 @@ test("the scroll keys scroll the page region with nothing focused", async ({ pag
 
 for (const theme of ["light", "dark"] as const) {
   test(`scrollbars resolve to Stoa's scrollbar tokens, thin (${theme})`, async ({ page }) => {
-    await page.goto(`/?theme=${theme}&issue=${ISSUES.offer}`);
+    await page.goto(`/?lang=en&theme=${theme}&issue=${ISSUES.offer}`);
     await ready(page);
     const result = await page.evaluate(() => {
       const probe = (inside: Element) => {
@@ -76,7 +76,7 @@ for (const [width, height] of [
       await held;
       await route.continue();
     });
-    await page.goto("/?lang=ar");
+    await page.goto("/?lang=ru");
     await expect(page.locator(".app")).toHaveAttribute("data-state", "loading");
     const top = () => page.locator(".glossary").evaluate((el) => el.getBoundingClientRect().top);
     const loading = await top();

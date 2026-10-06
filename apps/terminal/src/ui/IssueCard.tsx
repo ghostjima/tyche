@@ -97,7 +97,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
         <Ltr mono>{bond.id}</Ltr>
       </p>
       <div className="tags">
-        {/* The rating reads left to right in every language: "BBB-", not "-BBB" in Arabic. */}
+        {/* The rating reads left to right: "BBB-" keeps its sign after the letters. */}
         <Tag tone={ratingTone(bond)}>
           {t.rating} <Ltr>{bond.rating}</Ltr>
         </Tag>
