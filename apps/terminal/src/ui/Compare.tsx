@@ -6,7 +6,7 @@
 import type { ReactNode } from "react";
 import { Button, Panel, Table, keepFocusInPlace } from "@ghostjima/stoa-react";
 import { COMMISSION_PCT } from "@tyche/yield-twin";
-import { MARKET } from "../data/market";
+import { CURVE, MARKET } from "../data/market";
 import type { Engine, Plan } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Item } from "../lib/filters";
@@ -38,7 +38,7 @@ export function Compare({ t, f, engine, items, planOf, onRemove, nameOf, source 
     i.bond.coupon.kind === "fixed" ? t.chipFixed : i.bond.coupon.kind === "key_rate" ? t.chipKeyRate : i.bond.coupon.kind === "ruonia" ? t.chipRuonia : t.chipLinker;
   // After tax and the fee to the nearest exit, nothing reinvested.
   const afterTax = (i: Item) => {
-    const e = engine.explain(i.bond.issue, MARKET, planOf(i), COMMISSION_PCT);
+    const e = engine.explain(i.bond.issue, MARKET, planOf(i), COMMISSION_PCT, CURVE);
     if ("error" in e) return t.errors[e.error];
     const held = (e.ok.toOffer ?? e.ok.toMaturity).held;
     return held.annualPct === null ? t.overPeriod(f.percent(held.periodPct / 100)) : f.percent(held.annualPct / 100);

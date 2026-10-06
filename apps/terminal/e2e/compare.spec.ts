@@ -61,7 +61,7 @@ test("the comparison sets the measures side by side, the G-spread with them, and
   await expect(row("Liquidity").nth(2)).toHaveText("Thin market, spread 8.55%");
   await expect(row("Who can buy").nth(2)).toHaveText("Qualified only");
   // A G-spread in basis points; an inflation-linked issue's is not compared.
-  await expect(row("G-spread").first()).toHaveText(/^\+\d+ bp$/);
+  await expect(row("G-spread").first()).toHaveText("+145 bp");
   await expect(row("G-spread").nth(1)).toHaveText("not compared: the yield is real");
   const sources = compare(page).locator(":scope .source-note");
   await expect(sources).toHaveCount(2);

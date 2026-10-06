@@ -151,7 +151,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source, explan
         )}
       </div>
       <Risks t={t} f={f} bond={bond} derived={d} />
-      <HonestYield t={t} f={f} explanation={explanation} plan={plan} />
+      <HonestYield t={t} f={f} explanation={explanation} plan={plan} realYield={bond.coupon.kind === "linker"} />
       <Analogues t={t} f={f} engine={engine} item={{ bond, derived: d }} items={items} compared={compared} onOpen={onOpen} />
 
       <section className="block" aria-labelledby="figures-h">

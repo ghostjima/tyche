@@ -1,47 +1,21 @@
 // An issue among its peers: the G-spread to the Bank of Russia's
 // zero-coupon yield curve of federal loan bonds at the issue's duration,
-// and the analogues, issues of a similar rating and duration.
+// as the engine works it out, and the analogues, issues of a similar
+// rating and duration.
 import { ratingIndex } from "../data/issues";
-import { MACRO } from "../data/market";
-import type { Engine } from "../engine/types";
+import { CURVE, MARKET } from "../data/market";
+import type { Curve, Engine, GSpread, Result } from "../engine/types";
 import type { Item } from "./filters";
 
-/** The curve's yield at a term in years, percent: linear between the
- * published terms and flat beyond them, as the synthetic market reads it
- * when it prices an issue. */
-export function curveAt(years: number, curve = MACRO.curve): number {
-  const t = curve.termsYears;
-  const y = curve.yieldsPct;
-  if (t.length === 0) return Number.NaN;
-  if (years <= t[0]!) return y[0]!;
-  for (let i = 1; i < t.length; i++) {
-    if (years <= t[i]!) {
-      const w = (years - t[i - 1]!) / (t[i]! - t[i - 1]!);
-      return y[i - 1]! + w * (y[i]! - y[i - 1]!);
-    }
-  }
-  return y[y.length - 1]!;
-}
-
-export type GSpread = {
-  /** Macaulay duration to the nearest exit (the offer, else maturity) at
-   * the yield to it, years. */
-  durationYears: number;
-  /** The curve's yield at that duration, percent. */
-  curvePct: number;
-  /** The issue's yield to the same exit less the curve's, basis points. */
-  spreadBp: number;
-};
-
-/** The G-spread of an issue, or null for an inflation-linked one, whose
- * yield is real and does not compare with a nominal curve. */
-export function gSpread(engine: Engine, { bond, derived: d }: Item): GSpread | null {
+/** The G-spread of an issue's yield to its nearest exit (the offer, else
+ * maturity), from the engine against the snapshot's curve; null for an
+ * inflation-linked issue, whose yield is real and does not compare with a
+ * nominal curve; the engine's error code when it cannot read the
+ * curve. */
+export function gSpread(engine: Engine, { bond }: Item, curve: Curve = CURVE): Result<GSpread> | null {
   if (bond.coupon.kind === "linker") return null;
-  const flows = d.flowsToOffer ?? d.flows;
-  const amounts = flows.coupons.map((c, i) => c + (flows.principals[i] ?? 0));
-  const durationYears = engine.macaulay_duration(amounts, flows.days, d.yieldEvent);
-  const curvePct = curveAt(durationYears);
-  return { durationYears, curvePct, spreadBp: (d.yieldEvent * 100 - curvePct) * 100 };
+  const r = engine.g_spread(bond.issue, MARKET, curve);
+  return "ok" in r ? { ok: r.ok.toOffer ?? r.ok.toMaturity } : r;
 }
 
 /** How close a peer's rating and duration must be to count as an

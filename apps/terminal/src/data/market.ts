@@ -2,7 +2,7 @@
 // data, the tests and the screenshots stay the same from day to day, and
 // the Bank of Russia's figures for it, from which the synthetic universe
 // is generated. All issues are fictional.
-import { LDV_YEARS, addYears, dayOffset, parseIsoDate, type Market } from "@tyche/yield-twin";
+import { LDV_YEARS, addYears, dayOffset, parseIsoDate, type Curve, type Market } from "@tyche/yield-twin";
 import type { MacroInputs } from "./issues";
 import SNAPSHOT from "../../../../data/cbr/snapshot.json";
 
@@ -30,6 +30,12 @@ export const VALUATION_DATE = MACRO.valuationDate;
 export const KEY_RATE_PCT = MACRO.keyRatePct;
 
 export const MARKET: Market = { valuationDate: VALUATION_DATE, keyRatePct: KEY_RATE_PCT };
+
+/** The zero-coupon yield curve of federal loan bonds on the valuation
+ * date, as the snapshot holds it: yields in percent a year, annual
+ * effective, at the published terms in years. The engine takes it for the
+ * G-spreads. */
+export const CURVE: Curve = MACRO.curve;
 
 const DAY_MS = 86_400_000;
 const [y, m, d] = VALUATION_DATE.split("-").map(Number) as [number, number, number];

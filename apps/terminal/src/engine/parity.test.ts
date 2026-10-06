@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BONDS } from "../data/universe.testing";
-import { MARKET } from "../data/market";
+import { CURVE, MARKET } from "../data/market";
 import { twinEngine } from "./twin";
 import { loadWasm } from "./wasm";
 import type { Plan, TaxRegime } from "./types";
@@ -75,7 +75,14 @@ describe("WebAssembly and twin through the app's adapters", () => {
         [{ amount: 100_000, horizonDay: maturity, reinvest: false, taxRegime: "iis_b", otherIncome: 0, rateShiftPct: 0 }, 0],
         [{ amount: 100_000, horizonDay: maturity, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 }, -1],
       ];
-      for (const [n, [plan, fee]] of plans.entries()) close(wasm.explain(b.issue, MARKET, plan, fee), twinEngine.explain(b.issue, MARKET, plan, fee), `${b.id} explain ${n}`);
+      for (const [n, [plan, fee]] of plans.entries()) close(wasm.explain(b.issue, MARKET, plan, fee, CURVE), twinEngine.explain(b.issue, MARKET, plan, fee, CURVE), `${b.id} explain ${n}`);
+    }
+  });
+
+  it("take the same G-spreads for every issue, and refuse the same curves", () => {
+    const curves = [CURVE, { termsYears: [], yieldsPct: [] }, { termsYears: [1, 2], yieldsPct: [10] }, { termsYears: [1, 2], yieldsPct: [10, Number.NaN] }];
+    for (const b of BONDS) {
+      for (const [n, curve] of curves.entries()) close(wasm.g_spread(b.issue, MARKET, curve), twinEngine.g_spread(b.issue, MARKET, curve), `${b.id} g_spread ${n}`);
     }
   });
 
@@ -84,7 +91,6 @@ describe("WebAssembly and twin through the app's adapters", () => {
     const days = [100, 282, 464];
     for (const y of [0.05, 0.15, 0.35]) {
       close(wasm.price_from_yield(amounts, days, y), twinEngine.price_from_yield(amounts, days, y), `y=${y}`);
-      close(wasm.macaulay_duration(amounts, days, y), twinEngine.macaulay_duration(amounts, days, y), `duration y=${y}`);
     }
   });
 });
