@@ -247,7 +247,7 @@ publishing nothing, when a value cannot be read or a run did not pass.
   app's build.
 - axe: axe-core 4.13.0 in the e2e, over the app's named states in each
   language and theme; a serious or critical violation fails the run.
-- Lighthouse: Lighthouse 12 accessibility, best practices and SEO scores
+- Lighthouse: Lighthouse 13 accessibility, best practices and SEO scores
   of the app's home page served by `vite preview`, the lower of the
   desktop and mobile runs. Performance is not shown: on a shared CI
   runner it measures the runner.
