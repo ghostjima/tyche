@@ -263,11 +263,11 @@ export function wrap(w) {
       m.free();
       return out;
     },
-    calculate: (issue, market, plan) => {
+    calculate: (issue, market, plan, feePct) => {
       const i = issueOf(issue);
       const m = marketOf(market);
       const p = planOf(plan);
-      const out = result(w.calculate(i, m, p), calculation);
+      const out = result(w.calculate(i, m, p, feePct), calculation);
       i.free();
       m.free();
       p.free();

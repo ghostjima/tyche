@@ -6,7 +6,7 @@
 //! G-spread of each yield to the zero-coupon curve, and the tax year by
 //! year.
 
-use crate::calculate::{check_plan, Hold, Sale, TaxYear};
+use crate::calculate::{check_fee, check_plan, Hold, Sale, TaxYear};
 use crate::date::parse_iso_date;
 use crate::issue::{derive_bond, Error, Issue, Market, Schedule};
 use crate::primitives::{ytm_effective, YEAR};
@@ -96,9 +96,8 @@ pub struct Explanation {
     pub to_maturity: YieldTrace,
     /// Issues with an offer after the valuation date only.
     pub to_offer: Option<YieldTrace>,
-    /// The plan as [`calculate`](crate::calculate) gives it, with the fee
-    /// as the commission: the same as its `plan` when the fee is
-    /// [`COMMISSION_PCT`](crate::COMMISSION_PCT).
+    /// The plan as [`calculate`](crate::calculate) gives it with the same
+    /// fee: the same as its `plan`.
     pub plan: Breakdown,
     /// The plan's tax, year by year; the years' `tax` add up to
     /// `-plan.tax`.
@@ -119,9 +118,7 @@ pub fn explain(
 ) -> Result<Explanation, Error> {
     let d = derive_bond(issue, market)?;
     let qty = check_plan(&d, plan)?;
-    if !(fee_pct.is_finite() && fee_pct >= 0.0) {
-        return Err(Error::InvalidFee);
-    }
+    check_fee(fee_pct)?;
     curve.check()?;
     let today = parse_iso_date(&market.valuation_date).ok_or(Error::InvalidDate)?;
     let ctx = Context {

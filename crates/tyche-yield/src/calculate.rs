@@ -9,8 +9,9 @@ use crate::primitives::{
     OFFER_RATE_CHANGE, TAX_THRESHOLD, YEAR,
 };
 
-/// Brokerage commission in percent, charged on the purchase and on a sale
-/// before redemption.
+/// The usual brokerage commission in percent, charged on the purchase and
+/// on a sale before redemption: the fee a caller passes to [`calculate`]
+/// and [`explain`](crate::explain) when the holder has not given one.
 pub const COMMISSION_PCT: f64 = 0.05;
 /// The coupon rate in percent assumed after an offer in the worst case.
 pub const WORST_CASE_COUPON_PCT: f64 = 0.1;
@@ -192,8 +193,8 @@ pub(crate) struct Hold<'a> {
     pub(crate) period_days: f64,
     pub(crate) reinvest_rate: f64,
     pub(crate) exit_yield: f64,
-    /// The broker's commission in percent of each trade: [`COMMISSION_PCT`]
-    /// in [`calculate`], the fee asked for in [`explain`](crate::explain).
+    /// The broker's commission in percent of each trade: the fee asked for
+    /// in [`calculate`] and in [`explain`](crate::explain).
     pub(crate) commission_pct: f64,
     pub(crate) plan: &'a Plan,
 }
@@ -502,6 +503,15 @@ fn tax_year(years: &mut Vec<TaxYear>, year: i64) -> &mut TaxYear {
 /// [`Error::HorizonOutOfRange`], [`Error::InvalidOtherIncome`],
 /// [`Error::InvalidPrice`], [`Error::AmountBelowOneBond`], and returns the
 /// number of bonds bought.
+/// A broker's fee in percent must be a finite number of at least zero.
+pub(crate) fn check_fee(fee_pct: f64) -> Result<(), Error> {
+    if fee_pct.is_finite() && fee_pct >= 0.0 {
+        Ok(())
+    } else {
+        Err(Error::InvalidFee)
+    }
+}
+
 pub(crate) fn check_plan(d: &Derived, plan: &Plan) -> Result<f64, Error> {
     if !plan.amount.is_finite() || plan.amount <= 0.0 {
         return Err(Error::AmountNotPositive);
@@ -565,10 +575,13 @@ fn floater_path(
     (flows, discount)
 }
 
-/// Calculates a plan for an issue: derives the issue (its errors come
-/// first), checks the plan, then computes the plan's totals, the early exit
-/// with the plan's key-rate change, the floater scenarios and the offer
-/// pair.
+/// Calculates a plan for an issue with a broker's fee in percent of each
+/// trade, charged on the purchase and on a sale before redemption: derives
+/// the issue (its errors come first), checks the plan, then the fee
+/// ([`Error::InvalidFee`] for a fee that is not a finite number of at least
+/// zero), then computes the plan's totals, the early exit with the plan's
+/// key-rate change, the floater scenarios and the offer pair, each after
+/// the fee.
 ///
 /// Coupons and principal repaid before the horizon are reinvested, when
 /// the plan asks, at the yield to maturity;
@@ -581,9 +594,15 @@ fn floater_path(
 /// price stays close to where it is: in the early exit the key rate moves
 /// in equal steps on each coupon up to the first one after the horizon; in
 /// the scenarios over [`FLOATER_RAMP_STEPS`] coupons.
-pub fn calculate(issue: &Issue, market: &Market, plan: &Plan) -> Result<Calculation, Error> {
+pub fn calculate(
+    issue: &Issue,
+    market: &Market,
+    plan: &Plan,
+    fee_pct: f64,
+) -> Result<Calculation, Error> {
     let d = derive_bond(issue, market)?;
     let qty = check_plan(&d, plan)?;
+    check_fee(fee_pct)?;
     let y = d.ytm_maturity;
     let today = parse_iso_date(&market.valuation_date).ok_or(Error::InvalidDate)?;
     let hold = Hold {
@@ -595,7 +614,7 @@ pub fn calculate(issue: &Issue, market: &Market, plan: &Plan) -> Result<Calculat
         period_days: issue.period_days,
         reinvest_rate: if plan.reinvest { y } else { 0.0 },
         exit_yield: y,
-        commission_pct: COMMISSION_PCT,
+        commission_pct: fee_pct,
         plan,
     };
 

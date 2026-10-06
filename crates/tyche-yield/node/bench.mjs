@@ -32,7 +32,7 @@ function pass(impl) {
   const t0 = performance.now();
   const derived = issues.map((i) => impl.derive_bond(i, MARKET));
   const t1 = performance.now();
-  const calculated = issues.map((i, k) => impl.calculate(i, MARKET, plans[k]));
+  const calculated = issues.map((i, k) => impl.calculate(i, MARKET, plans[k], twin.COMMISSION_PCT));
   const t2 = performance.now();
   return { derive: t1 - t0, calculate: t2 - t1, both: t2 - t0, derived, calculated };
 }

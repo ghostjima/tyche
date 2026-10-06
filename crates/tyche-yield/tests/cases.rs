@@ -340,7 +340,7 @@ fn run(name: &str, a: &[Value]) -> Value {
         "calculate" => outcome(
             issue(&a[0])
                 .and_then(|i| Ok((i, plan(&a[2])?)))
-                .and_then(|(i, p)| calculate(&i, &market(&a[1]), &p)),
+                .and_then(|(i, p)| calculate(&i, &market(&a[1]), &p, num(&a[3]))),
             calculation,
         ),
         "explain" => outcome(
@@ -463,8 +463,8 @@ fn explain_traces_what_calculate_computes() {
             continue;
         };
         let near = |g: f64, w: f64| (g - w).abs() <= 1e-9 * g.abs().max(w.abs()).max(1.0);
-        // The years' tax adds up to the breakdown's; at the standard
-        // commission the plan is calculate's.
+        // The years' tax adds up to the breakdown's; the plan is
+        // calculate's with the same fee.
         let years: f64 = e.plan_tax.iter().map(|t| t.tax).sum();
         assert!(near(years, -e.plan.tax), "{}", case["name"]);
         for t in &e.plan_tax {
@@ -472,10 +472,8 @@ fn explain_traces_what_calculate_computes() {
             assert!(near(t.redemptions + t.sale - t.cost, t.result + t.relieved));
             assert!(near(t.taxed_low + t.taxed_high, t.base.max(0.0)));
         }
-        if e.fee_pct == COMMISSION_PCT {
-            let c = calculate(&i, &m, &p).expect("calculates");
-            assert_eq!(e.plan, c.plan, "{}", case["name"]);
-        }
+        let c = calculate(&i, &m, &p, e.fee_pct).expect("calculates");
+        assert_eq!(e.plan, c.plan, "{}", case["name"]);
         // The flows discounted at the solved yield give the dirty price.
         for y in std::iter::once(&e.to_maturity).chain(e.to_offer.as_ref()) {
             assert!((y.present_value - e.price.dirty).abs() < 1e-6 * e.price.dirty);
@@ -501,7 +499,7 @@ fn breakdown_lines_add_up() {
         let (Ok(i), Ok(p)) = (issue(&a[0]), plan(&a[2])) else {
             continue;
         };
-        let Ok(c) = calculate(&i, &market(&a[1]), &p) else {
+        let Ok(c) = calculate(&i, &market(&a[1]), &p, num(&a[3])) else {
             continue;
         };
         let b = c.plan;

@@ -516,12 +516,18 @@ pub fn derive_bond(issue: &JsIssue, market: &JsMarket) -> JsDeriveResult {
     }
 }
 
-/// Calculates a plan for an issue in a market.
+/// Calculates a plan for an issue in a market with a broker's fee in
+/// percent.
 #[wasm_bindgen]
-pub fn calculate(issue: &JsIssue, market: &JsMarket, plan: &JsPlan) -> JsCalculateResult {
+pub fn calculate(
+    issue: &JsIssue,
+    market: &JsMarket,
+    plan: &JsPlan,
+    fee_pct: f64,
+) -> JsCalculateResult {
     let r = issue_of(issue)
         .and_then(|i| Ok((i, plan_of(plan)?)))
-        .and_then(|(i, pl)| crate::calculate(&i, &market_of(market), &pl));
+        .and_then(|(i, pl)| crate::calculate(&i, &market_of(market), &pl, fee_pct));
     match r {
         Ok(c) => JsCalculateResult {
             ok: Some(c.into()),
