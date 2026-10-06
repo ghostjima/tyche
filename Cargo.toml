@@ -2,6 +2,9 @@
 members = ["crates/tyche-yield", "crates/tyche-market"]
 resolver = "2"
 
+[workspace.dependencies]
+tyche-yield = { path = "crates/tyche-yield", version = "0.1.0" }
+
 # Profiles apply to the whole workspace; a member's own [profile] would be
 # ignored. The release profile is tyche-yield's, because its WebAssembly
 # module ships to the browser. Measured in Valkyra-Labs/horkos-yield at

@@ -31,14 +31,14 @@ export async function expectNoHorizontalScroll(page: Page, what = "") {
   expect(overflow, what).toEqual({ doc: 0, region: 0 });
 }
 
-/** Issues with every feature the screen can show. */
+/** Issues of the synthetic universe with the features the screen shows. */
 export const ISSUES = {
-  /** Fixed coupon with an offer. */
-  offer: "OKAD-01",
-  /** Floater with amortisation and an offer. */
-  floater: "AMRT-02",
-  /** Fixed, amortising, no offer. */
-  amortising: "ANGM-01",
-  /** Plain fixed government bond. */
-  ofz: "OFZ-26217",
+  /** Corporate, fixed coupon, with a put offer. */
+  offer: "KAMF-01",
+  /** Corporate floater on RUONIA, amortising. */
+  floater: "LADE-02",
+  /** Corporate, fixed, amortising, no offer. */
+  amortising: "ILML-03",
+  /** Plain fixed synthetic government bond, over three years. */
+  gov: "SG-143",
 } as const;

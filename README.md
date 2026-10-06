@@ -17,8 +17,9 @@ separately written TypeScript twin, so a number on screen can be traced
 and tested; the market is a synthetic universe of fictional issuers, so
 nothing on screen is licensed exchange data.
 
-Status: early. What runs today is a prototype screen for sixty fictional
-issues (a list, an issue card and a holding calculator) on the engine;
+Status: early. What runs today is a prototype screen for a synthetic
+universe of 188 fictional issues (a list, an issue card and a holding
+calculator) on the engine;
 the terminal's flows are being built on top of it (see
 [What comes next](#what-comes-next)). Not investment advice.
 
@@ -87,8 +88,8 @@ single-issue calculator: see [What is built](#what-is-built).
   percent rates, the 2.4 million rouble threshold shared with the
   holder's other investment income, and the long-term holding relief.
 - **Data and licensing.** The rules the terminal's data follows. The
-  prototype's sixty issues are already fictional; the source labels,
-  the banner and the licensing page arrive with the synthetic universe.
+  universe is already synthetic; the source labels, the banner and the
+  licensing page are next.
   - The bond universe is fully synthetic: fictional issuers, calibrated
     on aggregate statistics only. No per-security series from an
     exchange is committed.
@@ -138,10 +139,11 @@ single-issue calculator: see [What is built](#what-is-built).
 
 ## What is built
 
-- **The prototype screen** ([`apps/terminal`](apps/terminal)): sixty
-  fictional issues (federal loan bonds and corporates; fixed coupons,
-  floaters on the key rate, amortising issues, issues with an offer) to
-  search, filter and sort; an issue card with clean and dirty price,
+- **The prototype screen** ([`apps/terminal`](apps/terminal)): the
+  synthetic universe (synthetic government bonds and corporates; fixed
+  coupons, floaters on the key rate and on RUONIA, inflation-linked and
+  amortising issues, put and call offers, subordinated and
+  qualified-only issues) to search, filter and sort; an issue card with clean and dirty price,
   accrued interest, yields to maturity and to the offer, durations and
   the payment schedule; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change. Russian
@@ -152,24 +154,28 @@ single-issue calculator: see [What is built](#what-is-built).
   price and yield, duration, cash flows with amortisation and offers,
   floaters, tax and holding-period results.
 - **The market engine** ([`crates/tyche-market`](crates/tyche-market)):
-  order-book reconstruction and replay, today for IEX's DEEP and DEEP+
-  feeds.
+  the synthetic universe and a trading day per issue (the exchange's
+  session schedule, an order book built message by message, a tape),
+  seeded and the same on every platform, calibrated on aggregate figures
+  only; priced by the bond engine from the zero-coupon yield curve. The
+  app runs its WebAssembly build in a worker. The IEX decoding stays
+  behind a feature for its tests; the product does not use it.
 
 The interface is built on [Stoa](https://github.com/ghostjima/stoa), the
 design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The synthetic universe of fictional issuers and the Bank of Russia
-  snapshot, with the source on every widget, the demo banner and the
-  "Data and licensing" page.
+- The Bank of Russia snapshot, taken by a scheduled job, with the
+  source on every widget, the demo banner and the "Data and licensing"
+  page.
 - Goal-first selection; the issue card with the risk and the yield after
   tax and fees, with the working shown; comparison; the order ticket
   against a synthetic order book; events.
 - In the engine: a per-year trace of tax and accrued interest, portfolio
   and ladder cash flows, yield after fees, the G-spread to the curve,
-  inflation-linked bonds. In the market engine: the synthetic bond
-  market generator; the IEX decoding leaves the product.
+  inflation-linked bonds with forecast indexation. In the app: the
+  order book and the tape of the synthetic market.
 
 ## Validation plan and target metrics
 
@@ -251,7 +257,7 @@ CI also checks the minimum supported Rust version, 1.85, with `cargo
 | `apps/terminal` | the app (React, TypeScript, Vite) |
 | `crates/tyche-yield` | the bond engine (Rust, WebAssembly) and its parity tests (`node/`) |
 | `packages/yield-twin` | the engine's TypeScript twin, `@tyche/yield-twin` |
-| `crates/tyche-market` | the order book and replay engine (Rust, WebAssembly) |
+| `crates/tyche-market` | the synthetic market and the order book (Rust, WebAssembly); IEX replay behind a feature |
 | `scripts` | the house-style check and the badge builder |
 
 A Cargo workspace and a pnpm workspace share the root. The app links

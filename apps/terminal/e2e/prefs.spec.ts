@@ -90,14 +90,14 @@ test("the page opens in Russian, and the language survives a reload and the next
 test("Russian writes numbers the Russian way, English the English way", async ({ page }) => {
   await page.goto(`/?lang=ru&issue=${ISSUES.offer}`);
   await ready(page);
-  await expect(page.getByTestId("figures")).toContainText("20,54");
+  await expect(page.getByTestId("figures")).toContainText("15,79");
   await expect(page.getByTestId("figures")).toContainText("₽");
-  await expect(page.getByRole("heading", { level: 2, name: "Ока Девелопмент" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Кама Арендные Решения" })).toBeVisible();
 
   await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
   await ready(page);
-  await expect(page.getByTestId("figures")).toContainText("20.54");
-  await expect(page.getByRole("heading", { level: 2, name: "Oka Development" })).toBeVisible();
+  await expect(page.getByTestId("figures")).toContainText("15.79");
+  await expect(page.getByRole("heading", { level: 2, name: "Kama Lease Solutions" })).toBeVisible();
 });
 
 test("every engine error code has a sentence in each language", async ({ page }) => {
@@ -105,7 +105,7 @@ test("every engine error code has a sentence in each language", async ({ page })
     ["ru", "Введите сумму больше нуля."],
     ["en", "Enter an amount above zero."],
   ] as const) {
-    await page.goto(`/?lang=${lang}&issue=${ISSUES.ofz}`);
+    await page.goto(`/?lang=${lang}&issue=${ISSUES.gov}`);
     await ready(page);
     const amount = page.locator(".calculator .stoa-number input").first();
     await amount.fill("0");

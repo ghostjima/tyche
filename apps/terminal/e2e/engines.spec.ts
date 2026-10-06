@@ -95,5 +95,5 @@ test("the load leaves the product's marks on the performance timeline, which the
       .filter((name) => /:(tyche|horkos):/.test(name))
       .sort(),
   );
-  expect(marks).toEqual(["mark:tyche:list-ready", "mark:tyche:wasm-start", "measure:tyche:wasm-init"]);
+  expect(marks).toEqual(["mark:tyche:list-ready", "mark:tyche:universe-start", "mark:tyche:wasm-start", "measure:tyche:universe", "measure:tyche:wasm-init"]);
 });

@@ -9,13 +9,13 @@ import type { Derived } from "../engine/types";
 
 export type Item = { bond: Bond; derived: Derived };
 
-export type ChipId = "ofz" | "corporate" | "fixed" | "floater" | "short" | "medium" | "long" | "amortising" | "offer";
+export type ChipId = "gov" | "corporate" | "fixed" | "floater" | "linker" | "short" | "medium" | "long" | "amortising" | "offer";
 
 export type GroupId = "sector" | "coupon" | "term" | "features";
 
 export const GROUPS: readonly { id: GroupId; mode: "any" | "all"; chips: readonly ChipId[] }[] = [
-  { id: "sector", mode: "any", chips: ["ofz", "corporate"] },
-  { id: "coupon", mode: "any", chips: ["fixed", "floater"] },
+  { id: "sector", mode: "any", chips: ["gov", "corporate"] },
+  { id: "coupon", mode: "any", chips: ["fixed", "floater", "linker"] },
   { id: "term", mode: "any", chips: ["short", "medium", "long"] },
   { id: "features", mode: "all", chips: ["amortising", "offer"] },
 ];
@@ -23,10 +23,11 @@ export const GROUPS: readonly { id: GroupId; mode: "any" | "all"; chips: readonl
 const YEAR = 365;
 
 const MATCH: Record<ChipId, (item: Item) => boolean> = {
-  ofz: ({ bond }) => bond.issuer.kind === "ofz",
+  gov: ({ bond }) => bond.issuer.kind === "government",
   corporate: ({ bond }) => bond.issuer.kind === "corporate",
-  fixed: ({ bond }) => bond.issue.couponType === "fixed",
-  floater: ({ bond }) => bond.issue.couponType === "floater",
+  fixed: ({ bond }) => bond.coupon.kind === "fixed",
+  floater: ({ bond }) => bond.coupon.kind === "key_rate" || bond.coupon.kind === "ruonia",
+  linker: ({ bond }) => bond.coupon.kind === "linker",
   short: ({ derived }) => derived.maturityDay <= YEAR,
   medium: ({ derived }) => derived.maturityDay > YEAR && derived.maturityDay <= 3 * YEAR,
   long: ({ derived }) => derived.maturityDay > 3 * YEAR,
@@ -39,8 +40,8 @@ export type Query = {
   chips: readonly ChipId[];
   /** Words to look for in the ticker and in the issue's search texts (the
    * issuer's name in the interface's language): each word must be found,
-   * and a ticker matches with or without its separators ("okad 01",
-   * "okad01", "OKAD-01"). */
+   * and a ticker matches with or without its separators ("kamf 01",
+   * "kamf01", "KAMF-01"). */
   search: string;
 };
 
@@ -55,7 +56,7 @@ function fold(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase().replace(/ё/g, "е");
 }
 
-/** Without spaces and separators, so "okad01" finds "OKAD-01". */
+/** Without spaces and separators, so "kamf01" finds "KAMF-01". */
 const compact = (text: string) => text.replace(/[\s\-_.,·]+/g, "");
 
 function matchesSearch(item: Item, words: readonly string[], textsOf: SearchTexts): boolean {

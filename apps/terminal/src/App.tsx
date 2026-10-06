@@ -15,10 +15,11 @@ import {
   SkeletonLines,
   ThemeSwitch,
   groupShortcuts,
+  keepFocusInPlace,
   useShortcuts,
   useThemePreference,
 } from "@ghostjima/stoa-react";
-import { BONDS, type Bond } from "./data/issues";
+import type { Bond } from "./data/issues";
 import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
@@ -28,15 +29,15 @@ import { formats } from "./lib/format";
 import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
+import { useUniverse } from "./market/useUniverse";
 import { Diagnostics } from "./ui/Diagnostics";
 import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
 import { WIDE, useMediaQuery } from "./ui/useMediaQuery";
 
-const readIssue = (): string | null => {
-  const id = new URLSearchParams(location.search).get("issue");
-  return id !== null && BONDS.some((b) => b.id === id) ? id : null;
-};
+/** The issue asked for in ?issue=; whether the universe has it is known
+ * once the universe is ready. */
+const readIssue = (): string | null => new URLSearchParams(location.search).get("issue");
 
 /** The history entry's mark for an issue opened over the list on a narrow
  * screen. */
@@ -64,7 +65,24 @@ function focusRecord(id: string, frames = 10) {
   else if (frames > 0) requestAnimationFrame(() => focusRecord(id, frames - 1));
 }
 
-const TERM_KEYS = ["keyRate", "ofz", "accrued", "ytm", "simpleYield", "offer", "amortisation", "duration", "ldv", "iis", "rating"] as const;
+const TERM_KEYS = [
+  "keyRate",
+  "ruonia",
+  "gov",
+  "accrued",
+  "ytm",
+  "simpleYield",
+  "offer",
+  "call",
+  "amortisation",
+  "linker",
+  "subordinated",
+  "qualified",
+  "duration",
+  "ldv",
+  "iis",
+  "rating",
+] as const;
 
 /** The screen. Rendered inside an I18nProvider set to the language's
  * locale, which Stoa's words and digits follow. */
@@ -73,6 +91,8 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const f = formats(LOCALES[lang]);
   const theme = useThemePreference(THEME_STORE);
   const { engines, retry } = useEngines();
+  const { state: market, retry: retryMarket } = useUniverse();
+  const bonds = market.status === "ready" ? market.universe.bonds : null;
   const [choice, setChoice] = useEngineChoice();
   const engine = activeEngine(engines, choice);
   const wide = useMediaQuery(WIDE);
@@ -95,15 +115,23 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
   const nameOf = (bond: Bond) => issuerName(bond, t);
   const textsOf = (bond: Bond) => searchTexts(bond, t);
 
-  // Every issue derived by the active engine; derived again when the
-  // engine changes.
+  // Every issue of the universe derived by the active engine; derived
+  // again when the engine changes.
   const items = useMemo<Item[] | null>(() => {
-    if (!engine) return null;
-    return BONDS.flatMap((bond) => {
+    if (!engine || !bonds) return null;
+    return bonds.flatMap((bond) => {
       const r = engine.derive_bond(bond.issue, MARKET);
       return "ok" in r ? [{ bond, derived: r.ok }] : [];
     });
-  }, [engine]);
+  }, [engine, bonds]);
+
+  // A link to an issue the universe does not have opens the list.
+  useEffect(() => {
+    if (items && selectedId !== null && !items.some((i) => i.bond.id === selectedId)) {
+      setSelectedId(null);
+      writeIssue(null);
+    }
+  }, [items, selectedId]);
 
   useEffect(() => {
     if (items && performance.getEntriesByName("tyche:list-ready").length === 0) performance.mark("tyche:list-ready");
@@ -180,7 +208,8 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
     { key: "?", description: t.scHelp, group: t.scGeneral, onTrigger: () => setHelpOpen(true) },
   ]);
 
-  const loading = engines.status === "loading";
+  const loading = engines.status === "loading" || market.status === "loading";
+  const marketFailed = market.status === "failed";
   const wasmFailed = engines.status === "ready" && engines.wasm === null;
 
   const list = items && (
@@ -233,7 +262,10 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
       }
       footer={
         <div className="foot">
-          <p>{t.footer(f.date(0), f.percent(KEY_RATE_PCT / 100, 0))}</p>
+          <p>
+            {t.footer(f.date(0), f.percent(KEY_RATE_PCT / 100, 0))} {t.footerSource}{" "}
+            <a href="https://www.cbr.ru/">cbr.ru</a>
+          </p>
           <div className="foot__actions">
             <Button variant="ghost" onPress={() => setDiagOpen(true)}>
               {t.openDiagnostics}
@@ -245,7 +277,7 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
         </div>
       }
     >
-      <div className="app" data-engine={engine?.kind ?? ""} data-state={loading ? "loading" : "ready"}>
+      <div className="app" data-engine={engine?.kind ?? ""} data-state={loading ? "loading" : marketFailed ? "failed" : "ready"}>
         {wasmFailed && !wasmNoticeDismissed && (
           <Callout
             tone="warning"
@@ -256,7 +288,26 @@ export function App({ lang, onLang }: { lang: Lang; onLang: (lang: Lang) => void
             {t.wasmFailedBody}
           </Callout>
         )}
-        {loading ? (
+        {marketFailed ? (
+          <Callout
+            tone="negative"
+            title={t.marketFailedTitle}
+            action={
+              <Button
+                onPress={(e) => {
+                  // The notice leaves with the retry; the focus moves on
+                  // to the next stop instead of falling to the page.
+                  keepFocusInPlace(e.target);
+                  retryMarket();
+                }}
+              >
+                {t.marketRetry}
+              </Button>
+            }
+          >
+            {t.marketFailedBody}
+          </Callout>
+        ) : loading ? (
           <div className="workspace" aria-busy="true">
             <Panel title={t.issues} className="pane-list">
               {/* As tall as the list will be, so what follows the

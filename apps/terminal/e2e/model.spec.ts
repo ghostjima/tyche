@@ -39,7 +39,7 @@ test("a floater's sale keeps its price when the key rate moves; its coupons chan
 });
 
 test("an amortising issue held to maturity earns about its yield after tax", async ({ page }) => {
-  await page.goto(`/?lang=en&issue=OFZ-46273`);
+  await page.goto(`/?lang=en&issue=SG-501`);
   await ready(page);
   await page.getByRole("button", { name: "Maturity", exact: true }).click();
   await expect(page.getByRole("switch", { name: /Reinvest payments/ })).toBeChecked();
@@ -52,7 +52,7 @@ test("an amortising issue held to maturity earns about its yield after tax", asy
 });
 
 test("tax: a brokerage account at 13 and 15 percent, with the sources of the rules", async ({ page }) => {
-  await page.goto(`/?lang=en&issue=${ISSUES.ofz}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.gov}`);
   await ready(page);
   const regime = page.getByRole("radiogroup", { name: "Tax regime" });
   await expect(regime.getByRole("radio", { name: "Brokerage account" })).toBeChecked();
@@ -74,14 +74,14 @@ test("tax: a brokerage account at 13 and 15 percent, with the sources of the rul
 });
 
 test("held more than three years, the screen says the gain is exempt", async ({ page }) => {
-  await page.goto(`/?lang=en&issue=${ISSUES.ofz}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.gov}`);
   await ready(page);
   await page.getByRole("button", { name: "Maturity", exact: true }).click();
   await expect(page.getByRole("radiogroup", { name: "Tax regime" })).toHaveAccessibleDescription(/held more than three years/);
 });
 
 test("a horizon under a month gives the return over the period, not a year's rate", async ({ page }) => {
-  await page.goto(`/?lang=en&issue=${ISSUES.ofz}`);
+  await page.goto(`/?lang=en&issue=${ISSUES.gov}`);
   await ready(page);
   const horizon = page.getByRole("slider", { name: "Holding horizon" });
   await horizon.focus();

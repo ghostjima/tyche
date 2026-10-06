@@ -16,7 +16,7 @@ import { chromium } from "@playwright/test";
 const COLD = Number(process.argv[2] ?? 10);
 const STEPS = Number(process.argv[3] ?? 100);
 const BASE = "http://localhost:4176";
-const ISSUES = { offer: "OKAD-01", floater: "AMRT-02", amortising: "ANGM-01", ofz: "OFZ-26217" };
+const ISSUES = { offer: "KAMF-01", floater: "LADE-02", amortising: "ILML-03", gov: "SG-143" };
 
 const median = (xs) => {
   const s = [...xs].sort((a, b) => a - b);
@@ -174,7 +174,7 @@ try {
   const col = (k) => loads.map((l) => l[k]).filter((v) => v !== undefined);
   lines.push(`| first contentful paint | navigation start to the first paint with content (the header and the loading skeleton) | ${fmt(median(col("fcp")), 1)} | ${fmt(p95(col("fcp")), 1)} |`);
   lines.push(`| WebAssembly load and instantiate | \`await init()\`: fetch of the .wasm from the local server, compile and instantiate | ${fmt(median(col("wasm")), 1)} | ${fmt(p95(col("wasm")), 1)} |`);
-  lines.push(`| list ready | navigation start to the commit of the first render with all sixty issues derived (the mark \`tyche:list-ready\`) | ${fmt(median(col("listReady")), 1)} | ${fmt(p95(col("listReady")), 1)} |`, "");
+  lines.push(`| list ready | navigation start to the commit of the first render with every issue of the universe derived (the mark \`tyche:list-ready\`) | ${fmt(median(col("listReady")), 1)} | ${fmt(p95(col("listReady")), 1)} |`, "");
   lines.push("Engine calls, from the diagnostics sheet's \"Time both engines\": per call, median and 95th percentile over 200 samples, each sample the mean of 10 consecutive calls, after 20 warm-up batches; one run per issue, in one warm page:", "");
   lines.push("| issue | engine | function | median | p95 |", "|---|---|---|---|---|");
   for (const [issue, rows] of Object.entries(engines)) for (const r of rows) lines.push(`| ${issue} | ${r[0]} | ${r[1]} | ${r[2]} | ${r[3]} |`);

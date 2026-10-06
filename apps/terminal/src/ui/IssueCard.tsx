@@ -28,6 +28,21 @@ function ratingTone(bond: Bond): TagTone {
   return i <= 3 ? "positive" : i <= 9 ? "neutral" : "warning";
 }
 
+/** The coupon's tag: fixed, a floater on its index with its spread, or a
+ * linker with its indexed face value. */
+function couponTag(bond: Bond, t: Strings, f: Formats): string {
+  switch (bond.coupon.kind) {
+    case "fixed":
+      return t.tagFixed;
+    case "key_rate":
+      return t.tagFloater(f.percent(bond.coupon.indexSpreadPct / 100));
+    case "ruonia":
+      return t.tagRuonia(f.percent(bond.coupon.indexSpreadPct / 100));
+    case "linker":
+      return t.tagLinker(f.money(bond.issue.nominal));
+  }
+}
+
 export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardProps) {
   const { issue } = bond;
   const floater = issue.couponType === "floater";
@@ -101,10 +116,12 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
         <Tag tone={ratingTone(bond)}>
           {t.rating} <Ltr>{bond.rating}</Ltr>
         </Tag>
-        <Tag>{bond.issuer.kind === "ofz" ? t.tagOfz : t.tagCorporate}</Tag>
-        <Tag tone={floater ? "info" : "neutral"}>{floater ? t.tagFloater(f.percent(issue.spreadPct / 100)) : t.tagFixed}</Tag>
+        <Tag>{bond.issuer.kind === "government" ? t.tagGov : t.tagCorporate}</Tag>
+        <Tag tone={bond.coupon.kind === "fixed" ? "neutral" : "info"}>{couponTag(bond, t, f)}</Tag>
         {issue.amortization.length > 0 && <Tag tone="info">{t.tagAmortising}</Tag>}
-        {d.offerDay !== null && <Tag tone="warning">{t.tagOffer(f.date(d.offerDay))}</Tag>}
+        {d.offerDay !== null && <Tag tone="warning">{bond.offer?.kind === "call" ? t.tagCall(f.date(d.offerDay)) : t.tagPut(f.date(d.offerDay))}</Tag>}
+        {bond.subordinated && <Tag tone="warning">{t.tagSubordinated}</Tag>}
+        {bond.qualifiedOnly && <Tag tone="warning">{t.tagQualified}</Tag>}
       </div>
 
       <section className="block" aria-labelledby="figures-h">
@@ -115,7 +132,11 @@ export function IssueCard({ t, f, bond, derived: d, engine, name }: IssueCardPro
           <Metric label={t.cleanPrice} value={f.percent(issue.pricePct / 100)} basis={t.cleanPriceBasis(f.money((issue.pricePct / 100) * issue.nominal))} />
           <Metric label={t.accrued} value={f.money(d.accrued)} basis={t.accruedBasis(f.term(d.daysSinceLast))} />
           <Metric label={t.dirtyPrice} value={f.money(d.dirtyPrice)} basis={t.dirtyPriceBasis} />
-          <Metric label={t.ytm} value={f.percent(d.ytmMaturity)} basis={t.ytmBasis(f.date(d.maturityDay))} />
+          <Metric
+            label={t.ytm}
+            value={f.percent(d.ytmMaturity)}
+            basis={bond.coupon.kind === "linker" ? t.ytmRealBasis(f.date(d.maturityDay)) : t.ytmBasis(f.date(d.maturityDay))}
+          />
           {d.ytmOffer !== null && d.offerDay !== null && (
             <Metric label={t.ytmOffer} value={f.percent(d.ytmOffer)} basis={t.ytmOfferBasis(f.date(d.offerDay))} />
           )}

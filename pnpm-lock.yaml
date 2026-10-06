@@ -34,6 +34,9 @@ importers:
       react-dom:
         specifier: 19.3.0
         version: 19.3.0(react@19.3.0)
+      tyche-market:
+        specifier: link:../../crates/tyche-market/pkg
+        version: link:../../crates/tyche-market/pkg
       tyche-yield:
         specifier: link:../../crates/tyche-yield/pkg
         version: link:../../crates/tyche-yield/pkg
