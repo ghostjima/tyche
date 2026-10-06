@@ -138,3 +138,23 @@ test("a link to the data page opens it, with the page's start untouched", async 
   // Nothing to go back to: the focus goes to the foot's link, not the page.
   await expect(page.locator(".foot").getByRole("link", { name: "Данные и лицензии" })).toBeFocused();
 });
+
+test("the labels and the benchmarks keep their height when the web fonts arrive", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  let release = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/\.woff2$/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/?lang=ru", { waitUntil: "commit" });
+  await ready(page);
+  const heights = () =>
+    page.evaluate(() => [".pane-list .source-note", ".benchmarks"].map((s) => document.querySelector(s)!.getBoundingClientRect().height));
+  const before = await heights();
+  release();
+  await page.waitForFunction(() => [...document.fonts].some((f) => f.family.includes("IBM Plex Sans") && f.status === "loaded"));
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(100);
+  expect(await heights()).toEqual(before);
+});
