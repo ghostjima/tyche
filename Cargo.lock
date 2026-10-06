@@ -156,6 +156,7 @@ name = "tyche-market"
 version = "0.1.0"
 dependencies = [
  "flate2",
+ "tyche-yield",
  "wasm-bindgen",
 ]
 

@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { BONDS } from "../data/issues";
+import { BONDS } from "../data/universe.testing";
 import { MARKET } from "../data/market";
 import { twinEngine } from "./twin";
 import { loadWasm } from "./wasm";

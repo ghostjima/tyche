@@ -7,6 +7,7 @@
 //! message is accepted when it is at least as long as its layout, and
 //! unknown types decode to [`Message::Other`].
 
+#[cfg(feature = "iex")]
 use crate::iextp::{PROTOCOL_DEEP, PROTOCOL_DEEP_PLUS};
 use std::fmt;
 
@@ -134,18 +135,22 @@ pub enum Message {
     Other { kind: u8 },
 }
 
+#[cfg(feature = "iex")]
 fn i64_at(b: &[u8], at: usize) -> i64 {
     i64::from_le_bytes(b[at..at + 8].try_into().expect("8 bytes"))
 }
 
+#[cfg(feature = "iex")]
 fn u32_at(b: &[u8], at: usize) -> u32 {
     u32::from_le_bytes(b[at..at + 4].try_into().expect("4 bytes"))
 }
 
+#[cfg(feature = "iex")]
 fn symbol_at(b: &[u8], at: usize) -> Symbol {
     Symbol(b[at..at + 8].try_into().expect("8 bytes"))
 }
 
+#[cfg(feature = "iex")]
 fn side(b: u8) -> Option<Side> {
     match b {
         b'8' => Some(Side::Buy),
@@ -154,6 +159,7 @@ fn side(b: u8) -> Option<Side> {
     }
 }
 
+#[cfg(feature = "iex")]
 /// Decode one message of the given protocol. A message shorter than its
 /// layout, or a side byte outside the specification, decodes to
 /// [`Message::Other`] with its type byte, so a damaged message cannot
@@ -276,6 +282,7 @@ impl Message {
     }
 }
 
+#[cfg(feature = "iex")]
 /// Symbol bytes of a raw message without decoding it (for filtering at
 /// capture speed): every symbol-bearing message in both protocols keeps
 /// the symbol at offset 10.

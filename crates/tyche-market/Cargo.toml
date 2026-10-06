@@ -4,22 +4,27 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
-description = "Order-book reconstruction and replay for IEX DEEP and DEEP+ market data, with a parity check between the two feeds"
+description = "Order books, a deterministic synthetic bond market on them, and order-book reconstruction and replay for IEX DEEP and DEEP+ market data"
 repository = "https://github.com/ghostjima/tyche"
 readme = "README.md"
-keywords = ["market-data", "order-book", "iex", "pcap", "finance"]
+keywords = ["order-book", "bonds", "synthetic-data", "iex", "finance"]
 categories = ["finance", "parser-implementations"]
 exclude = ["/data", "/tests/fixtures/*.pcap.gz"]
 
 [features]
 default = ["gzip"]
+# The IEX decoding: pcap, IEX-TP, DEEP and DEEP+, captures, parity and
+# replay. The product does not use it; its tests do.
+iex = []
 # Read .pcap.gz files directly (flate2 with its pure-Rust backend).
-gzip = ["dep:flate2"]
-# JavaScript bindings for the browser (wasm-bindgen).
+gzip = ["iex", "dep:flate2"]
+# JavaScript bindings for the browser (wasm-bindgen): the synthetic
+# market, and the IEX replay when `iex` is on too.
 wasm = ["dep:wasm-bindgen"]
 
 [dependencies]
 flate2 = { version = "1", optional = true }
+tyche-yield = { workspace = true }
 wasm-bindgen = { version = "0.2", optional = true }
 
 [[bin]]
@@ -29,6 +34,10 @@ required-features = ["gzip"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[[example]]
+name = "heatmap_cost"
+required-features = ["iex"]
 
 [[test]]
 name = "samples"

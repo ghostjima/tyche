@@ -1,0 +1,63 @@
+// The universe for the app: asks the market worker to generate it, once
+// per page (a retry asks again), and parses its JSON. The time it took is
+// left on the performance timeline as the measure "tyche:universe".
+import { useCallback, useEffect, useState } from "react";
+import { MACRO, SEED } from "../data/market";
+import { parseUniverse, type Universe } from "../data/issues";
+import type { Request, Response } from "./worker";
+
+export type UniverseState = { status: "loading" } | { status: "ready"; universe: Universe } | { status: "failed"; error: string };
+
+let worker: Worker | null = null;
+let pending: Promise<UniverseState> | null = null;
+let next = 0;
+
+function request(): Promise<UniverseState> {
+  pending ??= new Promise<UniverseState>((resolve) => {
+    performance.mark("tyche:universe-start");
+    worker ??= new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+    const w = worker;
+    const id = ++next;
+    const fail = (error: string) => {
+      // Forgotten, so a retry starts a new worker.
+      pending = null;
+      w.terminate();
+      if (worker === w) worker = null;
+      resolve({ status: "failed", error });
+    };
+    w.onerror = (e) => fail(e.message || "worker_error");
+    w.onmessage = (event: MessageEvent<Response>) => {
+      const r = event.data;
+      if (r.id !== id) return;
+      if ("error" in r) return fail(r.error);
+      try {
+        const universe = parseUniverse(r.json);
+        performance.measure("tyche:universe", "tyche:universe-start");
+        resolve({ status: "ready", universe });
+      } catch (e) {
+        fail(e instanceof Error ? e.message : String(e));
+      }
+    };
+    w.postMessage({ id, seed: SEED, inputs: MACRO } satisfies Request);
+  });
+  return pending;
+}
+
+export function useUniverse(): { state: UniverseState; retry: () => void } {
+  const [state, setState] = useState<UniverseState>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    void request().then((s) => {
+      if (alive) setState(s);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [attempt]);
+  const retry = useCallback(() => {
+    setState({ status: "loading" });
+    setAttempt((a) => a + 1);
+  }, []);
+  return { state, retry };
+}

@@ -21,6 +21,7 @@
     "react": "19.3.0",
     "react-aria-components": "1.21.1",
     "react-dom": "19.3.0",
+    "tyche-market": "link:../../crates/tyche-market/pkg",
     "tyche-yield": "link:../../crates/tyche-yield/pkg"
   },
   "devDependencies": {

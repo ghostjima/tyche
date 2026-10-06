@@ -9,10 +9,11 @@ import { GROUPS, chipCounts, type ChipId, type GroupId, type Item, type Query, t
 import type { Formats } from "../lib/format";
 
 const CHIP_LABEL: Record<ChipId, keyof Strings> = {
-  ofz: "chipOfz",
+  gov: "chipGov",
   corporate: "chipCorporate",
   fixed: "chipFixed",
   floater: "chipFloater",
+  linker: "chipLinker",
   short: "chipShort",
   medium: "chipMedium",
   long: "chipLong",
@@ -57,7 +58,7 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
           <span>
             {t.rating} <Ltr>{bond.rating}</Ltr>
           </span>
-          <span>{bond.issue.couponType === "floater" ? t.chipFloater : t.chipFixed}</span>
+          <span>{bond.coupon.kind === "linker" ? t.chipLinker : bond.coupon.kind === "fixed" ? t.chipFixed : t.chipFloater}</span>
           <span>{t.matures(f.date(derived.maturityDay))}</span>
         </span>
       </span>

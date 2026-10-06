@@ -58,7 +58,7 @@ for (const lang of LANGS) {
       await expectNoSeriousViolations(page, "diagnostics", { lang, theme });
     });
 
-    test(`axe: loading and fallback states (${lang}, ${theme})`, async ({ page }) => {
+    test(`axe: loading, fallback and failure states (${lang}, ${theme})`, async ({ page }) => {
       let release = () => {};
       const held = new Promise<void>((resolve) => (release = resolve));
       await page.route("**/*.wasm", async (route) => {
@@ -72,11 +72,17 @@ for (const lang of LANGS) {
       await ready(page);
 
       await page.unroute("**/*.wasm");
-      await page.route("**/*.wasm", (route) => route.abort());
+      await page.route("**/tyche_yield_bg*.wasm", (route) => route.abort());
       await open(page, lang, theme, `&issue=${ISSUES.offer}`);
       await ready(page, "twin");
       await expect(page.locator(".stoa-callout--warning")).toBeVisible();
       await expectNoSeriousViolations(page, "WebAssembly fallback", { lang, theme });
+
+      await page.unroute("**/tyche_yield_bg*.wasm");
+      await page.route("**/tyche_market_bg*.wasm", (route) => route.abort());
+      await open(page, lang, theme);
+      await expect(page.locator(".app")).toHaveAttribute("data-state", "failed");
+      await expectNoSeriousViolations(page, "market failure", { lang, theme });
     });
 
     test(`axe and layout on a phone (${lang}, ${theme})`, async ({ page }) => {

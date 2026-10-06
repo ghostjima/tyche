@@ -1,10 +1,32 @@
 // The market every figure is computed in: a fixed valuation date, so the
 // data, the tests and the screenshots stay the same from day to day, and
-// the key rate on that date. All issues are fictional.
+// the Bank of Russia's figures for it, from which the synthetic universe
+// is generated. All issues are fictional.
 import { LDV_YEARS, addYears, dayOffset, parseIsoDate, type Market } from "@tyche/yield-twin";
+import type { MacroInputs } from "./issues";
 
-export const VALUATION_DATE = "2026-09-04";
-export const KEY_RATE_PCT = 16;
+/** As the Bank of Russia published them (cbr.ru, read on 2026-10-06): the
+ * key rate on 2026-10-05, RUONIA for 2026-10-05, inflation over twelve
+ * months to August 2026 (Rosstat and the Bank of Russia), and the
+ * zero-coupon yield curve of federal loan bonds on 2026-10-05, which the
+ * Moscow Exchange calculates. The same figures as tyche-market's
+ * `inputs::fallback()`, which a unit test checks. */
+export const MACRO: MacroInputs = {
+  valuationDate: "2026-10-05",
+  keyRatePct: 14,
+  ruoniaPct: 13.77,
+  inflationPct: 6.33,
+  curve: {
+    termsYears: [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+    yieldsPct: [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+  },
+};
+
+/** The seed of the universe: the same issues for every visitor. */
+export const SEED = 20_261_006;
+
+export const VALUATION_DATE = MACRO.valuationDate;
+export const KEY_RATE_PCT = MACRO.keyRatePct;
 
 export const MARKET: Market = { valuationDate: VALUATION_DATE, keyRatePct: KEY_RATE_PCT };
 

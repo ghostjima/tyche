@@ -9,11 +9,14 @@ export default defineConfig({
   // node_modules: without dedupe the app would run two copies of React and
   // fail with "Invalid hook call".
   resolve: { dedupe: ["react", "react-dom", "react-aria-components"] },
+  // The market worker imports tyche-market's WebAssembly glue, which finds
+  // its module through import.meta.url: an ES module worker keeps it.
+  worker: { format: "es" },
   server: {
     port: 5181,
     strictPort: true,
     // What the dev server may serve: this workspace (the app, the twin's
-    // build and the engine's WebAssembly package) and the linked Stoa
+    // build and the engines' WebAssembly packages) and the linked Stoa
     // packages with their dependencies. Not the whole parent folder, which
     // would hand the other repositories' files (ignored ones included) to
     // anything that can reach the server.

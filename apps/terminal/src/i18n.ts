@@ -5,11 +5,12 @@
 // code it can return has a sentence here in each language.
 //
 // The domain is the Russian bond market. Its local terms (OFZ, the key
-// rate, the long-term holding relief, the individual investment account)
-// keep their accurate names, and English adds a short plain explanation
-// where the term first matters.
+// rate, RUONIA, the long-term holding relief, the individual investment
+// account) keep their accurate names, and English adds a short plain
+// explanation where the term first matters. Every issuer, issue and
+// rating is fictional, and the strings say so where they name them.
 import type { ErrorCode } from "./engine/types";
-import type { Industry, Place } from "./data/issues";
+import type { Place, Sector } from "./data/issues";
 
 export type Lang = "ru" | "en";
 
@@ -29,6 +30,8 @@ const en = {
   title: "Tyche Bonds",
   subtitle: "Yields, payment schedules and a holding calculator for bonds",
   footer: (date: string, rate: string) => `All issues are fictional. Prices as of ${date}; key rate ${rate}.`,
+  /** Followed by a link to cbr.ru, as the Bank of Russia's terms ask. */
+  footerSource: "The key rate, RUONIA, inflation and the zero-coupon yield curve of federal loan bonds (calculated by the Moscow Exchange) are the Bank of Russia's:",
   openDiagnostics: "Engine diagnostics",
   openShortcuts: "Keyboard shortcuts",
 
@@ -36,6 +39,9 @@ const en = {
   wasmFailedTitle: "WebAssembly did not load",
   wasmFailedBody: "The TypeScript engine is computing the figures instead. Both give the same results.",
   wasmRetry: "Try WebAssembly again",
+  marketFailedTitle: "The market did not load",
+  marketFailedBody: "The synthetic issues are generated in the browser by the market engine in WebAssembly, and it could not start, so there is nothing to show.",
+  marketRetry: "Load the market again",
 
   issues: "Issues",
   listCount: (shown: string, total: string) => `${shown} of ${total} issues`,
@@ -44,10 +50,11 @@ const en = {
   groupCoupon: "Coupon",
   groupTerm: "Maturity",
   groupFeatures: "Features",
-  chipOfz: "OFZ",
+  chipGov: "Synthetic government",
   chipCorporate: "Corporate",
   chipFixed: "Fixed",
   chipFloater: "Floater",
+  chipLinker: "Inflation-linked",
   chipShort: "Up to a year",
   chipMedium: "One to three years",
   chipLong: "Over three years",
@@ -66,30 +73,41 @@ const en = {
   noMatchesBody: "Try another search, or turn some filters off.",
   selected: "selected",
 
-  ofzIssuer: "OFZ federal loan bond",
+  govIssuer: "Synthetic Treasury",
   places: {
     volga: "Volga", kama: "Kama", oka: "Oka", neva: "Neva", ob: "Ob", amur: "Amur", baikal: "Baikal", ural: "Ural",
     don: "Don", angara: "Angara", irtysh: "Irtysh", lena: "Lena", pechora: "Pechora", onega: "Onega", kuban: "Kuban", yenisei: "Yenisei",
+    vyatka: "Vyatka", sura: "Sura", kolyma: "Kolyma", selenga: "Selenga", tobol: "Tobol", vetluga: "Vetluga", mezen: "Mezen", khoper: "Khoper",
+    sviyaga: "Sviyaga", ilmen: "Ilmen", ladoga: "Ladoga", seliger: "Seliger", tavda: "Tavda", chusovaya: "Chusovaya", belaya: "Belaya", shilka: "Shilka",
   } satisfies Record<Place, string>,
   companies: {
-    logistics: (place: string) => `${place} Logistics`,
-    energy: (place: string) => `${place} Energy`,
-    retail: (place: string) => `${place} Retail`,
-    metals: (place: string) => `${place} Metals`,
-    leasing: (place: string) => `${place} Leasing`,
-    agro: (place: string) => `${place} Agro`,
-    development: (place: string) => `${place} Development`,
-    telecom: (place: string) => `${place} Telecom`,
-  } satisfies Record<Industry, (place: string) => string>,
+    energy: (place: string) => `${place} Generation`,
+    metals: (place: string) => `${place} Alloys`,
+    logistics: (place: string) => `${place} Freight Lines`,
+    retail: (place: string) => `${place} Market Rows`,
+    telecom: (place: string) => `${place} Networks`,
+    development: (place: string) => `${place} Quarters`,
+    agro: (place: string) => `${place} Agrofield`,
+    leasing: (place: string) => `${place} Lease Solutions`,
+    banking: (place: string) => `${place} Clearing Bank`,
+    chemicals: (place: string) => `${place} Chemical Works`,
+  } satisfies Record<Exclude<Sector, "government">, (place: string) => string>,
 
-  tagOfz: "OFZ",
+  /** The synthetic government series' code in this language, for search. */
+  govCode: "SG",
+  tagGov: "Synthetic government bond",
   tagCorporate: "Corporate",
   tagFixed: "Fixed coupon",
   tagFloater: (spread: string) => `Floater: key rate + ${spread}`,
+  tagRuonia: (spread: string) => `Floater: RUONIA + ${spread}`,
+  tagLinker: (nominal: string) => `Inflation-linked: face value ${nominal} after indexation`,
   tagAmortising: "Amortising",
-  tagOffer: (date: string) => `Offer on ${date}`,
+  tagPut: (date: string) => `Put offer on ${date}`,
+  tagCall: (date: string) => `Issuer's call on ${date}`,
+  tagSubordinated: "Subordinated",
+  tagQualified: "Qualified investors only",
   /** Followed by the rating, isolated left to right. */
-  rating: "Rating",
+  rating: "Synthetic rating",
 
   chooseTitle: "Choose an issue",
   chooseBody: "Its payment schedule, figures and a calculator appear here.",
@@ -104,6 +122,7 @@ const en = {
   dirtyPriceBasis: "clean price plus accrued interest: what one bond costs",
   ytm: "Yield to maturity",
   ytmBasis: (date: string) => `annual effective, holding to ${date}`,
+  ytmRealBasis: (date: string) => `real, annual effective, holding to ${date}: the indexation of the face value is not forecast`,
   ytmOffer: "Yield to the offer",
   ytmOfferBasis: (date: string) => `annual effective, selling back on ${date}`,
   duration: "Duration",
@@ -251,7 +270,18 @@ const en = {
   glossary: "Terms",
   terms: {
     keyRate: ["Key rate", "The Bank of Russia's policy rate. Floaters pay the key rate plus a fixed spread."],
-    ofz: ["OFZ", "Federal loan bonds: bonds of the Russian Ministry of Finance, the market's lowest-risk issuer."],
+    gov: [
+      "Synthetic government bonds",
+      "Fictional issues of a fictional treasury, the lowest-risk group in this universe, priced from the zero-coupon yield curve of federal loan bonds (OFZ) that the Bank of Russia publishes. They are not OFZ.",
+    ],
+    ruonia: ["RUONIA", "The overnight rouble interbank rate the Bank of Russia publishes. Some floaters pay it plus a fixed spread."],
+    linker: [
+      "Inflation-linked bond",
+      "A bond whose face value is indexed to consumer prices; the coupon is a fixed real rate on the indexed face value. Its yield here is real: future indexation is not forecast.",
+    ],
+    call: ["Issuer's call", "A date on which the issuer may redeem the bond early at face value, which ends the coupons the holder counted on."],
+    subordinated: ["Subordinated bond", "Repaid after the issuer's other debts in a default; sold to qualified investors only."],
+    qualified: ["Qualified investors only", "An issue a broker may sell only to an investor with the status of a qualified investor."],
     accrued: ["Accrued interest", "The part of the next coupon earned since the last one. The buyer pays it to the seller on top of the clean price."],
     ytm: ["Yield to maturity", "The annual effective return from buying at today's dirty price and receiving every payment to maturity."],
     offer: ["Offer", "A date on which the holder may sell the bond back to the issuer at face value."],
@@ -270,7 +300,7 @@ const en = {
       (date: string) =>
         `A brokerage account with a tax relief: coupons and gains on it are free of tax when it is closed after at least three years. Only accounts opened by ${date} can be of type B.`,
     ],
-    rating: ["Rating", "Credit ratings here are on the Russian national scale, from AAA, the best, down to B."],
+    rating: ["Synthetic rating", "Every rating here is invented, on a scale from AAA, the best, down to B; no rating agency assigned it."],
   } satisfies Record<string, [string, string | ((date: string) => string)]>,
 
   errors: {
@@ -294,6 +324,7 @@ const ru: Strings = {
   title: "Tyche Облигации",
   subtitle: "Доходность, график выплат и калькулятор владения облигациями",
   footer: (date, rate) => `Все выпуски вымышленные. Цены на ${date}, ключевая ставка ${rate}.`,
+  footerSource: "Ключевая ставка, RUONIA, инфляция и кривая бескупонной доходности ОФЗ (рассчитана Московской биржей): данные Банка России,",
   openDiagnostics: "Диагностика движка",
   openShortcuts: "Сочетания клавиш",
 
@@ -301,6 +332,9 @@ const ru: Strings = {
   wasmFailedTitle: "WebAssembly не загрузился",
   wasmFailedBody: "Цифры считает движок на TypeScript. Результаты у обоих одинаковые.",
   wasmRetry: "Попробовать WebAssembly ещё раз",
+  marketFailedTitle: "Рынок не загрузился",
+  marketFailedBody: "Синтетические выпуски создаёт в браузере движок рынка на WebAssembly, и он не запустился, поэтому показать нечего.",
+  marketRetry: "Загрузить рынок ещё раз",
 
   issues: "Выпуски",
   listCount: (shown, total) => `${shown} из ${total} выпусков`,
@@ -309,10 +343,11 @@ const ru: Strings = {
   groupCoupon: "Купон",
   groupTerm: "Погашение",
   groupFeatures: "Особенности",
-  chipOfz: "ОФЗ",
+  chipGov: "Синтетические государственные",
   chipCorporate: "Корпоративные",
   chipFixed: "Фиксированный",
   chipFloater: "Флоатер",
+  chipLinker: "Линкер",
   chipShort: "До года",
   chipMedium: "От года до трёх лет",
   chipLong: "Больше трёх лет",
@@ -331,29 +366,39 @@ const ru: Strings = {
   noMatchesBody: "Измените запрос или отключите часть фильтров.",
   selected: "выбран",
 
-  ofzIssuer: "ОФЗ, федеральный заём",
+  govIssuer: "Синтетическое казначейство",
   places: {
     volga: "Волга", kama: "Кама", oka: "Ока", neva: "Нева", ob: "Обь", amur: "Амур", baikal: "Байкал", ural: "Урал",
     don: "Дон", angara: "Ангара", irtysh: "Иртыш", lena: "Лена", pechora: "Печора", onega: "Онега", kuban: "Кубань", yenisei: "Енисей",
+    vyatka: "Вятка", sura: "Сура", kolyma: "Колыма", selenga: "Селенга", tobol: "Тобол", vetluga: "Ветлуга", mezen: "Мезень", khoper: "Хопёр",
+    sviyaga: "Свияга", ilmen: "Ильмень", ladoga: "Ладога", seliger: "Селигер", tavda: "Тавда", chusovaya: "Чусовая", belaya: "Белая", shilka: "Шилка",
   },
   companies: {
-    logistics: (place) => `${place} Логистика`,
-    energy: (place) => `${place}-Энерго`,
-    retail: (place) => `${place} Ритейл`,
-    metals: (place) => `${place} Металл`,
-    leasing: (place) => `${place} Лизинг`,
-    agro: (place) => `${place} Агро`,
-    development: (place) => `${place} Девелопмент`,
-    telecom: (place) => `${place} Телеком`,
+    energy: (place) => `${place} Генерация`,
+    metals: (place) => `${place} Сплавы`,
+    logistics: (place) => `${place} Грузовые Линии`,
+    retail: (place) => `${place} Торговые Ряды`,
+    telecom: (place) => `${place} Сети Связи`,
+    development: (place) => `${place} Кварталы`,
+    agro: (place) => `${place} Агрополе`,
+    leasing: (place) => `${place} Арендные Решения`,
+    banking: (place) => `${place} Расчётный Банк`,
+    chemicals: (place) => `${place} Химпроцессы`,
   },
 
-  tagOfz: "ОФЗ",
+  govCode: "СГ",
+  tagGov: "Синтетическая гособлигация",
   tagCorporate: "Корпоративный",
   tagFixed: "Фиксированный купон",
   tagFloater: (spread) => `Флоатер: ключевая ставка + ${spread}`,
+  tagRuonia: (spread) => `Флоатер: RUONIA + ${spread}`,
+  tagLinker: (nominal) => `Линкер: номинал ${nominal} после индексации`,
   tagAmortising: "С амортизацией",
-  tagOffer: (date) => `Оферта ${date}`,
-  rating: "Рейтинг",
+  tagPut: (date) => `Оферта ${date}`,
+  tagCall: (date) => `Колл-опцион эмитента ${date}`,
+  tagSubordinated: "Субординированный",
+  tagQualified: "Только для квалифицированных инвесторов",
+  rating: "Синтетический рейтинг",
 
   chooseTitle: "Выберите выпуск",
   chooseBody: "Здесь появятся график выплат, показатели и калькулятор.",
@@ -368,6 +413,7 @@ const ru: Strings = {
   dirtyPriceBasis: "чистая цена плюс НКД: столько стоит одна облигация",
   ytm: "Доходность к погашению",
   ytmBasis: (date) => `эффективная годовая при владении до ${date}`,
+  ytmRealBasis: (date) => `реальная эффективная годовая при владении до ${date}: будущая индексация номинала не прогнозируется`,
   ytmOffer: "Доходность к оферте",
   ytmOfferBasis: (date) => `эффективная годовая при предъявлении к выкупу ${date}`,
   duration: "Дюрация",
@@ -515,7 +561,18 @@ const ru: Strings = {
   glossary: "Термины",
   terms: {
     keyRate: ["Ключевая ставка", "Основная ставка Банка России. Флоатеры платят ключевую ставку плюс фиксированный спред."],
-    ofz: ["ОФЗ", "Облигации федерального займа: облигации Минфина России, самого надёжного эмитента на рынке."],
+    gov: [
+      "Синтетические гособлигации",
+      "Вымышленные выпуски вымышленного казначейства, самая надёжная группа в этой вселенной. Их цены считаются от кривой бескупонной доходности облигаций федерального займа (ОФЗ), которую публикует Банк России. Это не ОФЗ.",
+    ],
+    ruonia: ["RUONIA", "Ставка однодневных рублёвых межбанковских кредитов, которую публикует Банк России. Часть флоатеров платит её плюс фиксированный спред."],
+    linker: [
+      "Линкер",
+      "Облигация, номинал которой индексируется на потребительскую инфляцию; купон: фиксированная реальная ставка на индексированный номинал. Её доходность здесь реальная: будущая индексация не прогнозируется.",
+    ],
+    call: ["Колл-опцион эмитента", "Дата, в которую эмитент может досрочно погасить облигацию по номиналу, и купоны, на которые рассчитывал владелец, закончатся."],
+    subordinated: ["Субординированная облигация", "При дефолте погашается после остальных долгов эмитента; продаётся только квалифицированным инвесторам."],
+    qualified: ["Только для квалифицированных инвесторов", "Выпуск, который брокер может продать только инвестору со статусом квалифицированного."],
     accrued: ["НКД", "Накопленный купонный доход: часть следующего купона, заработанная с прошлой выплаты. Покупатель платит его продавцу сверх чистой цены."],
     ytm: ["Доходность к погашению", "Эффективная годовая доходность покупки по сегодняшней полной цене с получением всех выплат до погашения."],
     offer: ["Оферта", "Дата, в которую владелец может продать облигацию эмитенту по номиналу."],
@@ -534,7 +591,7 @@ const ru: Strings = {
       (date) =>
         `Брокерский счёт с налоговой льготой: купоны и доход от цены на нём не облагаются, если счёт закрыт не раньше чем через три года. Тип Б бывает только у счетов, открытых до ${date} включительно.`,
     ],
-    rating: ["Рейтинг", "Кредитные рейтинги здесь по национальной шкале: от AAA, лучшего, до B."],
+    rating: ["Синтетический рейтинг", "Все рейтинги здесь придуманы, по шкале от AAA, лучшего, до B; ни одно рейтинговое агентство их не присваивало."],
   },
 
   errors: {

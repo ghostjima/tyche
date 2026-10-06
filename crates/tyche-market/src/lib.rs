@@ -1,29 +1,46 @@
-//! Order-book reconstruction and replay for IEX market data.
+//! Order books, a synthetic bond market on them, and order-book
+//! reconstruction and replay for IEX market data.
 //!
+//! Always built:
+//! - [`message`]: order and price-level messages (DEEP and DEEP+ shaped).
+//! - [`book`]: an order-by-order book and a price-level book.
+//! - [`synth`]: the synthetic bond market: a universe of fictional issues
+//!   and a trading day per issue, on the order-by-order book.
+//!
+//! With the `iex` feature (on by default), the IEX decoding, which the
+//! product does not use:
 //! - [`pcap`]: read the pcap and pcapng files IEX publishes as HIST data.
 //! - [`iextp`]: IEX Transport Protocol segments and message blocks.
-//! - [`message`]: DEEP (price level) and DEEP+ (order by order) messages.
-//! - [`book`]: an order-by-order book and a price-level book.
 //! - [`capture`]: symbol-filtered captures small enough for a demo.
 //! - [`parity`]: DEEP+ rebuilt and aggregated against DEEP, checkpoint by
 //!   checkpoint.
 //! - [`replay`]: one symbol's day, seekable to any moment.
 //!
-//! Data provided for free by IEX. By accessing or using IEX Historical
-//! Data, you agree to the IEX Historical Data Terms of Use.
+//! IEX data provided for free by IEX. By accessing or using IEX
+//! Historical Data, you agree to the IEX Historical Data Terms of Use.
 
 pub mod book;
+#[cfg(feature = "iex")]
 pub mod capture;
+#[cfg(feature = "iex")]
 pub mod iextp;
 pub mod message;
+#[cfg(feature = "iex")]
 pub mod parity;
+#[cfg(feature = "iex")]
 pub mod pcap;
+#[cfg(feature = "iex")]
 pub mod replay;
-#[cfg(feature = "wasm")]
+pub mod synth;
+#[cfg(all(feature = "wasm", feature = "iex"))]
 pub mod wasm;
+#[cfg(feature = "wasm")]
+pub mod wasm_market;
 
 pub use book::{Anomalies, LevelBook, Levels, OrderBook, Quote};
-pub use message::{decode, Message, Price, Side, Symbol};
+#[cfg(feature = "iex")]
+pub use message::decode;
+pub use message::{Message, Price, Side, Symbol};
 
 /// Errors from reading captures and feeds.
 #[derive(Debug)]
