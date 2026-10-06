@@ -161,7 +161,10 @@ the single-issue calculator: see [What is built](#what-is-built).
 - **The bond engine** ([`crates/tyche-yield`](crates/tyche-yield)) and
   its **TypeScript twin** ([`packages/yield-twin`](packages/yield-twin)):
   price and yield, duration, cash flows with amortisation and offers,
-  floaters, tax and holding-period results.
+  floaters, tax and holding-period results, and the working behind them:
+  the yields solved from the discounted flows, the yields after a
+  broker's fee and after tax without reinvestment, and the tax year by
+  year.
 - **The market engine** ([`crates/tyche-market`](crates/tyche-market)):
   the synthetic universe and a trading day per issue (the exchange's
   session schedule, an order book built message by message, a tape),
@@ -183,9 +186,8 @@ design system of this product and of Ariadne Desk.
 - The issue card with the risk and the yield after
   tax and fees, with the working shown; comparison; the order ticket
   against a synthetic order book; events.
-- In the engine: a per-year trace of tax and accrued interest, portfolio
-  and ladder cash flows, yield after fees, the G-spread to the curve,
-  inflation-linked bonds with forecast indexation. In the app: the
+- In the engine: portfolio and ladder cash flows, the G-spread to the
+  curve, inflation-linked bonds with forecast indexation. In the app: the
   order book and the tape of the synthetic market.
 
 ## Validation plan and target metrics

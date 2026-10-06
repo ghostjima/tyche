@@ -1,6 +1,6 @@
 // Rust (the wasm build in pkg/) against the TypeScript twin
 // (packages/yield-twin/dist): every case in cases.json, then 1,000
-// generated issues with a plan each.
+// generated issues with a plan and a broker's fee each.
 // Run after building both:  node --test node/
 //
 // Tolerance: numbers agree when |a - b| <= 1e-6 * max(|a|, |b|), both NaN
@@ -79,6 +79,7 @@ function isoOf(days) {
 
 export function generate(count, seed) {
   const r = rng(seed);
+  const fees = rng(seed + 1);
   const uniform = (lo, hi) => lo + (hi - lo) * r();
   const int = (lo, hi) => Math.floor(uniform(lo, hi + 1));
   const pick = (xs) => xs[Math.floor(r() * xs.length)];
@@ -125,35 +126,41 @@ export function generate(count, seed) {
       otherIncome: chance(0.01) ? pick([-1, Number.NaN]) : chance(0.6) ? 0 : pick([100_000, 2_000_000, 2_399_000, 5_000_000]),
       rateShiftPct: chance(0.3) ? 0 : round(uniform(-3, 3), 2),
     };
-    out.push({ issue, market, plan });
+    // A broker's fee in percent for explain: the usual ones, now and then
+    // one the engine refuses. From a generator of its own, so the issues
+    // and plans are the ones the set had before fees were added.
+    const f = fees();
+    const feePct = f < 0.01 ? (f < 0.005 ? -0.1 : Number.NaN) : [0, 0.05, 0.05, 0.3, 1][Math.floor(((f - 0.01) / 0.99) * 5)];
+    out.push({ issue, market, plan, feePct });
   }
   return out;
 }
 
-test("wasm and twin agree on 1,000 generated issues and plans", (t) => {
+test("wasm and twin agree on 1,000 generated issues, plans and fees", (t) => {
   const set = generate(1000, 20261004);
   const failures = [];
   let worst = 0;
   let worstAt = "";
-  const outcomes = { derived: 0, calculated: 0, errors: {} };
-  for (const [k, { issue, market, plan }] of set.entries()) {
+  const outcomes = { derived: 0, calculated: 0, explained: 0, errors: {} };
+  for (const [k, { issue, market, plan, feePct }] of set.entries()) {
     const pairs = [
       ["derive_bond", wasm.derive_bond(issue, market), twin.derive_bond(issue, market)],
       ["calculate", wasm.calculate(issue, market, plan), twin.calculate(issue, market, plan)],
+      ["explain", wasm.explain(issue, market, plan, feePct), twin.explain(issue, market, plan, feePct)],
     ];
     for (const [fn, w, t] of pairs) {
       const r = compare(w, t, `issue ${k} ${fn}`);
       failures.push(...r.failures);
       if (r.worst > worst) [worst, worstAt] = [r.worst, r.worstAt];
-      if ("ok" in t) outcomes[fn === "derive_bond" ? "derived" : "calculated"] += 1;
+      if ("ok" in t) outcomes[fn === "derive_bond" ? "derived" : fn === "calculate" ? "calculated" : "explained"] += 1;
       else outcomes.errors[t.error] = (outcomes.errors[t.error] ?? 0) + 1;
     }
   }
   console.log(
-    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
+    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
   );
   assert.deepEqual(failures.slice(0, 20), []);
   // The set must exercise the paths, not only the errors.
-  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800);
+  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790);
   t.diagnostic(`parity ${JSON.stringify({ checked: "generated issues", count: set.length })}`);
 });

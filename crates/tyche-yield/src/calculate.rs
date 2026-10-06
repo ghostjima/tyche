@@ -4,9 +4,9 @@
 use crate::date::{add_years, civil_from_days, full_years, parse_iso_date};
 use crate::issue::{derive_bond, CouponType, Derived, Error, Issue, Market, Schedule};
 use crate::primitives::{
-    build_cash_flow, floater_rate_path, hold_value, income_tax, min_nan, modified_duration,
-    periodic_rate_pct, price_after_rate_shift, value_along_path, OFFER_NONE, OFFER_RATE_CHANGE,
-    YEAR,
+    accrued_interest, build_cash_flow, floater_rate_path, hold_value, income_tax, max_nan, min_nan,
+    modified_duration, periodic_rate_pct, price_after_rate_shift, value_along_path, OFFER_NONE,
+    OFFER_RATE_CHANGE, TAX_THRESHOLD, YEAR,
 };
 
 /// Brokerage commission in percent, charged on the purchase and on a sale
@@ -181,22 +181,25 @@ pub fn effective_annual_pct(invested: f64, total: f64, horizon_day: f64) -> f64 
     ((total / invested).powf(YEAR / horizon_day) - 1.0) * 100.0
 }
 
-struct Hold<'a> {
-    qty: f64,
-    dirty_price: f64,
+pub(crate) struct Hold<'a> {
+    pub(crate) qty: f64,
+    pub(crate) dirty_price: f64,
     /// Accrued interest paid per bond at purchase.
-    accrued_paid: f64,
-    nominal: f64,
+    pub(crate) accrued_paid: f64,
+    pub(crate) nominal: f64,
     /// The valuation date as days since 1970-01-01.
-    today: i64,
-    period_days: f64,
-    reinvest_rate: f64,
-    exit_yield: f64,
-    plan: &'a Plan,
+    pub(crate) today: i64,
+    pub(crate) period_days: f64,
+    pub(crate) reinvest_rate: f64,
+    pub(crate) exit_yield: f64,
+    /// The broker's commission in percent of each trade: [`COMMISSION_PCT`]
+    /// in [`calculate`], the fee asked for in [`explain`](crate::explain).
+    pub(crate) commission_pct: f64,
+    pub(crate) plan: &'a Plan,
 }
 
 /// How the flows after the horizon are sold.
-enum Sale<'a> {
+pub(crate) enum Sale<'a> {
     /// At the exit yield, then moved by the modified duration for a
     /// key-rate shift in percentage points (a fixed coupon).
     Shifted(f64),
@@ -205,7 +208,24 @@ enum Sale<'a> {
 }
 
 impl Hold<'_> {
-    fn breakdown(&self, flows: &Schedule, horizon_day: f64, how: Sale) -> (Breakdown, Option<f64>) {
+    pub(crate) fn breakdown(
+        &self,
+        flows: &Schedule,
+        horizon_day: f64,
+        how: Sale,
+    ) -> (Breakdown, Option<f64>) {
+        let (breakdown, duration, _) = self.traced(flows, horizon_day, how);
+        (breakdown, duration)
+    }
+
+    /// The breakdown, the modified duration at the horizon for a fixed
+    /// coupon's sale, and the tax year by year.
+    pub(crate) fn traced(
+        &self,
+        flows: &Schedule,
+        horizon_day: f64,
+        how: Sale,
+    ) -> (Breakdown, Option<f64>, Vec<TaxYear>) {
         let hv = hold_value(
             &flows.days,
             &flows.coupons,
@@ -254,8 +274,9 @@ impl Hold<'_> {
         let amort = hv[2] * qty;
         let body = (hv[3] + sale) * qty;
         let sold = if sale > 0.0 { sale * qty } else { 0.0 };
-        let commission = (invested + sold) * COMMISSION_PCT / 100.0;
-        let tax = self.tax(flows, horizon_day, reinvest, invested, sold);
+        let commission = (invested + sold) * self.commission_pct / 100.0;
+        let years = self.tax_years(flows, horizon_day, reinvest, invested, sold);
+        let tax = years.iter().fold(0.0, |sum, t| sum + t.tax);
         let total = coupons + reinvest + amort + body - tax - commission;
         let breakdown = Breakdown {
             qty,
@@ -276,14 +297,17 @@ impl Hold<'_> {
             },
             horizon_day,
         };
-        (breakdown, mod_duration_at_horizon)
+        (breakdown, mod_duration_at_horizon, years)
     }
 
-    /// Personal income tax on the position, summed over the calendar years
-    /// it is paid in. In each year coupons and the result of redemptions and
-    /// the sale form one base, so a loss reduces that year's tax on coupons;
-    /// a year's base that is negative is taxed at zero and is not carried
-    /// to another year (that takes a tax declaration).
+    /// Personal income tax on the position, year by year: the calendar
+    /// years it is paid in, each with its tax. In each year coupons and the
+    /// result of redemptions and the sale form one base, so a loss reduces
+    /// that year's tax on coupons; a year's base that is negative is taxed
+    /// at zero and is not carried to another year (that takes a tax
+    /// declaration). Tax Code of the Russian Federation, part two, articles
+    /// 214.1 (the base for securities), 219.1 (the long-term holding
+    /// relief) and 224 (the rates), as in force from 2026-10-01.
     ///
     /// - Accrued interest paid at purchase reduces the first coupon
     ///   received, up to that coupon, and the cost by the same amount; with
@@ -299,18 +323,19 @@ impl Hold<'_> {
     ///   exempt up to [`LDV_CAP_PER_YEAR`] times the full years held,
     ///   averaged over the year's relieved disposals weighted by what each
     ///   returned. Coupons stay taxed.
-    fn tax(
+    fn tax_years(
         &self,
         flows: &Schedule,
         horizon_day: f64,
         reinvest: f64,
         invested: f64,
         sold: f64,
-    ) -> f64 {
+    ) -> Vec<TaxYear> {
         if self.plan.tax_regime == TaxRegime::IisB {
-            return 0.0;
+            return Vec::new();
         }
         let qty = self.qty;
+        let commission_pct = self.commission_pct;
         let year = |day: f64| civil_from_days(self.today + day.floor() as i64).0;
         // Days from the purchase after which a disposal is relieved.
         let relief_after = (add_years(self.today, LDV_YEARS) - self.today) as f64;
@@ -324,33 +349,41 @@ impl Hold<'_> {
             _ => 0.0,
         };
         let deducted = min_nan(self.accrued_paid * qty, first_coupon);
-        let cost = invested + invested * COMMISSION_PCT / 100.0 - deducted;
+        let cost = invested + invested * commission_pct / 100.0 - deducted;
         let mut repaid = 0.0;
         for (i, &d) in flows.days.iter().enumerate() {
             if d > horizon_day {
                 break;
             }
             let t = tax_year(&mut years, year(d));
-            t.income += flows.coupons[i] * qty - if i == 0 { deducted } else { 0.0 };
+            let coupon = flows.coupons[i] * qty;
+            let accrued = if i == 0 { deducted } else { 0.0 };
+            t.income += coupon - accrued;
+            t.coupons += coupon;
+            t.accrued_paid += accrued;
             let p = flows.principals[i];
             if p > 0.0 {
-                t.book(p * qty - cost * p / self.nominal, p * qty, held(d));
+                let share = cost * p / self.nominal;
+                t.book(p * qty - share, p * qty, held(d));
+                t.redemptions += p * qty;
+                t.cost += share;
                 repaid += p;
             }
         }
         let t = tax_year(&mut years, year(horizon_day));
         if sold > 0.0 {
             let left = (self.nominal - repaid) / self.nominal;
-            t.book(
-                sold - sold * COMMISSION_PCT / 100.0 - cost * left,
-                sold,
-                held(horizon_day),
-            );
+            let commission = sold * commission_pct / 100.0;
+            let share = cost * left;
+            t.book(sold - commission - share, sold, held(horizon_day));
+            t.sale += sold;
+            t.accrued_received += self.accrued_at(flows, horizon_day) * qty;
+            t.cost += commission + share;
         }
         t.income += reinvest;
-        let mut tax = 0.0;
-        for t in &years {
-            let exempt = if t.relieved > 0.0 {
+        t.reinvest += reinvest;
+        for t in &mut years {
+            t.exempt = if t.relieved > 0.0 {
                 min_nan(
                     t.relieved,
                     LDV_CAP_PER_YEAR * t.relieved_years / t.relieved_proceeds,
@@ -358,26 +391,79 @@ impl Hold<'_> {
             } else {
                 0.0
             };
-            let base = t.income + t.result + t.relieved - exempt;
-            tax += income_tax(base, self.plan.other_income);
+            t.base = t.income + t.result + t.relieved - t.exempt;
+            let taxed = max_nan(t.base, 0.0);
+            t.taxed_low = min_nan(max_nan(TAX_THRESHOLD - self.plan.other_income, 0.0), taxed);
+            t.taxed_high = taxed - t.taxed_low;
+            t.tax = income_tax(t.base, self.plan.other_income);
         }
-        tax
+        years
+    }
+
+    /// Accrued interest per bond on a day between coupons: the share of the
+    /// coming coupon earned since the last one, counted as at the purchase.
+    /// Zero after the last flow.
+    fn accrued_at(&self, flows: &Schedule, day: f64) -> f64 {
+        match flows.days.iter().position(|&d| d > day) {
+            Some(i) => accrued_interest(
+                flows.coupons[i],
+                self.period_days - (flows.days[i] - day),
+                self.period_days,
+            ),
+            None => 0.0,
+        }
     }
 }
 
-/// One calendar year of the tax base.
-#[derive(Default)]
-struct TaxYear {
-    year: i64,
-    /// Coupons and reinvestment income.
-    income: f64,
-    /// Result of redemptions and the sale.
-    result: f64,
+/// One calendar year of the tax on a position, as
+/// [`explain`](crate::explain) traces it. Amounts are for the whole
+/// position, in currency units.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct TaxYear {
+    pub year: i64,
+    /// Coupons received in the year.
+    pub coupons: f64,
+    /// Accrued interest paid at purchase, deducted from the first coupon
+    /// received (up to that coupon).
+    pub accrued_paid: f64,
+    /// Accrued interest the buyer pays within a sale's proceeds: part of
+    /// `sale`, and taxed with it.
+    pub accrued_received: f64,
+    /// Principal returned: amortisation and the final redemption.
+    pub redemptions: f64,
+    /// What a sale at the horizon brings, before its commission.
+    pub sale: f64,
+    /// The cost written off against the redemptions and the sale: the
+    /// price paid with the purchase commission, less the accrued interest
+    /// deducted, in proportion to the nominal returned, and the sale's
+    /// commission.
+    pub cost: f64,
+    /// Income from reinvested payments, taxed in the horizon's year.
+    pub reinvest: f64,
+    /// Coupons less the accrued interest deducted, plus reinvestment
+    /// income.
+    pub income: f64,
+    /// Result of the redemptions and the sale outside the long-term
+    /// holding relief: a loss (negative) is netted against the year's
+    /// coupons.
+    pub result: f64,
     /// The result of disposals under the long-term holding relief, what
     /// they returned, and that weighted by the full years each was held.
-    relieved: f64,
-    relieved_proceeds: f64,
-    relieved_years: f64,
+    pub relieved: f64,
+    pub relieved_proceeds: f64,
+    pub relieved_years: f64,
+    /// The part of `relieved` the relief exempts.
+    pub exempt: f64,
+    /// `income + result + relieved - exempt`; taxed at zero when negative.
+    pub base: f64,
+    /// The part of the base taxed at
+    /// [`TAX_RATE_PCT`](crate::primitives::TAX_RATE_PCT): what fits under
+    /// [`TAX_THRESHOLD`] with the holder's other investment income.
+    pub taxed_low: f64,
+    /// The part taxed at
+    /// [`TAX_HIGHER_RATE_PCT`](crate::primitives::TAX_HIGHER_RATE_PCT).
+    pub taxed_high: f64,
+    pub tax: f64,
 }
 
 impl TaxYear {
@@ -416,7 +502,7 @@ fn tax_year(years: &mut Vec<TaxYear>, year: i64) -> &mut TaxYear {
 /// [`Error::HorizonOutOfRange`], [`Error::InvalidOtherIncome`],
 /// [`Error::InvalidPrice`], [`Error::AmountBelowOneBond`], and returns the
 /// number of bonds bought.
-fn check_plan(d: &Derived, plan: &Plan) -> Result<f64, Error> {
+pub(crate) fn check_plan(d: &Derived, plan: &Plan) -> Result<f64, Error> {
     if !plan.amount.is_finite() || plan.amount <= 0.0 {
         return Err(Error::AmountNotPositive);
     }
@@ -509,6 +595,7 @@ pub fn calculate(issue: &Issue, market: &Market, plan: &Plan) -> Result<Calculat
         period_days: issue.period_days,
         reinvest_rate: if plan.reinvest { y } else { 0.0 },
         exit_yield: y,
+        commission_pct: COMMISSION_PCT,
         plan,
     };
 

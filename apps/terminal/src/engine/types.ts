@@ -32,4 +32,5 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "invalid_other_income",
   "invalid_price",
   "amount_below_one_bond",
+  "invalid_fee",
 ];

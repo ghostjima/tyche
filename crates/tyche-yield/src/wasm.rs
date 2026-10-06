@@ -1,10 +1,10 @@
 //! JavaScript bindings (feature `wasm`).
 //!
 //! The primitives take and return `Float64Array`s and numbers under their
-//! Rust names. `derive_bond` and `calculate` take and return wasm-bindgen
-//! structs with camelCase fields (`Issue`, `Market` and `Plan` in;
-//! `DeriveResult` and `CalculateResult` out, each with `ok` or `error`
-//! set). Codes cross as strings: an unknown coupon type or tax regime is
+//! Rust names. `derive_bond`, `calculate` and `explain` take and return
+//! wasm-bindgen structs with camelCase fields (`Issue`, `Market` and `Plan`
+//! in; `DeriveResult`, `CalculateResult` and `ExplainResult` out, each with
+//! `ok` or `error` set). Codes cross as strings: an unknown coupon type or tax regime is
 //! the error `invalid_code`.
 //!
 //! Structs rather than JSON: on the 60-issue set the struct boundary
@@ -13,8 +13,8 @@
 
 use crate::primitives as p;
 use crate::{
-    Amortization, Breakdown, Calculation, CouponType, Derived, Error, Issue, Market, Plan,
-    Schedule, TaxRegime,
+    Amortization, Breakdown, Calculation, CouponType, Derived, Error, Explanation, FlowTrace,
+    Issue, Market, Plan, PriceTrace, Schedule, TaxRegime, TaxYear, YieldTrace,
 };
 use wasm_bindgen::prelude::*;
 
@@ -493,6 +493,214 @@ pub fn calculate(issue: &JsIssue, market: &JsMarket, plan: &JsPlan) -> JsCalcula
             error: None,
         },
         Err(e) => JsCalculateResult {
+            ok: None,
+            error: Some(e.code().to_owned()),
+        },
+    }
+}
+
+#[wasm_bindgen(js_name = TaxYear)]
+#[derive(Clone, Copy)]
+pub struct JsTaxYear {
+    pub year: i32,
+    pub coupons: f64,
+    #[wasm_bindgen(js_name = accruedPaid)]
+    pub accrued_paid: f64,
+    #[wasm_bindgen(js_name = accruedReceived)]
+    pub accrued_received: f64,
+    pub redemptions: f64,
+    pub sale: f64,
+    pub cost: f64,
+    pub reinvest: f64,
+    pub income: f64,
+    pub result: f64,
+    pub relieved: f64,
+    #[wasm_bindgen(js_name = relievedProceeds)]
+    pub relieved_proceeds: f64,
+    #[wasm_bindgen(js_name = relievedYears)]
+    pub relieved_years: f64,
+    pub exempt: f64,
+    pub base: f64,
+    #[wasm_bindgen(js_name = taxedLow)]
+    pub taxed_low: f64,
+    #[wasm_bindgen(js_name = taxedHigh)]
+    pub taxed_high: f64,
+    pub tax: f64,
+}
+
+impl From<&TaxYear> for JsTaxYear {
+    fn from(t: &TaxYear) -> JsTaxYear {
+        JsTaxYear {
+            // A calendar year fits an i32; JavaScript gets a number, not a
+            // BigInt.
+            year: t.year as i32,
+            coupons: t.coupons,
+            accrued_paid: t.accrued_paid,
+            accrued_received: t.accrued_received,
+            redemptions: t.redemptions,
+            sale: t.sale,
+            cost: t.cost,
+            reinvest: t.reinvest,
+            income: t.income,
+            result: t.result,
+            relieved: t.relieved,
+            relieved_proceeds: t.relieved_proceeds,
+            relieved_years: t.relieved_years,
+            exempt: t.exempt,
+            base: t.base,
+            taxed_low: t.taxed_low,
+            taxed_high: t.taxed_high,
+            tax: t.tax,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = PriceTrace)]
+#[derive(Clone, Copy)]
+pub struct JsPriceTrace {
+    pub nominal: f64,
+    #[wasm_bindgen(js_name = cleanPct)]
+    pub clean_pct: f64,
+    pub clean: f64,
+    #[wasm_bindgen(js_name = couponRatePct)]
+    pub coupon_rate_pct: f64,
+    #[wasm_bindgen(js_name = periodDays)]
+    pub period_days: f64,
+    #[wasm_bindgen(js_name = couponAmount)]
+    pub coupon_amount: f64,
+    #[wasm_bindgen(js_name = daysSinceLast)]
+    pub days_since_last: f64,
+    #[wasm_bindgen(js_name = accruedComputed)]
+    pub accrued_computed: f64,
+    #[wasm_bindgen(js_name = accruedQuoted)]
+    pub accrued_quoted: Option<f64>,
+    pub accrued: f64,
+    pub dirty: f64,
+}
+
+impl From<&PriceTrace> for JsPriceTrace {
+    fn from(p: &PriceTrace) -> JsPriceTrace {
+        JsPriceTrace {
+            nominal: p.nominal,
+            clean_pct: p.clean_pct,
+            clean: p.clean,
+            coupon_rate_pct: p.coupon_rate_pct,
+            period_days: p.period_days,
+            coupon_amount: p.coupon_amount,
+            days_since_last: p.days_since_last,
+            accrued_computed: p.accrued_computed,
+            accrued_quoted: p.accrued_quoted,
+            accrued: p.accrued,
+            dirty: p.dirty,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = FlowTrace)]
+#[derive(Clone, Copy)]
+pub struct JsFlowTrace {
+    pub day: f64,
+    pub years: f64,
+    pub coupon: f64,
+    pub principal: f64,
+    pub amount: f64,
+    pub factor: f64,
+    #[wasm_bindgen(js_name = presentValue)]
+    pub present_value: f64,
+}
+
+impl From<&FlowTrace> for JsFlowTrace {
+    fn from(f: &FlowTrace) -> JsFlowTrace {
+        JsFlowTrace {
+            day: f.day,
+            years: f.years,
+            coupon: f.coupon,
+            principal: f.principal,
+            amount: f.amount,
+            factor: f.factor,
+            present_value: f.present_value,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = YieldTrace, getter_with_clone)]
+#[derive(Clone)]
+pub struct JsYieldTrace {
+    #[wasm_bindgen(js_name = eventDay)]
+    pub event_day: f64,
+    pub flows: Vec<JsFlowTrace>,
+    pub ytm: f64,
+    #[wasm_bindgen(js_name = presentValue)]
+    pub present_value: f64,
+    #[wasm_bindgen(js_name = priceWithFee)]
+    pub price_with_fee: f64,
+    #[wasm_bindgen(js_name = ytmAfterFee)]
+    pub ytm_after_fee: f64,
+    pub held: JsBreakdown,
+    pub tax: Vec<JsTaxYear>,
+}
+
+impl From<&YieldTrace> for JsYieldTrace {
+    fn from(y: &YieldTrace) -> JsYieldTrace {
+        JsYieldTrace {
+            event_day: y.event_day,
+            flows: y.flows.iter().map(Into::into).collect(),
+            ytm: y.ytm,
+            present_value: y.present_value,
+            price_with_fee: y.price_with_fee,
+            ytm_after_fee: y.ytm_after_fee,
+            held: y.held.into(),
+            tax: y.tax.iter().map(Into::into).collect(),
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = Explanation, getter_with_clone)]
+#[derive(Clone)]
+pub struct JsExplanation {
+    #[wasm_bindgen(js_name = feePct)]
+    pub fee_pct: f64,
+    pub price: JsPriceTrace,
+    #[wasm_bindgen(js_name = toMaturity)]
+    pub to_maturity: JsYieldTrace,
+    #[wasm_bindgen(js_name = toOffer)]
+    pub to_offer: Option<JsYieldTrace>,
+    pub plan: JsBreakdown,
+    #[wasm_bindgen(js_name = planTax)]
+    pub plan_tax: Vec<JsTaxYear>,
+}
+
+impl From<Explanation> for JsExplanation {
+    fn from(e: Explanation) -> JsExplanation {
+        JsExplanation {
+            fee_pct: e.fee_pct,
+            price: (&e.price).into(),
+            to_maturity: (&e.to_maturity).into(),
+            to_offer: e.to_offer.as_ref().map(Into::into),
+            plan: e.plan.into(),
+            plan_tax: e.plan_tax.iter().map(Into::into).collect(),
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = ExplainResult, getter_with_clone)]
+pub struct JsExplainResult {
+    pub ok: Option<JsExplanation>,
+    pub error: Option<String>,
+}
+
+/// Works out an issue's figures for a plan and a broker's fee in percent.
+#[wasm_bindgen]
+pub fn explain(issue: &JsIssue, market: &JsMarket, plan: &JsPlan, fee_pct: f64) -> JsExplainResult {
+    let r = issue_of(issue)
+        .and_then(|i| Ok((i, plan_of(plan)?)))
+        .and_then(|(i, pl)| crate::explain(&i, &market_of(market), &pl, fee_pct));
+    match r {
+        Ok(e) => JsExplainResult {
+            ok: Some(e.into()),
+            error: None,
+        },
+        Err(e) => JsExplainResult {
             ok: None,
             error: Some(e.code().to_owned()),
         },

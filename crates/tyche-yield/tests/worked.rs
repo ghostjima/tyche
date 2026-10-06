@@ -377,3 +377,181 @@ fn long_term_relief_leaves_coupons_taxed() {
     assert_close!(b.tax, -520.0);
     assert_close!(b.total, 13_475.5);
 }
+
+// A one-year bullet, 10 percent annual coupon, bought at par on the
+// valuation date, 2026-01-01; maturity 2027-01-01 (day 365). The only
+// coupon day is maturity, so no time has passed since the last coupon and
+// the accrued interest is 0: the dirty price is the clean price, 1,000.
+// The one flow is 100 + 1,000 = 1,100.
+fn bullet() -> Issue {
+    Issue {
+        nominal: 1000.0,
+        price_pct: 100.0,
+        accrued: None,
+        coupon_type: CouponType::Fixed,
+        coupon_rate_pct: 10.0,
+        spread_pct: 0.0,
+        period_days: 365.0,
+        maturity: "2027-01-01".into(),
+        offers: vec![],
+        amortization: vec![],
+    }
+}
+
+// Ten bonds (10,100 buys floor(10,100 / 1,000) = 10), held a year in a
+// brokerage account.
+fn bullet_plan(other_income: f64) -> Plan {
+    Plan {
+        amount: 10_100.0,
+        horizon_day: 365.0,
+        reinvest: false,
+        tax_regime: TaxRegime::Standard,
+        other_income,
+        rate_shift_pct: 0.0,
+    }
+}
+
+#[test]
+fn explain_works_out_the_yield_and_the_fee() {
+    let e = explain(&bullet(), &market("2026-01-01"), &bullet_plan(0.0), 1.0).unwrap();
+    assert_close!(e.price.clean, 1000.0);
+    assert_close!(e.price.accrued, 0.0);
+    assert_close!(e.price.dirty, 1000.0);
+    let m = &e.to_maturity;
+    assert_eq!(m.flows.len(), 1);
+    // 1,100 a year away at the solved yield, 10 percent: 1,100 / 1.1 =
+    // 1,000, the price back.
+    assert_close!(m.flows[0].amount, 1100.0);
+    assert_close!(m.flows[0].years, 1.0);
+    assert!((m.ytm - 0.1).abs() < 1e-9);
+    assert!((m.flows[0].factor - 1.0 / 1.1).abs() < 1e-9);
+    assert!((m.present_value - 1000.0).abs() < 1e-6);
+    // A fee of 1 percent: 1,010 paid for the same 1,100, so 1,100 / 1,010
+    // - 1 = 9 / 101 = 8.9109 percent.
+    assert_close!(m.price_with_fee, 1010.0);
+    assert!((m.ytm_after_fee - 9.0 / 101.0).abs() < 1e-9);
+}
+
+#[test]
+fn explain_traces_the_tax_and_the_yield_after_it() {
+    let e = explain(&bullet(), &market("2026-01-01"), &bullet_plan(0.0), 1.0).unwrap();
+    let held = &e.to_maturity.held;
+    // Ten bonds, 10,000 paid, a fee of 1 percent: 100.
+    assert_close!(held.invested, 10_000.0);
+    assert_close!(held.commission, -100.0);
+    // One tax year, 2027 (maturity falls on 2027-01-01): coupons 1,000;
+    // redemption 10,000 against a cost of 10,000 + 100 = 10,100, a loss of
+    // 100 netted against the coupons; base 900, all of it at 13 percent:
+    // 117.
+    assert_eq!(e.to_maturity.tax.len(), 1);
+    let t = e.to_maturity.tax[0];
+    assert_eq!(t.year, 2027);
+    assert_close!(t.coupons, 1000.0);
+    assert_close!(t.accrued_paid, 0.0);
+    assert_close!(t.redemptions, 10_000.0);
+    assert_close!(t.cost, 10_100.0);
+    assert_close!(t.result, -100.0);
+    assert_close!(t.base, 900.0);
+    assert_close!(t.taxed_low, 900.0);
+    assert_close!(t.taxed_high, 0.0);
+    assert_close!(t.tax, 117.0);
+    // Total 1,000 + 10,000 - 117 - 100 = 10,783, nothing reinvested: over
+    // exactly a year that is 7.83 percent, the yield after tax and the fee.
+    assert_close!(held.total, 10_783.0);
+    assert_close!(held.annual_pct.unwrap(), 7.83);
+    // With 2,399,900 of other income only 100 of the base fits under the
+    // 2.4 million threshold: 100 at 13 percent and 800 at 15, 13 + 120 =
+    // 133.
+    let e = explain(
+        &bullet(),
+        &market("2026-01-01"),
+        &bullet_plan(2_399_900.0),
+        1.0,
+    )
+    .unwrap();
+    let t = e.to_maturity.tax[0];
+    assert_close!(t.taxed_low, 100.0);
+    assert_close!(t.taxed_high, 800.0);
+    assert_close!(t.tax, 133.0);
+}
+
+// 7.3 percent paid every 180 days: 1,000 x 7.3% x 180 / 365 = 36 a
+// coupon. Valuation 2026-01-01, maturity on day 450 (2027-03-27), so the
+// coupons fall on days 90, 270 and 450, and 180 - 90 = 90 days have passed
+// since the last one: accrued interest 36 x 90 / 180 = 18, dirty price
+// 1,000 + 18 = 1,018.
+fn mid_period() -> Issue {
+    Issue {
+        nominal: 1000.0,
+        price_pct: 100.0,
+        accrued: None,
+        coupon_type: CouponType::Fixed,
+        coupon_rate_pct: 7.3,
+        spread_pct: 0.0,
+        period_days: 180.0,
+        maturity: "2027-03-27".into(),
+        offers: vec![],
+        amortization: vec![],
+    }
+}
+
+#[test]
+fn explain_shows_accrued_interest_paid_and_received() {
+    // Ten bonds (10,180 / 1,018), sold on day 180, halfway between the
+    // coupons of days 90 and 270.
+    let plan = Plan {
+        amount: 10_180.0,
+        horizon_day: 180.0,
+        reinvest: false,
+        tax_regime: TaxRegime::Standard,
+        other_income: 0.0,
+        rate_shift_pct: 0.0,
+    };
+    let e = explain(&mid_period(), &market("2026-01-01"), &plan, COMMISSION_PCT).unwrap();
+    assert_close!(e.price.coupon_amount, 36.0);
+    assert_close!(e.price.days_since_last, 90.0);
+    assert_close!(e.price.accrued, 18.0);
+    assert_close!(e.price.dirty, 1018.0);
+    // Everything happens in 2026: the coupon of day 90 (360 for ten
+    // bonds) less the 180 of accrued interest paid at purchase, and the
+    // sale, whose proceeds hold the 36 x 90 / 180 = 18 a bond accrued since
+    // day 90: 180.
+    assert_eq!(e.plan_tax.len(), 1);
+    let t = e.plan_tax[0];
+    assert_eq!(t.year, 2026);
+    assert_close!(t.coupons, 360.0);
+    assert_close!(t.accrued_paid, 180.0);
+    assert_close!(t.income, 180.0);
+    assert_close!(t.accrued_received, 180.0);
+    // The cost: 10,180 paid, plus 0.05 percent of it, less the 180
+    // deducted: 10,005.09, and the sale's own 0.05 percent.
+    assert_close!(t.cost, 10_005.09 + t.sale * 0.0005);
+    assert_close!(t.result, t.sale - t.cost);
+    // The sale is the two flows left, discounted to day 180 at the yield.
+    let y = e.to_maturity.ytm;
+    let per_bond = 36.0 * (1.0 + y).powf(-90.0 / 365.0) + 1036.0 * (1.0 + y).powf(-270.0 / 365.0);
+    assert_close!(t.sale, 10.0 * per_bond);
+    // The same plan through calculate pays the same tax.
+    let c = calculate(&mid_period(), &market("2026-01-01"), &plan).unwrap();
+    assert_close!(c.plan.tax, -t.tax);
+}
+
+#[test]
+fn explain_refuses_a_fee_it_cannot_use() {
+    let m = market("2026-01-01");
+    for fee in [-0.01, f64::NAN, f64::INFINITY] {
+        assert_eq!(
+            explain(&bullet(), &m, &bullet_plan(0.0), fee),
+            Err(Error::InvalidFee)
+        );
+    }
+    // The plan's errors come first.
+    let plan = Plan {
+        amount: 0.0,
+        ..bullet_plan(0.0)
+    };
+    assert_eq!(
+        explain(&bullet(), &m, &plan, -1.0),
+        Err(Error::AmountNotPositive)
+    );
+}

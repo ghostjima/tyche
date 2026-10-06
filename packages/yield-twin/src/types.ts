@@ -16,7 +16,8 @@ export type ErrorCode =
   | "horizon_out_of_range"
   | "invalid_other_income"
   | "invalid_price"
-  | "amount_below_one_bond";
+  | "amount_below_one_bond"
+  | "invalid_fee";
 
 /* Errors are values: either `ok` or `error` is present */
 export type Result<T> = { ok: T } | { error: ErrorCode };
@@ -139,4 +140,88 @@ export type Calculation = {
   earlyExit: EarlyExit;
   floater: { days: number[]; scenarios: FloaterScenario[] } | null;
   offer: { before: Breakdown; after: Breakdown } | null;
+};
+
+/*
+  One calendar year of the tax on a position, for the whole position.
+  base = income + result + relieved - exempt, taxed at zero when negative;
+  taxedLow at TAX_RATE_PCT (what fits under TAX_THRESHOLD with the other
+  income), taxedHigh at TAX_HIGHER_RATE_PCT.
+*/
+export type TaxYear = {
+  year: number;
+  /* Coupons received in the year */
+  coupons: number;
+  /* Accrued interest paid at purchase, deducted from the first coupon (up to it) */
+  accruedPaid: number;
+  /* Accrued interest the buyer pays within a sale's proceeds: part of sale */
+  accruedReceived: number;
+  /* Principal returned: amortisation and the final redemption */
+  redemptions: number;
+  /* A sale at the horizon, before its commission */
+  sale: number;
+  /* Cost written off against redemptions and the sale, with the commissions */
+  cost: number;
+  reinvest: number;
+  /* Coupons less the accrued interest deducted, plus reinvestment income */
+  income: number;
+  /* Result of disposals outside the long-term holding relief; a loss is netted */
+  result: number;
+  relieved: number;
+  relievedProceeds: number;
+  relievedYears: number;
+  exempt: number;
+  base: number;
+  taxedLow: number;
+  taxedHigh: number;
+  tax: number;
+};
+
+/* How the dirty price of one bond is made */
+export type PriceTrace = {
+  nominal: number;
+  cleanPct: number;
+  clean: number;
+  couponRatePct: number;
+  periodDays: number;
+  couponAmount: number;
+  daysSinceLast: number;
+  accruedComputed: number;
+  accruedQuoted: number | null;
+  accrued: number;
+  dirty: number;
+};
+
+/* One cash flow discounted at the solved yield */
+export type FlowTrace = {
+  day: number;
+  years: number;
+  coupon: number;
+  principal: number;
+  amount: number;
+  factor: number;
+  presentValue: number;
+};
+
+/* The yield to one event worked out, and what holding to it leaves */
+export type YieldTrace = {
+  eventDay: number;
+  flows: FlowTrace[];
+  ytm: number;
+  presentValue: number;
+  priceWithFee: number;
+  ytmAfterFee: number;
+  /* Held to the event: nothing reinvested, the fee on the purchase, the plan's tax */
+  held: Breakdown;
+  tax: TaxYear[];
+};
+
+export type Explanation = {
+  feePct: number;
+  price: PriceTrace;
+  toMaturity: YieldTrace;
+  toOffer: YieldTrace | null;
+  /* The plan as calculate gives it, with the fee as the commission */
+  plan: Breakdown;
+  planTax: TaxYear[];
 };

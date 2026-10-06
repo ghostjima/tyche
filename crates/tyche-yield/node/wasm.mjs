@@ -1,5 +1,6 @@
-// Loads the wasm-pack build in pkg/ under Node and wraps derive_bond and
-// calculate so they take and return the same plain objects as the twin.
+// Loads the wasm-pack build in pkg/ under Node and wraps derive_bond,
+// calculate and explain so they take and return the same plain objects as
+// the twin.
 // Also the reference for using the structs from JavaScript.
 
 import { readFileSync } from "node:fs";
@@ -129,6 +130,75 @@ export function wrap(w) {
     c.free();
     return out;
   };
+  const taxYear = (t) => {
+    const out = {
+      year: t.year,
+      coupons: t.coupons,
+      accruedPaid: t.accruedPaid,
+      accruedReceived: t.accruedReceived,
+      redemptions: t.redemptions,
+      sale: t.sale,
+      cost: t.cost,
+      reinvest: t.reinvest,
+      income: t.income,
+      result: t.result,
+      relieved: t.relieved,
+      relievedProceeds: t.relievedProceeds,
+      relievedYears: t.relievedYears,
+      exempt: t.exempt,
+      base: t.base,
+      taxedLow: t.taxedLow,
+      taxedHigh: t.taxedHigh,
+      tax: t.tax,
+    };
+    t.free();
+    return out;
+  };
+  const yieldTrace = (y) => {
+    const out = {
+      eventDay: y.eventDay,
+      flows: y.flows.map((f) => {
+        const r = { day: f.day, years: f.years, coupon: f.coupon, principal: f.principal, amount: f.amount, factor: f.factor, presentValue: f.presentValue };
+        f.free();
+        return r;
+      }),
+      ytm: y.ytm,
+      presentValue: y.presentValue,
+      priceWithFee: y.priceWithFee,
+      ytmAfterFee: y.ytmAfterFee,
+      held: breakdown(y.held),
+      tax: y.tax.map(taxYear),
+    };
+    y.free();
+    return out;
+  };
+  const explanation = (e) => {
+    const p = e.price;
+    const toOffer = e.toOffer;
+    const out = {
+      feePct: e.feePct,
+      price: {
+        nominal: p.nominal,
+        cleanPct: p.cleanPct,
+        clean: p.clean,
+        couponRatePct: p.couponRatePct,
+        periodDays: p.periodDays,
+        couponAmount: p.couponAmount,
+        daysSinceLast: p.daysSinceLast,
+        accruedComputed: p.accruedComputed,
+        accruedQuoted: p.accruedQuoted ?? null,
+        accrued: p.accrued,
+        dirty: p.dirty,
+      },
+      toMaturity: yieldTrace(e.toMaturity),
+      toOffer: toOffer === undefined ? null : yieldTrace(toOffer),
+      plan: breakdown(e.plan),
+      planTax: e.planTax.map(taxYear),
+    };
+    p.free();
+    e.free();
+    return out;
+  };
   const result = (r, convert) => {
     const ok = r.ok;
     const out = ok === undefined ? { error: r.error } : { ok: convert(ok) };
@@ -142,6 +212,16 @@ export function wrap(w) {
       const out = result(w.derive_bond(i, m), derived);
       i.free();
       m.free();
+      return out;
+    },
+    explain: (issue, market, plan, feePct) => {
+      const i = issueOf(issue);
+      const m = marketOf(market);
+      const p = planOf(plan);
+      const out = result(w.explain(i, m, p, feePct), explanation);
+      i.free();
+      m.free();
+      p.free();
       return out;
     },
     calculate: (issue, market, plan) => {

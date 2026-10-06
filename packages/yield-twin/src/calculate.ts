@@ -9,7 +9,9 @@ import { amountsOf, derive_bond, isCouponType, scheduleFromTriples } from "./iss
 import {
   OFFER_NONE,
   OFFER_RATE_CHANGE,
+  TAX_THRESHOLD,
   YEAR,
+  accrued_interest,
   build_cash_flow,
   floater_rate_path,
   hold_value,
@@ -31,6 +33,7 @@ import type {
   Result,
   Schedule,
   TaxRegime,
+  TaxYear,
 } from "./types.js";
 
 export const COMMISSION_PCT = 0.05;
@@ -44,7 +47,7 @@ export const LDV_CAP_PER_YEAR = 3_000_000;
 /* The shortest horizon, in days, whose return is annualised */
 export const MIN_ANNUALISED_DAYS = 30;
 
-function isTaxRegime(code: unknown): code is TaxRegime {
+export function isTaxRegime(code: unknown): code is TaxRegime {
   return code === "standard" || code === "iis_b";
 }
 
@@ -59,7 +62,7 @@ export function effective_annual_pct(invested: number, total: number, horizonDay
   return (Math.pow(total / invested, YEAR / horizonDay) - 1) * 100;
 }
 
-type Holding = {
+export type Holding = {
   qty: number;
   dirtyPrice: number;
   /* Accrued interest paid per bond at purchase */
@@ -70,6 +73,8 @@ type Holding = {
   periodDays: number;
   reinvestRate: number;
   exitYield: number;
+  /* The broker's commission, percent of each trade: COMMISSION_PCT in calculate, the fee asked for in explain */
+  commissionPct: number;
   plan: Plan;
 };
 
@@ -78,14 +83,15 @@ type Holding = {
   modified duration for a key-rate shift (a fixed coupon), or discounted
   along a path of per-period rates (a floater).
 */
-type Sale = { shiftPct: number } | { pathPct: readonly number[] };
+export type Sale = { shiftPct: number } | { pathPct: readonly number[] };
 
-function breakdownOf(
+/* The breakdown, the modified duration at the horizon for a fixed coupon's sale, and the tax year by year */
+export function breakdownOf(
   h: Holding,
   flows: Schedule,
   horizonDay: number,
   how: Sale,
-): { breakdown: Breakdown; modDurationAtHorizon: number | null } {
+): { breakdown: Breakdown; modDurationAtHorizon: number | null; years: TaxYear[] } {
   const hv = hold_value(flows.days, flows.coupons, flows.principals, horizonDay, h.reinvestRate, h.exitYield);
   let sale = hv[4] as number;
   let modDurationAtHorizon: number | null = null;
@@ -113,8 +119,10 @@ function breakdownOf(
   const amort = (hv[2] as number) * qty;
   const body = ((hv[3] as number) + sale) * qty;
   const sold = sale > 0 ? sale * qty : 0;
-  const commission = ((invested + sold) * COMMISSION_PCT) / 100;
-  const tax = taxOf(h, flows, horizonDay, reinvest, invested, sold);
+  const commission = ((invested + sold) * h.commissionPct) / 100;
+  const years = taxYears(h, flows, horizonDay, reinvest, invested, sold);
+  let tax = 0;
+  for (const y of years) tax += y.tax;
   const total = coupons + reinvest + amort + body - tax - commission;
   return {
     breakdown: {
@@ -133,31 +141,27 @@ function breakdownOf(
       horizonDay,
     },
     modDurationAtHorizon,
+    years,
   };
 }
 
 /*
-  One calendar year of the tax base; relieved is the result of disposals
-  under the long-term holding relief, with what they returned and that
-  weighted by the full years each was held
-*/
-type TaxYear = { year: number; income: number; result: number; relieved: number; relievedProceeds: number; relievedYears: number };
-
-/*
-  Personal income tax summed over the calendar years the position pays in.
-  Each year's coupons and the result of redemptions and the sale form one
-  base, taxed at zero when negative and not carried to another year.
-  Accrued interest paid at purchase reduces the first coupon received (up
-  to that coupon) and the cost; the cost with the purchase commission is
-  spread over redemptions and the sale by the nominal each returns; the
+  Personal income tax year by year over the calendar years the position
+  pays in. Each year's coupons and the result of redemptions and the sale
+  form one base, taxed at zero when negative and not carried to another
+  year. Accrued interest paid at purchase reduces the first coupon received
+  (up to that coupon) and the cost; the cost with the purchase commission
+  is spread over redemptions and the sale by the nominal each returns; the
   sale bears its own commission; reinvestment income falls in the
   horizon's year. A redemption or sale more than three years after the
-  purchase by calendar anniversary is relieved: the year's positive relieved
-  result is exempt up to 3 million times the full years held, averaged over
-  the relieved disposals weighted by what each returned; coupons stay taxed.
+  purchase by calendar anniversary is relieved: the year's positive
+  relieved result is exempt up to 3 million times the full years held,
+  averaged over the relieved disposals weighted by what each returned;
+  coupons stay taxed. Tax Code of the Russian Federation, part two,
+  articles 214.1, 219.1 and 224, as in force from 2026-10-01.
 */
-function taxOf(h: Holding, flows: Schedule, horizonDay: number, reinvest: number, invested: number, sold: number): number {
-  if (h.plan.taxRegime === "iis_b") return 0;
+function taxYears(h: Holding, flows: Schedule, horizonDay: number, reinvest: number, invested: number, sold: number): TaxYear[] {
+  if (h.plan.taxRegime === "iis_b") return [];
   const { qty } = h;
   const yearOf = (day: number) => civilFromDays(h.today + Math.floor(day))[0];
   const reliefAfter = addYears(h.today, LDV_YEARS) - h.today;
@@ -167,7 +171,26 @@ function taxOf(h: Holding, flows: Schedule, horizonDay: number, reinvest: number
   const entry = (year: number): TaxYear => {
     let t = years.find((x) => x.year === year);
     if (!t) {
-      t = { year, income: 0, result: 0, relieved: 0, relievedProceeds: 0, relievedYears: 0 };
+      t = {
+        year,
+        coupons: 0,
+        accruedPaid: 0,
+        accruedReceived: 0,
+        redemptions: 0,
+        sale: 0,
+        cost: 0,
+        reinvest: 0,
+        income: 0,
+        result: 0,
+        relieved: 0,
+        relievedProceeds: 0,
+        relievedYears: 0,
+        exempt: 0,
+        base: 0,
+        taxedLow: 0,
+        taxedHigh: 0,
+        tax: 0,
+      };
       years.push(t);
     }
     return t;
@@ -184,29 +207,52 @@ function taxOf(h: Holding, flows: Schedule, horizonDay: number, reinvest: number
   const firstDay = flows.days[0];
   const firstCoupon = firstDay !== undefined && firstDay <= horizonDay ? (flows.coupons[0] as number) * qty : 0;
   const deducted = Math.min(h.accruedPaid * qty, firstCoupon);
-  const cost = invested + (invested * COMMISSION_PCT) / 100 - deducted;
+  const cost = invested + (invested * h.commissionPct) / 100 - deducted;
   let repaid = 0;
   for (let i = 0; i < flows.days.length; i++) {
     const d = flows.days[i] as number;
     if (d > horizonDay) break;
     const t = entry(yearOf(d));
-    t.income += (flows.coupons[i] as number) * qty - (i === 0 ? deducted : 0);
+    const coupon = (flows.coupons[i] as number) * qty;
+    const accrued = i === 0 ? deducted : 0;
+    t.income += coupon - accrued;
+    t.coupons += coupon;
+    t.accruedPaid += accrued;
     const p = flows.principals[i] as number;
     if (p > 0) {
-      book(t, p * qty - (cost * p) / h.nominal, p * qty, held(d));
+      const share = (cost * p) / h.nominal;
+      book(t, p * qty - share, p * qty, held(d));
+      t.redemptions += p * qty;
+      t.cost += share;
       repaid += p;
     }
   }
   const t = entry(yearOf(horizonDay));
-  if (sold > 0) book(t, sold - (sold * COMMISSION_PCT) / 100 - cost * ((h.nominal - repaid) / h.nominal), sold, held(horizonDay));
-  t.income += reinvest;
-  let tax = 0;
-  for (const y of years) {
-    const exempt = y.relieved > 0 ? Math.min(y.relieved, (LDV_CAP_PER_YEAR * y.relievedYears) / y.relievedProceeds) : 0;
-    const base = y.income + y.result + y.relieved - exempt;
-    tax += income_tax(base, h.plan.otherIncome);
+  if (sold > 0) {
+    const commission = (sold * h.commissionPct) / 100;
+    const share = cost * ((h.nominal - repaid) / h.nominal);
+    book(t, sold - commission - share, sold, held(horizonDay));
+    t.sale += sold;
+    t.accruedReceived += accruedAt(h, flows, horizonDay) * qty;
+    t.cost += commission + share;
   }
-  return tax;
+  t.income += reinvest;
+  t.reinvest += reinvest;
+  for (const y of years) {
+    y.exempt = y.relieved > 0 ? Math.min(y.relieved, (LDV_CAP_PER_YEAR * y.relievedYears) / y.relievedProceeds) : 0;
+    y.base = y.income + y.result + y.relieved - y.exempt;
+    const taxed = Math.max(y.base, 0);
+    y.taxedLow = Math.min(Math.max(TAX_THRESHOLD - h.plan.otherIncome, 0), taxed);
+    y.taxedHigh = taxed - y.taxedLow;
+    y.tax = income_tax(y.base, h.plan.otherIncome);
+  }
+  return years;
+}
+
+/* Accrued interest per bond on a day between coupons, counted as at the purchase; zero after the last flow */
+function accruedAt(h: Holding, flows: Schedule, day: number): number {
+  const i = flows.days.findIndex((d) => d > day);
+  return i < 0 ? 0 : accrued_interest(flows.coupons[i] as number, h.periodDays - ((flows.days[i] as number) - day), h.periodDays);
 }
 
 /*
@@ -235,7 +281,7 @@ function floaterPath(issue: Issue, market: Market, d: Derived, shiftPct: number,
 }
 
 /* Bonds bought, or the first plan error in the documented order */
-function checkPlan(d: Derived, plan: Plan): number | ErrorCode {
+export function checkPlan(d: Derived, plan: Plan): number | ErrorCode {
   if (!Number.isFinite(plan.amount) || plan.amount <= 0) return "amount_not_positive";
   if (plan.amount > MAX_AMOUNT) return "amount_too_large";
   if (!Number.isFinite(plan.horizonDay) || plan.horizonDay < 1 || plan.horizonDay > d.maturityDay) {
@@ -266,13 +312,14 @@ export function calculate(issue: Issue, market: Market, plan: Plan): Result<Calc
     periodDays: issue.periodDays,
     reinvestRate: plan.reinvest ? y : 0,
     exitYield: y,
+    commissionPct: COMMISSION_PCT,
     plan,
   };
 
   const base = breakdownOf(h, d.flows, plan.horizonDay, { shiftPct: 0 }).breakdown;
   const applicable = plan.horizonDay < d.maturityDay;
   const shift = applicable ? plan.rateShiftPct : 0;
-  let early: ReturnType<typeof breakdownOf>;
+  let early: { breakdown: Breakdown; modDurationAtHorizon: number | null };
   if (issue.couponType === "floater" && shift === 0) {
     // An unchanged key rate is the plan itself.
     early = { breakdown: base, modDurationAtHorizon: null };
