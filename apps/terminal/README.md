@@ -184,10 +184,9 @@ What the tests cover, and nothing wider:
   Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
-  At 375 px every table on an issue fits its box, except the working's
-  derivation tables: a formula is one run that does not break, so they
-  scroll inside their own regions, which take the focus and scroll from
-  the keyboard.
+  At 375 px every table on an issue fits its box, and the working's
+  derivations are stacked as lists (Stoa's DerivationTable on a narrow
+  screen), so nothing in them scrolls sideways.
 - The header stays in place while the page scrolls under it, and the
   scrollbars are Stoa's.
 
