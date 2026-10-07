@@ -75,8 +75,9 @@ Workflows:
 6. **Events**: coupons, offers with an action deadline and a one-step
    request to redeem at the offer, rating changes, defaults.
 
-Today the prototype covers the first three workflows and the
-single-issue calculator: see [What is built](#what-is-built).
+Today the prototype covers the first three workflows, the
+single-issue calculator, and the events of a synthetic portfolio with
+its monthly coupon income: see [What is built](#what-is-built).
 
 ## Constraints
 
@@ -159,8 +160,13 @@ single-issue calculator: see [What is built](#what-is-built).
   (a similar rating and duration) on a map of peers, and up to three
   issues compared side by side, with the G-spread of each to the Bank
   of Russia's zero-coupon curve of federal loan bonds; a holding calculator with reinvestment, the
-  account type, tax per calendar year and a key-rate change; the Bank
-  of Russia's benchmarks with the yield curve. Every widget names its
+  account type, tax per calendar year and a key-rate change; a
+  synthetic portfolio kept in the link, with its events by date
+  (payments, offers with the window and the deadline, and a one-step
+  request to redeem at a put offer, recorded in the browser only and
+  never an order; rating changes and defaults from the synthetic
+  universe's scenario) and its coupon income by month; the Bank of
+  Russia's benchmarks with the yield curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
   cbr.ru), a banner in the header says the terminal is a demonstration
   with synthetic data and not investment advice, and a "Data and
@@ -201,8 +207,7 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The order ticket's screen against the synthetic order book; the events
-  in the app.
+- The order ticket's screen against the synthetic order book.
 - In the engine: portfolio and ladder cash flows, inflation-linked
   bonds with forecast indexation. In the app: the
   order book and the tape of the synthetic market.

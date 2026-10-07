@@ -35,3 +35,18 @@ export function dayJson(index: number, day = 0, untilMs = -1, levels = 10): stri
   m.free();
   return out;
 }
+
+/** The markets built for the events, one per seed and inputs, kept for
+ * the test run. */
+const markets = new Map<string, SynthMarket>();
+
+/** A holding's events, as JSON, for a universe of a seed and inputs. */
+export function eventsJson(index: number, bonds: number, seed = SEED, inputs: MacroInputs = MACRO): string {
+  const key = JSON.stringify([seed, inputs]);
+  let m = markets.get(key);
+  if (!m) {
+    m = new SynthMarket(seed, inputs.valuationDate, inputs.keyRatePct, inputs.ruoniaPct, inputs.inflationPct, Float64Array.from(inputs.curve.termsYears), Float64Array.from(inputs.curve.yieldsPct));
+    markets.set(key, m);
+  }
+  return m.eventsJson(index, bonds);
+}

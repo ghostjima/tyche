@@ -119,6 +119,30 @@ Status: early. Performance record, with stamps:
   input recalculates at once. An error the engine returns (an amount of
   zero, one that does not buy a bond, one over the limit) is a sentence
   with a way back to valid inputs.
+- **Holdings and events**: a synthetic portfolio, kept in the URL
+  (`?hold=TICKER*BONDS` once per issue, up to twenty issues) or added from
+  the issue card with a number of bonds (and changed there), with each
+  issue's bonds and face value and a button that takes it out. The
+  events of the holdings come from tyche-market's events model in the
+  worker: from six months back to a year ahead, by date (Stoa's
+  Timeline, a day per heading), each with its issue: coupons,
+  amortisations and maturity from the issue's terms with the amount for
+  the holding and for a bond (a floater's or a linker's coupon marked as
+  projected at today's index); a put offer with its window to ask for
+  redemption, the deadline counted down in working days (Stoa's
+  Countdown, a warning from three working days) and the window's rule
+  explained; a call offer with the day the issuer gives notice by; and the
+  synthetic universe's scenario, each entry saying so: rating changes,
+  payments missed and made late, and defaults. An entry that asks for
+  action (a put offer not yet requested, a missed payment, a default) is
+  emphasised. "Request redemption at the offer" asks for a confirmation
+  that says the request stays in this browser and is not an order;
+  recorded, it can be cancelled until the window closes (localStorage
+  `tyche.redemptionRequests`; nothing is sent anywhere). Then the coupon
+  income by month over the next twelve months, before tax, for the
+  "Monthly income" goal: the coupons over the year, a month on average and
+  the months without a coupon (Stoa's StatBar), and a table of the
+  coupons and the principal returned per month.
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the
@@ -168,6 +192,7 @@ URL (`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage,
 under `tyche.lang` and `tyche.theme`, and set before the first paint by
 Stoa's first-paint script, built from the same choices the app reads
 (`src/preferences.ts`). `?issue=TICKER` opens an issue,
+`?hold=TICKER*BONDS` holds bonds of it,
 `?fee=0.3` sets the broker's fee in percent, `?page=data` the data and
 licensing page, `?engine=twin` starts on the TypeScript engine.
 
@@ -183,9 +208,11 @@ What the tests cover, and nothing wider:
   every risk, three issues compared
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
+  holdings with every kind of event and the income by month, the
+  confirmation of a request to redeem at an offer,
   the loading state, the WebAssembly fallback and the market's failure,
-  at 1440 px; and the list, "Money by a date", the comparison and an
-  issue at 375 px.
+  at 1440 px; and the list, "Money by a date", the comparison, an
+  issue and the holdings at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the
   broker's fee by the arrow keys a hundredth of a percent at a time, the
@@ -195,7 +222,10 @@ What the tests cover, and nothing wider:
   the focus on the Back button, and the page's Back button and the
   browser's Back both return to the list, with focus on the issue's row;
   on a phone the filters open in a sheet that returns the focus to its
-  button; after "Try WebAssembly again" succeeds, the focus moves on to
+  button; a holding's Remove moves the focus on to the next stop; the
+  request to redeem at an offer opens a confirmation with the focus on
+  its safe action, and recording or cancelling the request puts the
+  focus on the button that replaces the one pressed; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The

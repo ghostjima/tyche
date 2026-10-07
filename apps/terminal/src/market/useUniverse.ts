@@ -30,6 +30,7 @@ function request(): Promise<UniverseState> {
       const r = event.data;
       if (r.id !== id) return;
       if ("error" in r) return fail(r.error);
+      if (!("json" in r)) return fail("unexpected_reply");
       try {
         const universe = parseUniverse(r.json);
         performance.measure("tyche:universe", "tyche:universe-start");
@@ -41,6 +42,17 @@ function request(): Promise<UniverseState> {
     w.postMessage({ id, seed: SEED, inputs: MACRO } satisfies Request);
   });
   return pending;
+}
+
+/** The worker that holds the universe, once it is built; the events of
+ * holdings are asked of it. */
+export function universeWorker(): Worker | null {
+  return worker;
+}
+
+/** A request id no other request of this page has. */
+export function nextRequestId(): number {
+  return ++next;
 }
 
 export function useUniverse(): { state: UniverseState; retry: () => void } {

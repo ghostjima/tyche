@@ -130,3 +130,12 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .data-page__title { margin: 0; font-size: var(--stoa-font-size-xl); font-weight: var(--stoa-font-weight-semibold); }
 .data-page__intro, .data-page__text { margin: 0; }
 .data-page__title:focus-visible { outline: 2px solid var(--stoa-color-focus); outline-offset: 2px; }
+
+/* Holdings: adding an issue from its card, and the events inbox. */
+.hold { display: grid; gap: var(--stoa-space-2); justify-items: start; margin-block-start: var(--stoa-space-3); }
+.hold > p, .hold__actions p { margin: 0; }
+.hold__actions { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
+.event-text { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.event-text p { margin: 0; }
+.redeem { display: grid; gap: var(--stoa-space-2); justify-items: start; }
+.redeem p { margin: 0; }
