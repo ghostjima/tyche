@@ -88,10 +88,11 @@ on aggregate figures only.
   from the seed, one stream per issuer: a rating change of a notch in the
   last 180 days that ended at today's rating, one ahead likelier in the
   outlook's direction, and, for issuers rated BB- or lower, a payment
-  missed on a payment day ahead, made within ten working days or not, and
-  then a default after which nothing more is paid. Working days are
-  Monday to Friday, with no holiday calendar. Every one of these is a
-  rule of the synthetic universe, not a statement about a real issuer.
+  missed on a payment day in the year ahead, made within ten working
+  days or not, and then a default after which nothing more is paid.
+  Working days are Monday to Friday, with no holiday calendar. Every one
+  of these is a rule of the synthetic universe, not a statement about a
+  real issuer.
 - **The depth check** (`depth::depth_check(levels, side, bonds,
   limit)`): how much of a limit order the visible book fills at once at
   or better than the limit, taking the opposite side best price first as

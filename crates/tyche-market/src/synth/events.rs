@@ -23,7 +23,7 @@
 //!   the last [`PAST_DAYS`] days, which ended at today's rating, and may
 //!   have one ahead of it, likelier in the direction of its outlook.
 //! - Defaults: an issuer rated BB- or lower may miss a payment on a
-//!   payment day ahead (a technical default); it pays within
+//!   payment day in the year ahead (a technical default); it pays within
 //!   [`GRACE_DAYS`] working days (the default is cured), or does not, and
 //!   the issue is in default. Payments after a default are not listed.
 
@@ -210,7 +210,7 @@ fn scenario(seed: u64, issuer: usize, rating: usize, outlook: Outlook) -> Scenar
             0.3
         };
         if r.chance(p) {
-            miss_from = Some(r.range(30.0, 720.0) as i64);
+            miss_from = Some(r.range(30.0, 360.0) as i64);
             if r.chance(0.4) {
                 cured_after = Some(1 + r.below(GRACE_DAYS as usize) as i64);
             }

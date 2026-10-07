@@ -330,6 +330,6 @@ fn the_events_are_the_same_on_every_run_and_pinned() {
     // Pinned, so a change to the scenario is seen and explained.
     assert_eq!(
         format!("{:016x}", json::fnv1a(a.as_bytes())),
-        "b804d4cc24aa442b"
+        "be90933fcacc3bf3"
     );
 }
