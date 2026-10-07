@@ -791,3 +791,168 @@ fn calculate_refuses_a_fee_it_cannot_use() {
         Err(Error::AmountNotPositive)
     );
 }
+
+// The order ticket. A buy order at the one-year bullet's par price: two
+// lots of ten bonds, a fee of 0.1 percent, a price step of 0.01.
+fn order(side: Side, limit: Limit, limit_value: f64) -> Order {
+    Order {
+        side,
+        limit,
+        limit_value,
+        lots: 2.0,
+        lot_size: 10.0,
+        tick_pct: 0.01,
+        fee_pct: 0.1,
+    }
+}
+
+#[test]
+fn a_ticket_gives_the_yield_at_a_limit_price_with_lots_and_the_fee() {
+    let m = market("2026-01-01");
+    let t = order_ticket(&bullet(), &m, &order(Side::Buy, Limit::Price, 100.0)).unwrap();
+    // 2 lots of 10: 20 bonds at 1,000, no accrued interest: 20,000; the
+    // fee 0.1 percent of it, 20; paid 20,020.
+    assert_eq!(t.bonds, 20.0);
+    assert_close!(t.clean, 1000.0);
+    assert_close!(t.accrued, 0.0);
+    assert_close!(t.amount, 20_000.0);
+    assert_close!(t.fee, 20.0);
+    assert_close!(t.total, 20_020.0);
+    // 1,100 a year after 1,000 paid: 10 percent; after the fee one bond
+    // costs 1,001, so 1,100 / 1,001 - 1.
+    assert_close!(t.yield_event, 0.1);
+    assert_eq!(t.event, Event::Maturity);
+    assert_close!(t.yield_event_after_fee, 1100.0 / 1001.0 - 1.0);
+    // A sale brings the amount less the fee, 19,980; the yield given up
+    // is the one at 999 a bond.
+    let s = order_ticket(&bullet(), &m, &order(Side::Sell, Limit::Price, 100.0)).unwrap();
+    assert_close!(s.total, 19_980.0);
+    assert_close!(s.yield_event_after_fee, 1100.0 / 999.0 - 1.0);
+}
+
+#[test]
+fn a_ticket_gives_the_price_at_a_limit_yield_with_the_accrued_interest() {
+    let m = market("2026-01-01");
+    // The bullet with 25 of accrued interest quoted.
+    let issue = Issue {
+        accrued: Some(25.0),
+        ..bullet()
+    };
+    // At 10 percent one bond is worth 1,100 / 1.1 = 1,000 with the accrued
+    // interest; the clean price is 1,000 - 25 = 975, 97.5 percent, on the
+    // step. Three bonds: 2,925 clean and 75 accrued, 3,000; the fee 0.05
+    // percent, 1.5; paid 3,001.5.
+    let three = Order {
+        lots: 3.0,
+        lot_size: 1.0,
+        fee_pct: 0.05,
+        ..order(Side::Buy, Limit::Yield, 10.0)
+    };
+    let t = order_ticket(&issue, &m, &three).unwrap();
+    assert_close!(t.clean_pct, 97.5);
+    assert_close!(t.dirty, 1000.0);
+    assert_close!(t.clean_amount, 2925.0);
+    assert_close!(t.accrued_amount, 75.0);
+    assert_close!(t.total, 3001.5);
+    assert_close!(t.yield_event, 0.1);
+    // At 10.5 percent: 1,100 / 1.105 = 995.4751..., clean 970.4751..., or
+    // 97.04751... percent. A buy goes down to the step, 97.04, so its
+    // yield is 1,100 / 995.40 - 1, above 10.5 percent; a sell goes up to
+    // 97.05, a yield of 1,100 / 995.50 - 1, below it.
+    let buy = order_ticket(&issue, &m, &order(Side::Buy, Limit::Yield, 10.5)).unwrap();
+    assert_close!(buy.clean_pct, 97.04);
+    assert_close!(buy.yield_event, 1100.0 / 995.4 - 1.0);
+    assert!(buy.yield_event > 0.105);
+    let sell = order_ticket(&issue, &m, &order(Side::Sell, Limit::Yield, 10.5)).unwrap();
+    assert_close!(sell.clean_pct, 97.05);
+    assert_close!(sell.yield_event, 1100.0 / 995.5 - 1.0);
+    assert!(sell.yield_event < 0.105);
+    // With no price step the price is the exact one.
+    let exact = Order {
+        tick_pct: 0.0,
+        ..order(Side::Buy, Limit::Yield, 10.5)
+    };
+    let e = order_ticket(&issue, &m, &exact).unwrap();
+    assert_close!(e.clean_pct, (1100.0 / 1.105 - 25.0) / 10.0);
+}
+
+#[test]
+fn a_ticket_takes_the_yield_to_the_offer_when_there_is_one() {
+    let m = market("2026-01-01");
+    // Two years, a put offer after the first: flows 100 on day 365 and
+    // 1,100 on day 730; at the offer the bond is redeemed, so the flows to
+    // it are 1,100 on day 365.
+    let issue = Issue {
+        maturity: "2028-01-01".into(),
+        offers: vec!["2027-01-01".into()],
+        ..bullet()
+    };
+    let t = order_ticket(&issue, &m, &order(Side::Buy, Limit::Price, 98.0)).unwrap();
+    // At 980: to the offer 1,100 / 980 - 1. To maturity, x = 1 / (1 + y)
+    // solves 1,100 x^2 + 100 x - 980 = 0: x = (-100 + sqrt(100^2 + 4 x
+    // 1,100 x 980)) / 2,200.
+    assert_eq!(t.event, Event::Offer);
+    assert_eq!(t.event_day, 365.0);
+    assert_close!(t.ytm_offer.unwrap(), 1100.0 / 980.0 - 1.0);
+    assert_close!(t.yield_event, 1100.0 / 980.0 - 1.0);
+    let x = (-100.0 + (100.0_f64 * 100.0 + 4.0 * 1100.0 * 980.0).sqrt()) / 2200.0;
+    assert!((t.ytm_maturity - (1.0 / x - 1.0)).abs() < 1e-9);
+    // A limit yield is to the offer: 10 percent there is 1,000.
+    let y = order_ticket(&issue, &m, &order(Side::Buy, Limit::Yield, 10.0)).unwrap();
+    assert_close!(y.clean_pct, 100.0);
+}
+
+#[test]
+fn a_ticket_refuses_what_it_cannot_price_in_order() {
+    let m = market("2026-01-01");
+    let b = bullet();
+    let with = |f: &dyn Fn(&mut Order)| {
+        let mut o = order(Side::Buy, Limit::Price, 100.0);
+        f(&mut o);
+        order_ticket(&b, &m, &o)
+    };
+    assert_eq!(with(&|o| o.lots = 0.0), Err(Error::InvalidQuantity));
+    assert_eq!(with(&|o| o.lots = 1.5), Err(Error::InvalidQuantity));
+    assert_eq!(
+        with(&|o| o.lot_size = f64::NAN),
+        Err(Error::InvalidQuantity)
+    );
+    assert_eq!(with(&|o| o.limit_value = 0.0), Err(Error::InvalidLimit));
+    assert_eq!(
+        with(&|o| o.limit_value = f64::INFINITY),
+        Err(Error::InvalidLimit)
+    );
+    assert_eq!(
+        with(&|o| {
+            o.limit = Limit::Yield;
+            o.limit_value = -99.0;
+        }),
+        Err(Error::InvalidLimit)
+    );
+    assert_eq!(with(&|o| o.tick_pct = -0.01), Err(Error::InvalidTick));
+    // 97.045 is half a step off 0.01.
+    assert_eq!(with(&|o| o.limit_value = 97.045), Err(Error::PriceOffTick));
+    assert_eq!(with(&|o| o.fee_pct = -1.0), Err(Error::InvalidFee));
+    // The quantity is checked before the limit, the limit before the fee.
+    assert_eq!(
+        with(&|o| {
+            o.lots = 0.0;
+            o.limit_value = -1.0;
+        }),
+        Err(Error::InvalidQuantity)
+    );
+    assert_eq!(
+        with(&|o| {
+            o.limit_value = -1.0;
+            o.fee_pct = -1.0;
+        }),
+        Err(Error::InvalidLimit)
+    );
+    // The issue's own errors come first.
+    let matured = order_ticket(
+        &b,
+        &market("2027-06-01"),
+        &order(Side::Buy, Limit::Price, 0.0),
+    );
+    assert_eq!(matured, Err(Error::Matured));
+}

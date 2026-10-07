@@ -48,6 +48,16 @@ pub enum Error {
     /// is not a finite number above zero, the terms do not strictly
     /// ascend, or a yield is not a finite number.
     InvalidCurve,
+    /// An order's lots or lot size is not a whole number of at least one.
+    InvalidQuantity,
+    /// An order's limit price is not a positive finite number, or its
+    /// limit yield is not a finite number above -99 percent or gives no
+    /// positive clean price.
+    InvalidLimit,
+    /// An order's price step is not a finite number of at least zero.
+    InvalidTick,
+    /// An order's limit price is not on the price step.
+    PriceOffTick,
 }
 
 impl Error {
@@ -68,6 +78,10 @@ impl Error {
             Error::InvalidFee => "invalid_fee",
             Error::CurveMissing => "curve_missing",
             Error::InvalidCurve => "invalid_curve",
+            Error::InvalidQuantity => "invalid_quantity",
+            Error::InvalidLimit => "invalid_limit",
+            Error::InvalidTick => "invalid_tick",
+            Error::PriceOffTick => "price_off_tick",
         }
     }
 }

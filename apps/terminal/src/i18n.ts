@@ -532,7 +532,7 @@ const en = {
   } satisfies Record<string, [string, string | ((...values: string[]) => string)]>,
 
   errors: {
-    invalid_code: "The engine was given a coupon type or a tax regime it does not know.",
+    invalid_code: "The engine was given a coupon type, a tax regime or an order side it does not know.",
     invalid_date: "A date of this issue is not a valid calendar date.",
     invalid_nominal: "The face value must be a positive number.",
     invalid_period: "The coupon period must be at least one day.",
@@ -546,6 +546,10 @@ const en = {
     invalid_fee: "The broker's fee must be a number of at least zero.",
     curve_missing: "The zero-coupon yield curve of federal loan bonds is missing, so the G-spread cannot be worked out.",
     invalid_curve: "The zero-coupon yield curve of federal loan bonds is malformed, so the G-spread cannot be worked out.",
+    invalid_quantity: "The number of lots must be a whole number of at least one.",
+    invalid_limit: "The limit price must be above zero, and a limit yield must give a price above zero.",
+    invalid_tick: "The price step must be zero or more.",
+    price_off_tick: "The limit price is not on the issue's price step.",
   } satisfies Record<ErrorCode, string>,
 };
 
@@ -1059,7 +1063,7 @@ const ru: Strings = {
   },
 
   errors: {
-    invalid_code: "Движок получил неизвестный тип купона или налоговый режим.",
+    invalid_code: "Движок получил неизвестный тип купона, налоговый режим или направление заявки.",
     invalid_date: "Одна из дат выпуска не является календарной датой.",
     invalid_nominal: "Номинал должен быть положительным числом.",
     invalid_period: "Купонный период должен быть не меньше одного дня.",
@@ -1073,6 +1077,10 @@ const ru: Strings = {
     invalid_fee: "Комиссия брокера должна быть числом не меньше нуля.",
     curve_missing: "Нет кривой бескупонной доходности ОФЗ, поэтому G-спред не посчитать.",
     invalid_curve: "Кривая бескупонной доходности ОФЗ повреждена, поэтому G-спред не посчитать.",
+    invalid_quantity: "Число лотов должно быть целым и не меньше одного.",
+    invalid_limit: "Цена заявки должна быть больше нуля, а доходность заявки должна давать цену больше нуля.",
+    invalid_tick: "Шаг цены должен быть нулём или больше.",
+    price_off_tick: "Цена заявки не кратна шагу цены выпуска.",
   },
 };
 

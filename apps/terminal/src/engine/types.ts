@@ -43,4 +43,8 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "invalid_fee",
   "curve_missing",
   "invalid_curve",
+  "invalid_quantity",
+  "invalid_limit",
+  "invalid_tick",
+  "price_off_tick",
 ];

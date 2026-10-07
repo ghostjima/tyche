@@ -7,6 +7,8 @@
 //! `ok` or `error` set). Codes cross as strings: an unknown coupon type or tax regime is
 //! the error `invalid_code`. `g_spread` and `explain` take a `Curve`;
 //! `undefined` or `null` in its place is the error `curve_missing`.
+//! `order_ticket` takes an `Order` (`side` "buy" or "sell", `limit`
+//! "price" or "yield") and gives a `TicketResult`.
 //!
 //! Structs rather than JSON: on the 60-issue set the struct boundary
 //! added 4 to 6 percent to the time spent inside wasm, the JSON boundary
@@ -15,8 +17,8 @@
 use crate::primitives as p;
 use crate::{
     Amortization, Breakdown, Calculation, CouponType, Curve, Derived, Error, Explanation,
-    FlowTrace, GSpread, GSpreads, Issue, Market, Plan, PriceTrace, Schedule, TaxRegime, TaxYear,
-    YieldTrace,
+    FlowTrace, GSpread, GSpreads, Issue, Limit, Market, Order, Plan, PriceTrace, Schedule, Side,
+    TaxRegime, TaxYear, Ticket, YieldTrace,
 };
 use wasm_bindgen::prelude::*;
 
@@ -826,6 +828,120 @@ pub fn explain(
             error: None,
         },
         Err(e) => JsExplainResult {
+            ok: None,
+            error: Some(e.code().to_owned()),
+        },
+    }
+}
+
+#[wasm_bindgen(js_name = Order, getter_with_clone)]
+#[derive(Clone, Default)]
+pub struct JsOrder {
+    pub side: String,
+    pub limit: String,
+    #[wasm_bindgen(js_name = limitValue)]
+    pub limit_value: f64,
+    pub lots: f64,
+    #[wasm_bindgen(js_name = lotSize)]
+    pub lot_size: f64,
+    #[wasm_bindgen(js_name = tickPct)]
+    pub tick_pct: f64,
+    #[wasm_bindgen(js_name = feePct)]
+    pub fee_pct: f64,
+}
+
+#[wasm_bindgen(js_class = Order)]
+impl JsOrder {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> JsOrder {
+        JsOrder::default()
+    }
+}
+
+fn order_of(o: &JsOrder) -> Result<Order, Error> {
+    Ok(Order {
+        side: Side::from_code(&o.side).ok_or(Error::InvalidCode)?,
+        limit: Limit::from_code(&o.limit).ok_or(Error::InvalidCode)?,
+        limit_value: o.limit_value,
+        lots: o.lots,
+        lot_size: o.lot_size,
+        tick_pct: o.tick_pct,
+        fee_pct: o.fee_pct,
+    })
+}
+
+#[wasm_bindgen(js_name = Ticket, getter_with_clone)]
+#[derive(Clone)]
+pub struct JsTicket {
+    pub bonds: f64,
+    #[wasm_bindgen(js_name = cleanPct)]
+    pub clean_pct: f64,
+    pub clean: f64,
+    pub accrued: f64,
+    pub dirty: f64,
+    #[wasm_bindgen(js_name = cleanAmount)]
+    pub clean_amount: f64,
+    #[wasm_bindgen(js_name = accruedAmount)]
+    pub accrued_amount: f64,
+    pub amount: f64,
+    pub fee: f64,
+    pub total: f64,
+    #[wasm_bindgen(js_name = ytmMaturity)]
+    pub ytm_maturity: f64,
+    #[wasm_bindgen(js_name = ytmOffer)]
+    pub ytm_offer: Option<f64>,
+    pub event: String,
+    #[wasm_bindgen(js_name = eventDay)]
+    pub event_day: f64,
+    #[wasm_bindgen(js_name = yieldEvent)]
+    pub yield_event: f64,
+    #[wasm_bindgen(js_name = yieldEventAfterFee)]
+    pub yield_event_after_fee: f64,
+}
+
+impl From<Ticket> for JsTicket {
+    fn from(t: Ticket) -> JsTicket {
+        JsTicket {
+            bonds: t.bonds,
+            clean_pct: t.clean_pct,
+            clean: t.clean,
+            accrued: t.accrued,
+            dirty: t.dirty,
+            clean_amount: t.clean_amount,
+            accrued_amount: t.accrued_amount,
+            amount: t.amount,
+            fee: t.fee,
+            total: t.total,
+            ytm_maturity: t.ytm_maturity,
+            ytm_offer: t.ytm_offer,
+            event: t.event.code().to_owned(),
+            event_day: t.event_day,
+            yield_event: t.yield_event,
+            yield_event_after_fee: t.yield_event_after_fee,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = TicketResult, getter_with_clone)]
+pub struct JsTicketResult {
+    pub ok: Option<JsTicket>,
+    pub error: Option<String>,
+}
+
+/// An order ticket's figures: the yield at a limit price or the price at
+/// a limit yield, for a number of lots, with the accrued interest and the
+/// broker's fee.
+#[wasm_bindgen]
+pub fn order_ticket(issue: &JsIssue, market: &JsMarket, order: &JsOrder) -> JsTicketResult {
+    let r = issue_of(issue)
+        .and_then(|i| Ok((i, order_of(order)?)))
+        .and_then(|(i, o)| crate::order_ticket(&i, &market_of(market), &o));
+    match r {
+        Ok(t) => JsTicketResult {
+            ok: Some(t.into()),
+            error: None,
+        },
+        Err(e) => JsTicketResult {
             ok: None,
             error: Some(e.code().to_owned()),
         },

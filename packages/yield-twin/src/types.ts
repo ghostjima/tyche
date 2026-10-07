@@ -19,7 +19,11 @@ export type ErrorCode =
   | "amount_below_one_bond"
   | "invalid_fee"
   | "curve_missing"
-  | "invalid_curve";
+  | "invalid_curve"
+  | "invalid_quantity"
+  | "invalid_limit"
+  | "invalid_tick"
+  | "price_off_tick";
 
 /* Errors are values: either `ok` or `error` is present */
 export type Result<T> = { ok: T } | { error: ErrorCode };
@@ -250,4 +254,47 @@ export type Explanation = {
   /* The plan as calculate gives it with the same fee */
   plan: Breakdown;
   planTax: TaxYear[];
+};
+
+/* Which way an order goes */
+export type Side = "buy" | "sell";
+/* What a limit is set in: a clean price, percent of nominal, or a yield to the nearest event, percent a year */
+export type LimitKind = "price" | "yield";
+
+export type Order = {
+  side: Side;
+  limit: LimitKind;
+  limitValue: number;
+  /* Lots and bonds per lot: whole numbers of at least one */
+  lots: number;
+  lotSize: number;
+  /* Price step, percent of nominal; 0 for none */
+  tickPct: number;
+  /* Broker's fee, percent of the amount traded */
+  feePct: number;
+};
+
+/*
+  An order ticket: per bond the clean price, accrued interest and dirty
+  price; for the order the amounts, the fee and the total (paid for a buy,
+  received for a sell); yields at the dirty price, and to the nearest event
+  at the price after the fee
+*/
+export type Ticket = {
+  bonds: number;
+  cleanPct: number;
+  clean: number;
+  accrued: number;
+  dirty: number;
+  cleanAmount: number;
+  accruedAmount: number;
+  amount: number;
+  fee: number;
+  total: number;
+  ytmMaturity: number;
+  ytmOffer: number | null;
+  event: EventKind;
+  eventDay: number;
+  yieldEvent: number;
+  yieldEventAfterFee: number;
 };
