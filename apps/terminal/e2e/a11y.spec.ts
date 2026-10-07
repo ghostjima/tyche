@@ -18,77 +18,106 @@ async function open(page: Page, lang: string, theme: string, query = "") {
   await expect(page.locator("html")).toHaveAttribute("lang", lang);
 }
 
+// The main states of the screen when the engines are ready, each set up
+// from a fresh navigation. One test per state: a scan takes seconds on a
+// shared CI runner wherever the issue list, about 3,000 elements, is on
+// the screen, and eleven scans in one test grew past the test timeout.
+// The state names are what the badge counts; a scan is recorded per test.
+type Prepare = (page: Page, lang: string, theme: string) => Promise<void>;
+
+async function floater(page: Page, lang: string, theme: string) {
+  await open(page, lang, theme, `&issue=${ISSUES.floater}`);
+  await ready(page);
+  await expect(page.getByTestId("floater")).toBeVisible();
+}
+
+const READY_STATES: Record<string, Prepare> = {
+  // The list with no issue open.
+  list: async (page, lang, theme) => {
+    await open(page, lang, theme);
+    await ready(page);
+  },
+  // A goal on, with its sentence; "Money by a date" with its month.
+  "goal with its filters": async (page, lang, theme) => {
+    await open(page, lang, theme, "&f=durShort&f=ratingHigh&f=fixed&f=keyRate&f=open&f=liquid");
+    await ready(page);
+    await expect(page.locator(".goals__note")).toBeVisible();
+  },
+  "money by a date": async (page, lang, theme) => {
+    await open(page, lang, theme, "&by=2027-10");
+    await ready(page);
+    await expect(page.locator(".goals__by")).toBeVisible();
+  },
+  // The data and licensing page.
+  "data and licensing": async (page, lang, theme) => {
+    await open(page, lang, theme, "&page=data");
+    await ready(page);
+    await expect(page.locator(".data-page")).toBeVisible();
+  },
+  // A fixed issue with an offer, the glossary and the working open.
+  "fixed issue with an offer": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=${ISSUES.offer}`);
+    await ready(page);
+    await page.locator(".glossary summary").click();
+    await page.getByTestId("working").locator("summary").click();
+    await expect(page.locator(".working .stoa-table").first()).toBeVisible();
+  },
+  // The risks at their fullest: subordinated, qualified only, a
+  // negative outlook, a thin market.
+  "issue with every risk": async (page, lang, theme) => {
+    await open(page, lang, theme, "&issue=BELB-02");
+    await ready(page);
+    await expect(page.getByTestId("liquidity-warning")).toBeVisible();
+  },
+  // Three issues compared, with the analogues and the map's table open.
+  "comparison and analogues": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=BELB-02&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=NEVB-01`);
+    await ready(page);
+    await page.getByTestId("analogues").locator(".peer-map__data summary").click();
+    await expect(page.locator(".compare")).toBeVisible();
+  },
+  // A floater with amortisation: scenarios and the coupon chart.
+  floater,
+  // A filter with no match beside the floater: the empty state.
+  "empty list": async (page, lang, theme) => {
+    await floater(page, lang, theme);
+    await page.getByRole("searchbox").fill("zzzz");
+    await expect(page.locator(".pane-list .stoa-empty-state")).toBeVisible();
+  },
+  // An engine error in the floater's calculator.
+  "calculation error": async (page, lang, theme) => {
+    await floater(page, lang, theme);
+    const amount = page.locator(".calculator .stoa-number input").first();
+    await amount.fill("0");
+    await amount.press("Enter");
+    await expect(page.getByTestId("calc-error")).toBeVisible();
+  },
+  // The diagnostics sheet, timed.
+  diagnostics: async (page, lang, theme) => {
+    await floater(page, lang, theme);
+    await page.locator(".foot__actions button").first().click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByRole("dialog").locator(".diagnostics > button").click();
+    await expect(page.getByRole("dialog").locator("tbody tr")).toHaveCount(4, TIMING_DONE);
+  },
+};
+
+// The states checked at 375 px, by the query that opens each.
+const PHONE_STATES: Record<string, string> = {
+  list: "",
+  "money by a date": "&by=2027-10",
+  comparison: `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`,
+  issue: `&issue=${ISSUES.floater}`,
+};
+
 for (const lang of LANGS) {
   for (const theme of THEMES) {
-    test(`axe: ready states (${lang}, ${theme})`, async ({ page }) => {
-      // The list with no issue open.
-      await open(page, lang, theme);
-      await ready(page);
-      await expectNoSeriousViolations(page, "list", { lang, theme });
-
-      // A goal on, with its sentence; "Money by a date" with its month.
-      await open(page, lang, theme, "&f=durShort&f=ratingHigh&f=fixed&f=keyRate&f=open&f=liquid");
-      await ready(page);
-      await expect(page.locator(".goals__note")).toBeVisible();
-      await expectNoSeriousViolations(page, "goal with its filters", { lang, theme });
-      await open(page, lang, theme, "&by=2027-10");
-      await ready(page);
-      await expect(page.locator(".goals__by")).toBeVisible();
-      await expectNoSeriousViolations(page, "money by a date", { lang, theme });
-
-      // The data and licensing page.
-      await open(page, lang, theme, "&page=data");
-      await ready(page);
-      await expect(page.locator(".data-page")).toBeVisible();
-      await expectNoSeriousViolations(page, "data and licensing", { lang, theme });
-
-      // A fixed issue with an offer, the glossary and the working open.
-      await open(page, lang, theme, `&issue=${ISSUES.offer}`);
-      await ready(page);
-      await page.locator(".glossary summary").click();
-      await page.getByTestId("working").locator("summary").click();
-      await expect(page.locator(".working .stoa-table").first()).toBeVisible();
-      await expectNoSeriousViolations(page, "fixed issue with an offer", { lang, theme });
-
-      // The risks at their fullest: subordinated, qualified only, a
-      // negative outlook, a thin market.
-      await open(page, lang, theme, "&issue=BELB-02");
-      await ready(page);
-      await expect(page.getByTestId("liquidity-warning")).toBeVisible();
-      await expectNoSeriousViolations(page, "issue with every risk", { lang, theme });
-
-      // Three issues compared, with the analogues and the map's table open.
-      await open(page, lang, theme, `&issue=BELB-02&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=NEVB-01`);
-      await ready(page);
-      await page.getByTestId("analogues").locator(".peer-map__data summary").click();
-      await expect(page.locator(".compare")).toBeVisible();
-      await expectNoSeriousViolations(page, "comparison and analogues", { lang, theme });
-
-      // A floater with amortisation: scenarios and the coupon chart.
-      await open(page, lang, theme, `&issue=${ISSUES.floater}`);
-      await ready(page);
-      await expect(page.getByTestId("floater")).toBeVisible();
-      await expectNoSeriousViolations(page, "floater", { lang, theme });
-
-      // A filter with no match: the empty state.
-      await page.getByRole("searchbox").fill("zzzz");
-      await expect(page.locator(".pane-list .stoa-empty-state")).toBeVisible();
-      await expectNoSeriousViolations(page, "empty list", { lang, theme });
-
-      // An engine error in the calculator.
-      const amount = page.locator(".calculator .stoa-number input").first();
-      await amount.fill("0");
-      await amount.press("Enter");
-      await expect(page.getByTestId("calc-error")).toBeVisible();
-      await expectNoSeriousViolations(page, "calculation error", { lang, theme });
-
-      // The diagnostics sheet, timed.
-      await page.locator(".foot__actions button").first().click();
-      await expect(page.getByRole("dialog")).toBeVisible();
-      await page.getByRole("dialog").locator(".diagnostics > button").click();
-      await expect(page.getByRole("dialog").locator("tbody tr")).toHaveCount(4, TIMING_DONE);
-      await expectNoSeriousViolations(page, "diagnostics", { lang, theme });
-    });
+    for (const [state, prepare] of Object.entries(READY_STATES)) {
+      test(`axe: ${state} (${lang}, ${theme})`, async ({ page }) => {
+        await prepare(page, lang, theme);
+        await expectNoSeriousViolations(page, state, { lang, theme });
+      });
+    }
 
     test(`axe: loading, fallback and failure states (${lang}, ${theme})`, async ({ page }) => {
       let release = () => {};
@@ -117,25 +146,16 @@ for (const lang of LANGS) {
       await expectNoSeriousViolations(page, "market failure", { lang, theme });
     });
 
-    test(`axe and layout on a phone (${lang}, ${theme})`, async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 812 });
-      await open(page, lang, theme);
-      await ready(page);
-      await expectNoHorizontalScroll(page, "list at 375");
-      await expectNoSeriousViolations(page, "list on a phone", { lang, theme });
-      await open(page, lang, theme, "&by=2027-10");
-      await ready(page);
-      await expectNoHorizontalScroll(page, "money by a date at 375");
-      await expectNoSeriousViolations(page, "money by a date on a phone", { lang, theme });
-      await open(page, lang, theme, `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`);
-      await ready(page);
-      await expectNoHorizontalScroll(page, "comparison at 375");
-      await expectNoSeriousViolations(page, "comparison on a phone", { lang, theme });
-      await open(page, lang, theme, `&issue=${ISSUES.floater}`);
-      await ready(page);
-      await expectNoHorizontalScroll(page, "issue at 375");
-      await expectNoSeriousViolations(page, "issue on a phone", { lang, theme });
-    });
+    // On a phone, one test per state for the same reason.
+    for (const [state, query] of Object.entries(PHONE_STATES)) {
+      test(`axe and layout on a phone: ${state} (${lang}, ${theme})`, async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await open(page, lang, theme, query);
+        await ready(page);
+        await expectNoHorizontalScroll(page, `${state} at 375`);
+        await expectNoSeriousViolations(page, `${state} on a phone`, { lang, theme });
+      });
+    }
   }
 
   test(`no sideways scroll at 1280 px (${lang})`, async ({ page }) => {
