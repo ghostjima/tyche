@@ -161,14 +161,23 @@ function* playwrightTests(suite) {
   for (const child of suite.suites ?? []) yield* playwrightTests(child);
 }
 
+/** Titles of the e2e tests that run axe. */
+const AXE_TEST = /^axe\b/;
+
 /** The axe matrix, from the "axe-scan" annotations the e2e records: one
- * per scan, naming the language, the theme and the state of the screen. */
+ * per scan, naming the language, the theme and the state of the screen.
+ * A test titled "axe ..." that recorded no scan, a skipped one for
+ * instance, stops the script, so a state cannot drop out of the count
+ * unnoticed. */
 export function readAxe(report) {
   const scans = [];
   for (const suite of report.suites ?? []) {
     for (const test of playwrightTests(suite)) {
       const notes = (test.annotations ?? []).filter((a) => a.type === "axe-scan");
-      if (notes.length === 0) continue;
+      if (notes.length === 0) {
+        if (AXE_TEST.test(test.title)) fail(`axe test "${test.title}" recorded no scan (${test.status})`);
+        continue;
+      }
       if (test.status !== "expected") fail(`axe test "${test.title}" did not pass`);
       for (const note of notes) scans.push(JSON.parse(note.description));
     }
