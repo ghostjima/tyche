@@ -259,6 +259,9 @@ publishing nothing, when a value cannot be read or a run did not pass.
   app's build.
 - axe: axe-core 4.13.0 in the e2e, over the app's named states in each
   language and theme; a serious or critical violation fails the run.
+  The badge gives the number of distinct states and of language and
+  theme pairs, read from the scans the e2e records; a state not scanned
+  in every pair, or an axe test that recorded no scan, stops the script.
 - Lighthouse: Lighthouse 13 accessibility, best practices and SEO scores
   of the app's home page served by `vite preview`, the lower of the
   desktop and mobile runs. Performance is not shown: on a shared CI
