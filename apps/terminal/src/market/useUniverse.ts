@@ -3,10 +3,13 @@
 // left on the performance timeline as the measure "tyche:universe".
 import { useCallback, useEffect, useState } from "react";
 import { MACRO, SEED } from "../data/market";
-import { parseUniverse, type Universe } from "../data/issues";
+import { parseAccess, parseUniverse, type Access, type Universe } from "../data/issues";
 import type { Request, Response } from "./worker";
 
-export type UniverseState = { status: "loading" } | { status: "ready"; universe: Universe } | { status: "failed"; error: string };
+export type UniverseState =
+  | { status: "loading" }
+  | { status: "ready"; universe: Universe; access: Map<string, Access> }
+  | { status: "failed"; error: string };
 
 let worker: Worker | null = null;
 let pending: Promise<UniverseState> | null = null;
@@ -30,10 +33,12 @@ function request(): Promise<UniverseState> {
       const r = event.data;
       if (r.id !== id) return;
       if ("error" in r) return fail(r.error);
+      if (!("json" in r)) return fail("unexpected_reply");
       try {
         const universe = parseUniverse(r.json);
+        const access = parseAccess(r.access);
         performance.measure("tyche:universe", "tyche:universe-start");
-        resolve({ status: "ready", universe });
+        resolve({ status: "ready", universe, access });
       } catch (e) {
         fail(e instanceof Error ? e.message : String(e));
       }
@@ -41,6 +46,17 @@ function request(): Promise<UniverseState> {
     w.postMessage({ id, seed: SEED, inputs: MACRO } satisfies Request);
   });
   return pending;
+}
+
+/** The worker that holds the universe, once it is built; the events of
+ * holdings are asked of it. */
+export function universeWorker(): Worker | null {
+  return worker;
+}
+
+/** A request id no other request of this page has. */
+export function nextRequestId(): number {
+  return ++next;
 }
 
 export function useUniverse(): { state: UniverseState; retry: () => void } {

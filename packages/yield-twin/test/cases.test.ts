@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { compare, decodeNaN } from "../../../crates/tyche-yield/node/compare.mjs";
 import * as twin from "../src/index.js";
-import type { Curve, Issue, Market, Plan } from "../src/index.js";
+import type { Curve, Issue, Market, Order, Plan } from "../src/index.js";
 
 type Case = { name: string; fn: string; args: unknown[]; expect: unknown };
 
@@ -60,6 +60,8 @@ function run(fn: string, args: unknown[]): unknown {
       return twin.explain(x[0] as Issue, x[1] as Market, x[2] as Plan, n(x[3]), x[4] as Curve | null);
     case "g_spread":
       return twin.g_spread(x[0] as Issue, x[1] as Market, x[2] as Curve | null);
+    case "order_ticket":
+      return twin.order_ticket(x[0] as Issue, x[1] as Market, x[2] as Order);
     case "curve_yield_pct":
       return twin.curve_yield_pct(a(x[0]), a(x[1]), n(x[2]));
     default:
@@ -69,7 +71,7 @@ function run(fn: string, args: unknown[]): unknown {
 
 describe("TypeScript twin against cases.json", () => {
   it("covers every function", () => {
-    expect(new Set(cases.map((c) => c.fn)).size).toBe(19);
+    expect(new Set(cases.map((c) => c.fn)).size).toBe(20);
   });
 
   it.each(cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {

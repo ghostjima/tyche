@@ -2,8 +2,8 @@
 // the arithmetic in the comments. The same examples run against the Rust
 // crate in tests/worked.rs.
 import { describe, expect, it } from "vitest";
-import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, g_spread, hold_value, income_tax } from "../src/index.js";
-import type { Calculation, Curve, Explanation, GSpreads, Issue, Market, Plan } from "../src/index.js";
+import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, g_spread, hold_value, income_tax, order_ticket } from "../src/index.js";
+import type { Calculation, Curve, Explanation, GSpreads, Issue, Market, Order, Plan, Ticket } from "../src/index.js";
 
 const close = (got: number, want: number) => expect(Math.abs(got - want)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(want), 1));
 
@@ -466,5 +466,95 @@ describe("calculate's fee", () => {
     const m = market("2026-01-01");
     for (const fee of [-0.01, Number.NaN, Number.POSITIVE_INFINITY]) expect(calculate(bullet, m, bulletPlan(0), fee)).toEqual({ error: "invalid_fee" });
     expect(calculate(bullet, m, { ...bulletPlan(0), amount: 0 }, -1)).toEqual({ error: "amount_not_positive" });
+  });
+});
+
+// The order ticket. Two lots of ten bonds of the one-year bullet, a fee of
+// 0.1 percent, a price step of 0.01.
+const order = (side: Order["side"], limit: Order["limit"], limitValue: number): Order => ({ side, limit, limitValue, lots: 2, lotSize: 10, tickPct: 0.01, feePct: 0.1 });
+
+function ticket(r: ReturnType<typeof order_ticket>): Ticket {
+  if (!("ok" in r)) throw new Error(r.error);
+  return r.ok;
+}
+
+describe("order_ticket", () => {
+  it("gives the yield at a limit price, with lots and the fee", () => {
+    const m = market("2026-01-01");
+    const t = ticket(order_ticket(bullet, m, order("buy", "price", 100)));
+    // 20 bonds at 1,000, no accrued interest: 20,000; fee 20; paid 20,020.
+    expect(t.bonds).toBe(20);
+    close(t.clean, 1000);
+    close(t.accrued, 0);
+    close(t.amount, 20_000);
+    close(t.fee, 20);
+    close(t.total, 20_020);
+    // 1,100 a year after 1,000: 10 percent; after the fee 1,100 / 1,001 - 1.
+    close(t.yieldEvent, 0.1);
+    expect(t.event).toBe("maturity");
+    close(t.yieldEventAfterFee, 1100 / 1001 - 1);
+    // A sale brings 19,980; the yield given up is the one at 999 a bond.
+    const s = ticket(order_ticket(bullet, m, order("sell", "price", 100)));
+    close(s.total, 19_980);
+    close(s.yieldEventAfterFee, 1100 / 999 - 1);
+  });
+
+  it("gives the price at a limit yield, with the accrued interest, on the price step", () => {
+    const m = market("2026-01-01");
+    const issue: Issue = { ...bullet, accrued: 25 };
+    // At 10 percent: 1,100 / 1.1 = 1,000 with the accrued interest, 975
+    // clean, 97.5 percent. Three bonds: 2,925 and 75, fee 1.5, 3,001.5.
+    const t = ticket(order_ticket(issue, m, { ...order("buy", "yield", 10), lots: 3, lotSize: 1, feePct: 0.05 }));
+    close(t.cleanPct, 97.5);
+    close(t.dirty, 1000);
+    close(t.cleanAmount, 2925);
+    close(t.accruedAmount, 75);
+    close(t.total, 3001.5);
+    close(t.yieldEvent, 0.1);
+    // At 10.5 percent the exact clean price is 97.04751... percent: a buy
+    // goes down to 97.04, a sell up to 97.05.
+    const buy = ticket(order_ticket(issue, m, order("buy", "yield", 10.5)));
+    close(buy.cleanPct, 97.04);
+    close(buy.yieldEvent, 1100 / 995.4 - 1);
+    expect(buy.yieldEvent).toBeGreaterThan(0.105);
+    const sell = ticket(order_ticket(issue, m, order("sell", "yield", 10.5)));
+    close(sell.cleanPct, 97.05);
+    close(sell.yieldEvent, 1100 / 995.5 - 1);
+    expect(sell.yieldEvent).toBeLessThan(0.105);
+    const exact = ticket(order_ticket(issue, m, { ...order("buy", "yield", 10.5), tickPct: 0 }));
+    close(exact.cleanPct, (1100 / 1.105 - 25) / 10);
+  });
+
+  it("takes the yield to the offer when there is one", () => {
+    const m = market("2026-01-01");
+    const issue: Issue = { ...bullet, maturity: "2028-01-01", offers: ["2027-01-01"] };
+    const t = ticket(order_ticket(issue, m, order("buy", "price", 98)));
+    expect(t.event).toBe("offer");
+    expect(t.eventDay).toBe(365);
+    close(t.ytmOffer!, 1100 / 980 - 1);
+    close(t.yieldEvent, 1100 / 980 - 1);
+    // To maturity x = 1 / (1 + y) solves 1,100 x^2 + 100 x - 980 = 0.
+    const x = (-100 + Math.sqrt(100 * 100 + 4 * 1100 * 980)) / 2200;
+    expect(Math.abs(t.ytmMaturity - (1 / x - 1))).toBeLessThan(1e-9);
+    close(ticket(order_ticket(issue, m, order("buy", "yield", 10))).cleanPct, 100);
+  });
+
+  it("refuses what it cannot price, in order", () => {
+    const m = market("2026-01-01");
+    const err = (o: Partial<Order>) => order_ticket(bullet, m, { ...order("buy", "price", 100), ...o });
+    expect(err({ lots: 0 })).toEqual({ error: "invalid_quantity" });
+    expect(err({ lots: 1.5 })).toEqual({ error: "invalid_quantity" });
+    expect(err({ lotSize: Number.NaN })).toEqual({ error: "invalid_quantity" });
+    expect(err({ limitValue: 0 })).toEqual({ error: "invalid_limit" });
+    expect(err({ limitValue: Number.POSITIVE_INFINITY })).toEqual({ error: "invalid_limit" });
+    expect(err({ limit: "yield", limitValue: -99 })).toEqual({ error: "invalid_limit" });
+    expect(err({ tickPct: -0.01 })).toEqual({ error: "invalid_tick" });
+    expect(err({ limitValue: 97.045 })).toEqual({ error: "price_off_tick" });
+    expect(err({ feePct: -1 })).toEqual({ error: "invalid_fee" });
+    expect(err({ lots: 0, limitValue: -1 })).toEqual({ error: "invalid_quantity" });
+    expect(err({ limitValue: -1, feePct: -1 })).toEqual({ error: "invalid_limit" });
+    expect(order_ticket(bullet, market("2027-06-01"), order("buy", "price", 0))).toEqual({ error: "matured" });
+    // Codes are read before anything else, as at the engine's JavaScript boundary.
+    expect(order_ticket(bullet, market("2027-06-01"), { ...order("buy", "price", 0), side: "hold" as Order["side"] })).toEqual({ error: "invalid_code" });
   });
 });

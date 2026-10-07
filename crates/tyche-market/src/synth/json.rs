@@ -3,8 +3,11 @@
 //! its digest) does not depend on the last bit of a platform's maths
 //! library.
 
+use super::access::{gate, TEST_BELOW};
 use super::day::{Day, Print};
+use super::events::HoldingEvent;
 use super::universe::{Universe, RATINGS};
+use crate::depth::DepthCheck;
 use std::fmt::Write;
 
 /// A number rounded to `decimals`, without trailing zeros.
@@ -174,6 +177,68 @@ pub fn day_json(d: &Day, levels: usize) -> String {
         )),
         list(&bids, |(p, s)| format!("[{p},{s}]")),
         list(&asks, |(p, s)| format!("[{p},{s}]")),
+    )
+}
+
+/// Who may buy each issue, by ticker, with the reasons and the rating
+/// threshold of the synthetic rule:
+/// `{"testBelow": "BBB-", "issues": [{"ticker", "access", "reasons"}]}`.
+pub fn access_json(u: &Universe) -> String {
+    format!(
+        "{{\"testBelow\":{},\"issues\":{}}}",
+        text(RATINGS[TEST_BELOW]),
+        list(&u.issues, |s| {
+            let g = gate(s);
+            format!(
+                "{{\"ticker\":{},\"access\":{},\"reasons\":{}}}",
+                text(&s.ticker),
+                text(g.access.code()),
+                list(&g.reasons, |r| text(r.code()))
+            )
+        })
+    )
+}
+
+fn opt_day(x: Option<i64>) -> String {
+    x.map_or("null".into(), |d| d.to_string())
+}
+
+/// A holding's events, by day: amounts in currency units to two
+/// decimals, days as offsets from the valuation date, ratings as names.
+pub fn events_json(events: &[HoldingEvent]) -> String {
+    list(events, |e| {
+        format!(
+            "{{\"kind\":{},\"source\":{},\"day\":{},\"date\":{},\"perBond\":{},\"amount\":{},\"projected\":{},\"windowFrom\":{},\"windowTo\":{},\"noticeDay\":{},\"ratingFrom\":{},\"ratingTo\":{}}}",
+            text(e.kind.code()),
+            text(e.source.code()),
+            e.day,
+            text(&e.date),
+            num(e.per_bond, 4),
+            num(e.amount, 2),
+            e.projected,
+            opt_day(e.window.map(|w| w.0)),
+            opt_day(e.window.map(|w| w.1)),
+            opt_day(e.notice_day),
+            e.rating.map_or("null".into(), |r| text(RATINGS[r.0])),
+            e.rating.map_or("null".into(), |r| text(RATINGS[r.1])),
+        )
+    })
+}
+
+/// A depth check, prices in the book's units.
+pub fn depth_json(c: &DepthCheck) -> String {
+    let price = |p: Option<i64>| p.map_or("null".into(), |p| p.to_string());
+    format!(
+        "{{\"requested\":{},\"filled\":{},\"left\":{},\"best\":{},\"average\":{},\"worst\":{},\"levelsUsed\":{},\"slippageBp\":{},\"fills\":{}}}",
+        c.requested,
+        c.filled,
+        c.left,
+        price(c.best),
+        c.average.map_or("null".into(), |a| num(a, 4)),
+        price(c.worst),
+        c.levels_used,
+        c.slippage_bp.map_or("null".into(), |s| num(s, 4)),
+        list(&c.fills, |(p, s)| format!("[{p},{s}]")),
     )
 }
 

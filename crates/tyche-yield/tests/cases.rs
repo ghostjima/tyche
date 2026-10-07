@@ -113,6 +113,41 @@ fn plan(v: &Value) -> Result<Plan, Error> {
     })
 }
 
+// Codes as at the JavaScript boundary: an unknown side or limit is
+// `Error::InvalidCode`.
+fn order(v: &Value) -> Result<Order, Error> {
+    Ok(Order {
+        side: Side::from_code(v["side"].as_str().expect("side")).ok_or(Error::InvalidCode)?,
+        limit: Limit::from_code(v["limit"].as_str().expect("limit")).ok_or(Error::InvalidCode)?,
+        limit_value: num(&v["limitValue"]),
+        lots: num(&v["lots"]),
+        lot_size: num(&v["lotSize"]),
+        tick_pct: num(&v["tickPct"]),
+        fee_pct: num(&v["feePct"]),
+    })
+}
+
+fn ticket(t: &Ticket) -> Value {
+    json!({
+        "bonds": f(t.bonds),
+        "cleanPct": f(t.clean_pct),
+        "clean": f(t.clean),
+        "accrued": f(t.accrued),
+        "dirty": f(t.dirty),
+        "cleanAmount": f(t.clean_amount),
+        "accruedAmount": f(t.accrued_amount),
+        "amount": f(t.amount),
+        "fee": f(t.fee),
+        "total": f(t.total),
+        "ytmMaturity": f(t.ytm_maturity),
+        "ytmOffer": opt(t.ytm_offer),
+        "event": t.event.code(),
+        "eventDay": f(t.event_day),
+        "yieldEvent": f(t.yield_event),
+        "yieldEventAfterFee": f(t.yield_event_after_fee),
+    })
+}
+
 fn schedule(s: &Schedule) -> Value {
     json!({"days": fs(&s.days), "coupons": fs(&s.coupons), "principals": fs(&s.principals)})
 }
@@ -353,6 +388,12 @@ fn run(name: &str, a: &[Value]) -> Value {
             issue(&a[0]).and_then(|i| g_spread(&i, &market(&a[1]), &curve(&a[2]))),
             g_spreads,
         ),
+        "order_ticket" => outcome(
+            issue(&a[0])
+                .and_then(|i| Ok((i, order(&a[2])?)))
+                .and_then(|(i, o)| order_ticket(&i, &market(&a[1]), &o)),
+            ticket,
+        ),
         other => panic!("unknown function {other}"),
     }
 }
@@ -442,7 +483,7 @@ fn every_case_matches() {
     );
     // Every function has cases; the table keeps the 30 original primitive
     // cases at its head.
-    assert_eq!(seen.len(), 19, "{seen:?}");
+    assert_eq!(seen.len(), 20, "{seen:?}");
     assert!(
         cases.len()
             >= 30 + seen["derive_bond"] + seen["calculate"] + seen["explain"] + seen["g_spread"]

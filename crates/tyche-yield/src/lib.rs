@@ -12,6 +12,9 @@
 //!   the price and the accrued interest, the yields solved from the
 //!   discounted flows, the yields after a broker's fee and after tax
 //!   without reinvestment, the G-spreads, and the tax year by year.
+//! - [`order_ticket`]: an order's figures: the yield at a limit price or
+//!   the price at a limit yield, for a number of lots, with the accrued
+//!   interest and the broker's fee.
 //! - [`g_spread`]: an issue's yields to maturity and to the offer over the
 //!   zero-coupon yield curve of federal loan bonds, at their Macaulay
 //!   durations, the curve read linearly between its published terms.
@@ -66,6 +69,7 @@ mod explain;
 mod issue;
 pub mod primitives;
 mod spread;
+mod ticket;
 #[cfg(feature = "wasm")]
 mod wasm;
 
@@ -82,3 +86,4 @@ pub use issue::{
 };
 pub use primitives::*;
 pub use spread::{g_spread, Curve, GSpread, GSpreads};
+pub use ticket::{order_ticket, Limit, Order, Side, Ticket};

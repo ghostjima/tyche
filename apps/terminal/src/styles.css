@@ -49,7 +49,7 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .goals__by { display: grid; gap: var(--stoa-space-2); }
 .goals__by-label { margin: 0; font-size: var(--stoa-font-size-sm); }
 .goals__by-fields { display: flex; flex-wrap: wrap; gap: var(--stoa-space-3); align-items: end; }
-.issue-list__sort { display: flex; justify-content: flex-end; }
+.issue-list__sort { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2); justify-content: flex-end; align-items: end; }
 
 .issue-desc { display: grid; }
 .issue-desc__facts { display: flex; flex-wrap: wrap; column-gap: var(--stoa-space-3); }
@@ -113,3 +113,24 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .data-page__title { margin: 0; font-size: var(--stoa-font-size-xl); font-weight: var(--stoa-font-weight-semibold); }
 .data-page__intro, .data-page__text { margin: 0; }
 .data-page__title:focus-visible { outline: 2px solid var(--stoa-color-focus); outline-offset: 2px; }
+
+/* Holdings: adding an issue from its card, and the events inbox. */
+.hold { display: grid; gap: var(--stoa-space-2); justify-items: start; margin-block-start: var(--stoa-space-3); }
+.hold > p, .hold__actions p { margin: 0; }
+.hold__actions { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
+.event-text { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.event-text p { margin: 0; }
+.redeem { display: grid; gap: var(--stoa-space-2); justify-items: start; }
+.redeem p { margin: 0; }
+
+/* The ladder builder. */
+.ladder__inputs {
+  display: grid; gap: var(--stoa-space-4); align-items: end;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, calc(var(--stoa-space-12) * 5)), 1fr));
+}
+.ladder__inputs > * { min-inline-size: 0; }
+.ladder__rungs { display: grid; gap: var(--stoa-space-4); margin: 0; padding: 0; list-style: none; }
+.ladder__rung { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.ladder__rung > * { max-inline-size: 100%; }
+.ladder__rung p { margin: 0; }
+.ladder__assumptions { margin: 0; padding-inline-start: var(--stoa-space-5); display: grid; gap: var(--stoa-space-1); }

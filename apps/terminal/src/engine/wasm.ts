@@ -286,6 +286,9 @@ export const wasmEngine: Engine = {
   price_from_yield(amounts, days, y) {
     return glue.price_from_yield(Float64Array.from(amounts), Float64Array.from(days), y);
   },
+  ytm_effective(amounts, days, price) {
+    return glue.ytm_effective(Float64Array.from(amounts), Float64Array.from(days), price);
+  },
 };
 
 /** Fetches, compiles and instantiates the module; resolves with the

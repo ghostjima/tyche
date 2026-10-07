@@ -42,3 +42,10 @@ export const ISSUES = {
   /** Plain fixed synthetic government bond, over three years. */
   gov: "SG-143",
 } as const;
+
+/** The holdings' issue with a put offer whose window is ahead. */
+export const PORTFOLIO_PUT = "VTKT-02";
+/** Six holdings with every kind of event in the year ahead: two put
+ * offers, a floater with amortisation, a missed payment that is made, one
+ * that ends in a default, and rating changes behind and ahead. */
+export const PORTFOLIO = `hold=${PORTFOLIO_PUT}*10&hold=KAMF-01*30&hold=BELM-01*5&hold=IRTD-01*3&hold=ENSD-03*20&hold=OBRC-01*15`;

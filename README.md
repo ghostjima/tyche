@@ -75,8 +75,10 @@ Workflows:
 6. **Events**: coupons, offers with an action deadline and a one-step
    request to redeem at the offer, rating changes, defaults.
 
-Today the prototype covers the first three workflows and the
-single-issue calculator: see [What is built](#what-is-built).
+Today the prototype covers the first three workflows, the
+single-issue calculator, the events of a synthetic portfolio with its
+monthly coupon income, and a ladder builder: see
+[What is built](#what-is-built).
 
 ## Constraints
 
@@ -159,8 +161,17 @@ single-issue calculator: see [What is built](#what-is-built).
   (a similar rating and duration) on a map of peers, and up to three
   issues compared side by side, with the G-spread of each to the Bank
   of Russia's zero-coupon curve of federal loan bonds; a holding calculator with reinvestment, the
-  account type, tax per calendar year and a key-rate change; the Bank
-  of Russia's benchmarks with the yield curve. Every widget names its
+  account type, tax per calendar year and a key-rate change; a
+  synthetic portfolio kept in the link, with its events by date
+  (payments, offers with the window and the deadline, and a one-step
+  request to redeem at a put offer, recorded in the browser only and
+  never an order; rating changes and defaults from the synthetic
+  universe's scenario) and its coupon income by month; a ladder builder
+  (a horizon and an amount, an issue proposed for each year from the
+  filters and changeable, each rung's and the ladder's yield after tax and
+  the fee from the engine, the payments by year and every assumption,
+  kept in the link); the Bank of Russia's benchmarks with the yield
+  curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
   cbr.ru), a banner in the header says the terminal is a demonstration
   with synthetic data and not investment advice, and a "Data and
@@ -171,7 +182,9 @@ single-issue calculator: see [What is built](#what-is-built).
   its **TypeScript twin** ([`packages/yield-twin`](packages/yield-twin)):
   price and yield, duration, cash flows with amortisation and offers,
   floaters, tax and holding-period results, the G-spread to the Bank of
-  Russia's zero-coupon curve at the issue's duration, and the working
+  Russia's zero-coupon curve at the issue's duration, an order ticket's
+  figures (the yield at a limit price or the price at a limit yield, with
+  the accrued interest, lots and the fee), and the working
   behind them: the yields solved from the discounted flows, the yields
   after a broker's fee and after tax without reinvestment, the G-spreads,
   and the tax year by year.
@@ -179,8 +192,14 @@ single-issue calculator: see [What is built](#what-is-built).
   the synthetic universe and a trading day per issue (the exchange's
   session schedule, an order book built message by message, a tape),
   seeded and the same on every platform, calibrated on aggregate figures
-  only; priced by the bond engine from the zero-coupon yield curve. The
-  app runs its WebAssembly build in a worker. The IEX decoding stays
+  only; priced by the bond engine from the zero-coupon yield curve. It
+  also says who may buy each issue (anyone, after a test, or qualified
+  investors only, by a stated rule of the synthetic universe modelled on
+  the law on the securities market), lists a holding's events (payments,
+  offers with the window to act in, and a scenario of rating changes and
+  defaults), and checks an order's depth against an issue's book (filled
+  at or better than the limit, the average price, the slippage, the
+  levels used). The app runs its WebAssembly build in a worker. The IEX decoding stays
   behind a feature for its tests; the product does not use it.
 - **The Bank of Russia snapshot** ([`data/cbr`](data/cbr)): the key
   rate, RUONIA, the zero-coupon yield curve and inflation, each with the
@@ -193,9 +212,10 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The order ticket against a synthetic order book; events.
-- In the engine: portfolio and ladder cash flows, inflation-linked
-  bonds with forecast indexation. In the app: the
+- The order ticket's screen against the synthetic order book.
+- In the engine: a portfolio's tax counted across its holdings (the
+  ladder counts each rung on its own), inflation-linked bonds with
+  forecast indexation. In the app: the
   order book and the tape of the synthetic market.
 
 ## Validation plan and target metrics

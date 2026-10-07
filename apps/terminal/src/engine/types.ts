@@ -6,7 +6,7 @@
 import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result } from "@tyche/yield-twin";
 
 export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result };
-export type { Breakdown, FlowTrace, GSpread, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
+export type { Breakdown, FlowTrace, GSpread, Schedule, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
 
 export type EngineKind = "wasm" | "twin";
 
@@ -25,6 +25,9 @@ export type Engine = {
   /** Dirty price of a bond from its flows at an annual effective yield
    * (a fraction). */
   price_from_yield(amounts: number[], days: number[], y: number): number;
+  /** The annual effective yield (a fraction) at which flows are worth a
+   * price; NaN with no flows or a price that is not positive. */
+  ytm_effective(amounts: number[], days: number[], price: number): number;
 };
 
 /** Every code the engine can return, in its documented order of checks. */
@@ -43,4 +46,8 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "invalid_fee",
   "curve_missing",
   "invalid_curve",
+  "invalid_quantity",
+  "invalid_limit",
+  "invalid_tick",
+  "price_off_tick",
 ];

@@ -1,5 +1,5 @@
 // Loads the wasm-pack build in pkg/ under Node and wraps derive_bond,
-// calculate, explain and g_spread so they take and return the same plain
+// calculate, explain, g_spread and order_ticket so they take and return the same plain
 // objects as the twin.
 // Also the reference for using the structs from JavaScript.
 
@@ -75,6 +75,39 @@ export function wrap(w) {
     const toOffer = s.toOffer;
     const out = { toMaturity: gSpread(s.toMaturity), toOffer: toOffer === undefined ? null : gSpread(toOffer) };
     s.free();
+    return out;
+  };
+  const orderOf = (x) => {
+    const o = new w.Order();
+    o.side = x.side;
+    o.limit = x.limit;
+    o.limitValue = x.limitValue;
+    o.lots = x.lots;
+    o.lotSize = x.lotSize;
+    o.tickPct = x.tickPct;
+    o.feePct = x.feePct;
+    return o;
+  };
+  const ticket = (t) => {
+    const out = {
+      bonds: t.bonds,
+      cleanPct: t.cleanPct,
+      clean: t.clean,
+      accrued: t.accrued,
+      dirty: t.dirty,
+      cleanAmount: t.cleanAmount,
+      accruedAmount: t.accruedAmount,
+      amount: t.amount,
+      fee: t.fee,
+      total: t.total,
+      ytmMaturity: t.ytmMaturity,
+      ytmOffer: t.ytmOffer ?? null,
+      event: t.event,
+      eventDay: t.eventDay,
+      yieldEvent: t.yieldEvent,
+      yieldEventAfterFee: t.yieldEventAfterFee,
+    };
+    t.free();
     return out;
   };
   const schedule = (s) => {
@@ -261,6 +294,16 @@ export function wrap(w) {
       const out = result(w.g_spread(i, m, curveOf(curve)), gSpreads);
       i.free();
       m.free();
+      return out;
+    },
+    order_ticket: (issue, market, order) => {
+      const i = issueOf(issue);
+      const m = marketOf(market);
+      const o = orderOf(order);
+      const out = result(w.order_ticket(i, m, o), ticket);
+      i.free();
+      m.free();
+      o.free();
       return out;
     },
     calculate: (issue, market, plan, feePct) => {

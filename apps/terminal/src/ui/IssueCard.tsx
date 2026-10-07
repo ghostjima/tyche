@@ -12,6 +12,7 @@ import type { Item } from "../lib/filters";
 import type { Formats } from "../lib/format";
 import { COMPARE_MAX } from "./Compare";
 import { Analogues } from "./Analogues";
+import { HoldControl } from "./HoldControl";
 import { HonestYield } from "./HonestYield";
 import { Risks } from "./Risks";
 
@@ -36,6 +37,12 @@ export type IssueCardProps = {
   compared: readonly string[];
   onCompare: (id: string, on: boolean) => void;
   onOpen: (id: string) => void;
+  /** The bonds of this issue in the holdings, or null; whether the
+   * holdings take no new issue; and adding the issue or setting its
+   * bonds. */
+  held: number | null;
+  holdingsFull: boolean;
+  onHold: (id: string, bonds: number) => void;
 };
 
 type Row = { day: number; coupon: number; principal: number; last: boolean };
@@ -63,7 +70,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, feePct, onFee, items, compared, onCompare, onOpen }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, feePct, onFee, items, compared, onCompare, onOpen, held, holdingsFull, onHold }: IssueCardProps) {
   const inComparison = compared.includes(bond.id);
   const { issue } = bond;
   const floater = issue.couponType === "floater";
@@ -153,6 +160,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source, explan
           <p className="muted">{t.compareFull}</p>
         )}
       </div>
+      <HoldControl t={t} f={f} bond={bond} held={held} full={holdingsFull} onHold={onHold} />
       <Risks t={t} f={f} bond={bond} derived={d} />
       <HonestYield t={t} f={f} explanation={explanation} plan={plan} realYield={bond.coupon.kind === "linker"} feePct={feePct} onFee={onFee} />
       <Analogues t={t} f={f} engine={engine} item={{ bond, derived: d }} items={items} compared={compared} onOpen={onOpen} />
