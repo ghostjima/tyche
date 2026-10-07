@@ -9171,5 +9171,845 @@
     "expect": {
       "error": "amount_not_positive"
     }
+  },
+  {
+    "name": "order_ticket: buy at the issue's price, quoted accrued interest",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 98.12,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 98.12,
+        "clean": 981.2,
+        "accrued": 16.15,
+        "dirty": 997.35,
+        "cleanAmount": 2943.6000000000004,
+        "accruedAmount": 48.449999999999996,
+        "amount": 2992.05,
+        "fee": 1.4960250000000002,
+        "total": 2993.546025,
+        "ytmMaturity": 0.1338293250500341,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.1338293250500341,
+        "yieldEventAfterFee": 0.13355808752993525
+      }
+    }
+  },
+  {
+    "name": "order_ticket: buy at a limit yield, the price down to the step",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "yield",
+        "limitValue": 14.5,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 96.09,
+        "clean": 960.9,
+        "accrued": 16.15,
+        "dirty": 977.05,
+        "cleanAmount": 2882.7,
+        "accruedAmount": 48.449999999999996,
+        "amount": 2931.1499999999996,
+        "fee": 1.4655749999999999,
+        "total": 2932.615575,
+        "ytmMaturity": 0.14505323203053522,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.14505323203053522,
+        "yieldEventAfterFee": 0.14477886872835477
+      }
+    }
+  },
+  {
+    "name": "order_ticket: sell at a limit yield, the price up to the step",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "sell",
+        "limit": "yield",
+        "limitValue": 14.5,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 96.10000000000001,
+        "clean": 961.0000000000001,
+        "accrued": 16.15,
+        "dirty": 977.1500000000001,
+        "cleanAmount": 2883.0000000000005,
+        "accruedAmount": 48.449999999999996,
+        "amount": 2931.4500000000003,
+        "fee": 1.4657250000000002,
+        "total": 2929.9842750000003,
+        "ytmMaturity": 0.14499705306516064,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.14499705306516064,
+        "yieldEventAfterFee": 0.14527161451993165
+      }
+    }
+  },
+  {
+    "name": "order_ticket: a limit yield with no price step",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "yield",
+        "limitValue": 14.5,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 96.09947539840303,
+        "clean": 960.9947539840302,
+        "accrued": 16.15,
+        "dirty": 977.1447539840302,
+        "cleanAmount": 2882.9842619520905,
+        "accruedAmount": 48.449999999999996,
+        "amount": 2931.4342619520908,
+        "fee": 1.4657171309760455,
+        "total": 2932.8999790830667,
+        "ytmMaturity": 0.14500000000000013,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.14500000000000013,
+        "yieldEventAfterFee": 0.14472565154810602
+      }
+    }
+  },
+  {
+    "name": "order_ticket: lots of 100 and a fee of 0.3",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 97.5,
+        "lots": 7,
+        "lotSize": 100,
+        "tickPct": 0.01,
+        "feePct": 0.3
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 700,
+        "cleanPct": 97.5,
+        "clean": 975,
+        "accrued": 16.15,
+        "dirty": 991.15,
+        "cleanAmount": 682500,
+        "accruedAmount": 11304.999999999998,
+        "amount": 693805,
+        "fee": 2081.415,
+        "total": 695886.415,
+        "ytmMaturity": 0.13721932666408254,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 861,
+        "yieldEvent": 0.13721932666408254,
+        "yieldEventAfterFee": 0.13558941345007913
+      }
+    }
+  },
+  {
+    "name": "order_ticket: an offer, a limit price, the yield to the offer",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2030-02-05"],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 99.5,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 99.5,
+        "clean": 995,
+        "accrued": 11.93,
+        "dirty": 1006.93,
+        "cleanAmount": 2985,
+        "accruedAmount": 35.79,
+        "amount": 3020.79,
+        "fee": 1.510395,
+        "total": 3022.3003949999998,
+        "ytmMaturity": 0.1953489575861046,
+        "ytmOffer": 0.19632354895243964,
+        "event": "offer",
+        "eventDay": 1250,
+        "yieldEvent": 0.19632354895243964,
+        "yieldEventAfterFee": 0.19609286719956776
+      }
+    }
+  },
+  {
+    "name": "order_ticket: an offer, a limit yield to the offer",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2030-02-05"],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "yield",
+        "limitValue": 16,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.0001,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 107.9424,
+        "clean": 1079.424,
+        "accrued": 11.93,
+        "dirty": 1091.354,
+        "cleanAmount": 3238.272,
+        "accruedAmount": 35.79,
+        "amount": 3274.062,
+        "fee": 1.6370310000000001,
+        "total": 3275.699031,
+        "ytmMaturity": 0.17526724923267978,
+        "ytmOffer": 0.1600002625375011,
+        "event": "offer",
+        "eventDay": 1250,
+        "yieldEvent": 0.1600002625375011,
+        "yieldEventAfterFee": 0.1597798432641938
+      }
+    }
+  },
+  {
+    "name": "order_ticket: amortising, a limit yield",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {"date": "2027-07-11", "fractionPct": 16.67},
+          {"date": "2028-01-09", "fractionPct": 16.67},
+          {"date": "2028-07-09", "fractionPct": 16.67},
+          {"date": "2029-01-07", "fractionPct": 16.67},
+          {"date": "2029-07-08", "fractionPct": 16.67},
+          {"date": "2030-01-06", "fractionPct": 16.67}
+        ]
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "yield",
+        "limitValue": 18.25,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 89.36,
+        "clean": 893.6,
+        "accrued": 16.39,
+        "dirty": 909.99,
+        "cleanAmount": 2680.8,
+        "accruedAmount": 49.17,
+        "amount": 2729.9700000000003,
+        "fee": 1.3649850000000001,
+        "total": 2731.3349850000004,
+        "ytmMaturity": 0.1825436209609691,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 1220,
+        "yieldEvent": 0.1825436209609691,
+        "yieldEventAfterFee": 0.18221883754966617
+      }
+    }
+  },
+  {
+    "name": "order_ticket: floater, sell at a limit price",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 111.45,
+        "accrued": 54.87,
+        "couponType": "floater",
+        "couponRatePct": 16.83,
+        "spreadPct": 0.83,
+        "periodDays": 182,
+        "maturity": "2029-05-04",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "sell",
+        "limit": "price",
+        "limitValue": 100.1,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0
+      }
+    ],
+    "expect": {
+      "ok": {
+        "bonds": 3,
+        "cleanPct": 100.1,
+        "clean": 1001,
+        "accrued": 54.87,
+        "dirty": 1055.87,
+        "cleanAmount": 3003,
+        "accruedAmount": 164.60999999999999,
+        "amount": 3167.6099999999997,
+        "fee": 0,
+        "total": 3167.6099999999997,
+        "ytmMaturity": 0.17448306093455412,
+        "ytmOffer": null,
+        "event": "maturity",
+        "eventDay": 973,
+        "yieldEvent": 0.17448306093455412,
+        "yieldEventAfterFee": 0.17448306093455412
+      }
+    }
+  },
+  {
+    "name": "order_ticket error: lots not whole",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 2.5,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_quantity"
+    }
+  },
+  {
+    "name": "order_ticket error: lot size zero",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 3,
+        "lotSize": 0,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_quantity"
+    }
+  },
+  {
+    "name": "order_ticket error: a price that is not positive",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": -1,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_limit"
+    }
+  },
+  {
+    "name": "order_ticket error: a yield at -99 percent",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "yield",
+        "limitValue": -99,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_limit"
+    }
+  },
+  {
+    "name": "order_ticket error: a negative price step",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": -0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_tick"
+    }
+  },
+  {
+    "name": "order_ticket error: a price off the step",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 97.005,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "price_off_tick"
+    }
+  },
+  {
+    "name": "order_ticket error: a fee below zero",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": -0.1
+      }
+    ],
+    "expect": {
+      "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "order_ticket error: an unknown side",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "hold",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_code"
+    }
+  },
+  {
+    "name": "order_ticket error: an unknown limit",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "spread",
+        "limitValue": 100,
+        "lots": 3,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_code"
+    }
+  },
+  {
+    "name": "order_ticket error: the quantity before the limit",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": -1,
+        "lots": 0,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "invalid_quantity"
+    }
+  },
+  {
+    "name": "order_ticket error: the issue's errors first",
+    "fn": "order_ticket",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2040-01-01",
+        "keyRatePct": 16
+      },
+      {
+        "side": "buy",
+        "limit": "price",
+        "limitValue": 100,
+        "lots": 0,
+        "lotSize": 1,
+        "tickPct": 0.01,
+        "feePct": 0.05
+      }
+    ],
+    "expect": {
+      "error": "matured"
+    }
   }
 ]

@@ -1,7 +1,7 @@
 // Rust (the wasm build in pkg/) against the TypeScript twin
 // (packages/yield-twin/dist): every case in cases.json, then 1,000
-// generated issues with a plan, a broker's fee and a zero-coupon curve
-// each.
+// generated issues with a plan, a broker's fee, a zero-coupon curve and
+// an order each.
 // Run after building both:  node --test node/
 //
 // Tolerance: numbers agree when |a - b| <= 1e-6 * max(|a|, |b|), both NaN
@@ -105,10 +105,38 @@ function curveFrom(c) {
   return { termsYears, yieldsPct };
 }
 
+// An order for the ticket: a buy or a sell, a limit price near the issue's
+// own on the price step or a limit yield, a few lots of 1, 10 or 100
+// bonds; now and then one the engine refuses.
+function orderFrom(o, issue) {
+  const pick = (xs) => xs[Math.floor(o() * xs.length)];
+  const tickPct = pick([0.01, 0.01, 0.001, 0.0001, 0]);
+  const price = o() < 0.5;
+  const near = (Number.isFinite(issue.pricePct) ? issue.pricePct : 100) * (0.97 + 0.06 * o());
+  const onTick = tickPct > 0 ? Math.round(near / tickPct) * tickPct : near;
+  const order = {
+    side: o() < 0.5 ? "buy" : "sell",
+    limit: price ? "price" : "yield",
+    limitValue: price ? Math.round(onTick * 10_000) / 10_000 : Math.round((2 + 30 * o()) * 100) / 100,
+    lots: 1 + Math.floor(o() * 20),
+    lotSize: pick([1, 1, 10, 100]),
+    tickPct,
+    feePct: pick([0, 0.05, 0.05, 0.3]),
+  };
+  const x = o();
+  if (x < 0.01) order.lots = pick([0, 1.5, Number.NaN]);
+  else if (x < 0.02) order.limitValue = pick([0, -5, Number.NaN]);
+  else if (x < 0.025) order.tickPct = -0.01;
+  else if (x < 0.03) order.feePct = Number.NaN;
+  else if (x < 0.035) order.side = "hold";
+  return order;
+}
+
 export function generate(count, seed) {
   const r = rng(seed);
   const fees = rng(seed + 1);
   const curves = rng(seed + 2);
+  const orders = rng(seed + 3);
   const uniform = (lo, hi) => lo + (hi - lo) * r();
   const int = (lo, hi) => Math.floor(uniform(lo, hi + 1));
   const pick = (xs) => xs[Math.floor(r() * xs.length)];
@@ -164,24 +192,28 @@ export function generate(count, seed) {
     // A zero-coupon curve for explain and g_spread, from a third generator,
     // so the issues, plans and fees are the ones the set had before.
     const curve = curveFrom(curves);
-    out.push({ issue, market, plan, feePct, curve });
+    // An order for the ticket, from a fourth generator, so the rest is
+    // the set it was before.
+    const order = orderFrom(orders, issue);
+    out.push({ issue, market, plan, feePct, curve, order });
   }
   return out;
 }
 
-test("wasm and twin agree on 1,000 generated issues, plans, fees and curves", (t) => {
+test("wasm and twin agree on 1,000 generated issues, plans, fees, curves and orders", (t) => {
   const set = generate(1000, 20261004);
   const failures = [];
   let worst = 0;
   let worstAt = "";
-  const outcomes = { derived: 0, calculated: 0, explained: 0, spread: 0, errors: {} };
-  const done = { derive_bond: "derived", calculate: "calculated", explain: "explained", g_spread: "spread" };
-  for (const [k, { issue, market, plan, feePct, curve }] of set.entries()) {
+  const outcomes = { derived: 0, calculated: 0, explained: 0, spread: 0, ticketed: 0, errors: {} };
+  const done = { derive_bond: "derived", calculate: "calculated", explain: "explained", g_spread: "spread", order_ticket: "ticketed" };
+  for (const [k, { issue, market, plan, feePct, curve, order }] of set.entries()) {
     const pairs = [
       ["derive_bond", wasm.derive_bond(issue, market), twin.derive_bond(issue, market)],
       ["calculate", wasm.calculate(issue, market, plan, feePct), twin.calculate(issue, market, plan, feePct)],
       ["explain", wasm.explain(issue, market, plan, feePct, curve), twin.explain(issue, market, plan, feePct, curve)],
       ["g_spread", wasm.g_spread(issue, market, curve), twin.g_spread(issue, market, curve)],
+      ["order_ticket", wasm.order_ticket(issue, market, order), twin.order_ticket(issue, market, order)],
     ];
     for (const [fn, w, t] of pairs) {
       const r = compare(w, t, `issue ${k} ${fn}`);
@@ -192,10 +224,10 @@ test("wasm and twin agree on 1,000 generated issues, plans, fees and curves", (t
     }
   }
   console.log(
-    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained, ${outcomes.spread} spread; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
+    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained, ${outcomes.spread} spread, ${outcomes.ticketed} ticketed; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
   );
   assert.deepEqual(failures.slice(0, 20), []);
   // The set must exercise the paths, not only the errors.
-  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790 && outcomes.spread > 900);
+  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790 && outcomes.spread > 900 && outcomes.ticketed > 850);
   t.diagnostic(`parity ${JSON.stringify({ checked: "generated issues", count: set.length })}`);
 });
