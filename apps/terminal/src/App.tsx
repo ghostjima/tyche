@@ -26,12 +26,14 @@ import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import type { Plan } from "./engine/types";
 import { LANGS, strings, type Lang } from "./i18n";
 import { readFee, writeFee } from "./lib/fee";
+import { HOLDINGS_MAX, readHoldings, setHolding, writeHoldings, type Holding } from "./lib/holdings";
 import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
 import { useAppFormats } from "./lib/format";
 import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH } from "./lib/liquidity";
 import { issuerName, searchTexts } from "./lib/names";
 import { timed } from "./lib/timing";
 import { Calculator, defaultPlan, type PlanInput } from "./ui/Calculator";
+import { useEvents } from "./market/useEvents";
 import { useUniverse } from "./market/useUniverse";
 import { Benchmarks } from "./ui/Benchmarks";
 import { DataPage } from "./ui/DataPage";
@@ -40,6 +42,7 @@ import { BorSource, SimSource, dataHref } from "./ui/Sources";
 import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
 import { COMPARE_MAX, Compare } from "./ui/Compare";
+import { Holdings, type HeldItem } from "./ui/Holdings";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
  * once the universe is ready. */
@@ -148,6 +151,15 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     for (const id of compared) url.searchParams.append("cmp", id);
     if (url.href !== location.href) history.replaceState(history.state, "", url);
   }, [compared]);
+  // The holdings of a synthetic portfolio, in ?hold= once per issue.
+  const [holdings, setHoldings] = useState<Holding[]>(() => readHoldings(new URLSearchParams(location.search)));
+  useEffect(() => {
+    const url = new URL(location.href);
+    writeHoldings(url.searchParams, holdings);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [holdings]);
+  const hold = (id: string, bonds: number) => setHoldings((all) => setHolding(all, id, bonds));
+  const unhold = (id: string) => setHoldings((all) => all.filter((h) => h.id !== id));
   const compare = (id: string, on: boolean) =>
     setCompared((all) => (on ? (all.includes(id) || all.length >= COMPARE_MAX ? all : [...all, id]) : all.filter((x) => x !== id)));
   const [diagOpen, setDiagOpen] = useState(false);
@@ -186,6 +198,19 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   useEffect(() => {
     if (items) setCompared((all) => (all.every((id) => items.some((i) => i.bond.id === id)) ? all : all.filter((id) => items.some((i) => i.bond.id === id))));
   }, [items]);
+
+  // A link may name holdings the universe does not have: they leave it.
+  useEffect(() => {
+    if (items) setHoldings((all) => (all.every((h) => items.some((i) => i.bond.id === h.id)) ? all : all.filter((h) => items.some((i) => i.bond.id === h.id))));
+  }, [items]);
+  // Each holding with its issue and its place in the universe, for the
+  // market worker's events.
+  const held: (HeldItem & { index: number })[] = items && bonds ? holdings.flatMap((holding) => {
+    const index = bonds.findIndex((b) => b.id === holding.id);
+    const item = items.find((i) => i.bond.id === holding.id);
+    return index >= 0 && item ? [{ holding, item, index }] : [];
+  }) : [];
+  const events = useEvents(held.map((h) => ({ index: h.index, bonds: h.holding.bonds })), market.status === "ready");
 
   // A link to an issue the universe does not have opens the list.
   useEffect(() => {
@@ -386,6 +411,9 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           compared={compared}
           onCompare={compare}
           onOpen={open}
+          held={holdings.find((h) => h.id === selected.bond.id)?.bonds ?? null}
+          holdingsFull={holdings.length >= HOLDINGS_MAX}
+          onHold={hold}
         />
         <Calculator
           t={t}
@@ -554,6 +582,18 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
                 <BorSource t={t} f={f} curve />
               </>
             }
+          />
+        )}
+
+        {!dataOpen && !loading && !marketFailed && held.length > 0 && (
+          <Holdings
+            t={t}
+            f={f}
+            held={held}
+            events={events}
+            nameOf={(i) => nameOf(i.bond)}
+            onRemove={unhold}
+            source={<SimSource t={t} onData={openData} />}
           />
         )}
 

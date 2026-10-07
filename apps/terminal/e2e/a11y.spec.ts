@@ -2,7 +2,7 @@
 // zero serious or critical violations. And no sideways scroll at 1280 and
 // 375 px wide.
 import { expect, test, type Page } from "@playwright/test";
-import { ISSUES, expectNoHorizontalScroll, expectNoSeriousViolations, ready } from "./helpers";
+import { ISSUES, PORTFOLIO, PORTFOLIO_PUT, expectNoHorizontalScroll, expectNoSeriousViolations, ready } from "./helpers";
 
 // Timing both engines runs 8,800 calls (two engines, two functions, 20
 // warm-up and 200 kept batches of 10); a shared CI runner takes well over
@@ -87,6 +87,22 @@ const READY_STATES: Record<string, Prepare> = {
     await page.getByTestId("analogues").locator(".peer-map__data summary").click();
     await expect(page.locator(".compare")).toBeVisible();
   },
+  // Holdings with every kind of event, and the income by month.
+  "holdings and events": async (page, lang, theme) => {
+    await open(page, lang, theme, `&${PORTFOLIO}`);
+    await ready(page);
+    await expect(page.getByTestId("income").locator("tbody tr")).toHaveCount(12);
+  },
+  // The confirmation of a request to redeem at a put offer.
+  "redemption request": async (page, lang, theme) => {
+    await open(page, lang, theme, `&hold=${PORTFOLIO_PUT}*10`);
+    await ready(page);
+    await page.locator(".redeem").getByRole("button").click();
+    await expect(page.getByRole("alertdialog")).toBeVisible();
+    // Scanned once the dialog has faded in: mid-fade its text is paler
+    // than it is drawn.
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
+  },
   // A floater with amortisation: scenarios and the coupon chart.
   floater,
   // A filter with no match beside the floater: the empty state.
@@ -119,6 +135,7 @@ const PHONE_STATES: Record<string, string> = {
   "money by a date": "&by=2027-10",
   comparison: `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`,
   issue: `&issue=${ISSUES.floater}`,
+  holdings: `&${PORTFOLIO}`,
 };
 
 for (const lang of LANGS) {
