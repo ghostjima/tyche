@@ -19,9 +19,10 @@ async function figures(page: Page): Promise<string[]> {
   ];
   const out: string[] = [];
   for (const part of parts) out.push(await part.innerText());
-  // The price curve's data table holds the curve's values.
-  const curve = page.locator(".issue-card .stoa-chart table");
-  if ((await curve.count()) > 0) out.push(await curve.innerText());
+  // The charts' data tables: the price curve's values, and the map of
+  // peers' durations (Stoa's ScatterChart, its table behind a disclosure,
+  // so read as text whether it is open or not).
+  out.push(...(await page.locator(".issue-card .stoa-chart table").evaluateAll((tables) => tables.map((t) => t.textContent ?? ""))));
   return out;
 }
 
