@@ -60,7 +60,11 @@ Status: early. Performance record, with stamps:
   reinvested, for the calculator's amount, account and other income.
   "How it is worked out" shows each step: the coupon and the accrued
   interest, every payment discounted at the solved yield, the yields
-  after the fee and after tax, and the tax per calendar year (coupons,
+  after the fee and after tax, the G-spread of each yield (the Macaulay
+  duration, the Bank of Russia's zero-coupon curve read at it between
+  its published terms, dated and linked, and the difference in basis
+  points; none for an inflation-linked issue, whose yield is real), and
+  the tax per calendar year (coupons,
   accrued interest paid, the face value repaid, the cost, a loss netted,
   the base, the parts at 13 and 15 percent), each step citing its rule:
   the terms of the issue, the engine's convention, or the Tax Code
@@ -82,7 +86,8 @@ Status: early. Performance record, with stamps:
   liquidity, who can buy, and the G-spread: the issue's yield to the
   nearest exit less the Bank of Russia's zero-coupon yield of federal
   loan bonds at the same Macaulay duration, read linearly between the
-  curve's terms (`src/lib/peers.ts`). The map of peers is the app's own
+  curve's terms, as the engine's `g_spread` works it out from the
+  snapshot's curve. The map of peers is the app's own
   scatter chart (Stoa has none yet), in Stoa's chart tokens, with a table
   alternative.
 - **The calculator**: amount, holding horizon (with presets for one year,
@@ -110,9 +115,11 @@ Status: early. Performance record, with stamps:
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the
-  calculator's key rate, and the Bank of Russia benchmarks: the key
-  rate, RUONIA, inflation and the zero-coupon yield curve, with the
-  Moscow Exchange credited for the curve). The header carries a
+  issue card's G-spreads and the comparison's, from the zero-coupon
+  curve, with the Moscow Exchange credited for it; the calculator's key
+  rate; and the Bank of Russia benchmarks: the key rate, RUONIA,
+  inflation and the zero-coupon yield curve, with the Moscow Exchange
+  credited for the curve). The header carries a
   banner on every screen: "Демонстрация. Данные синтетические. Не
   является инвестиционной рекомендацией." ("Demonstration. The data are
   synthetic. Not investment advice."). "Данные и лицензии" ("Data and

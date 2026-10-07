@@ -1,17 +1,21 @@
 // The yield as a holder would get it: to maturity and to the offer side
-// by side, before and after the broker's fee, and after tax and the fee
-// with nothing reinvested, for the calculator's amount, account and other
-// income; then how each figure is worked out, step by step, each step
-// citing its rule. Every figure comes from the engine's explain.
+// by side, before and after the broker's fee, after tax and the fee with
+// nothing reinvested, for the calculator's amount, account and other
+// income, and the G-spread to the Bank of Russia's zero-coupon curve; then
+// how each figure is worked out, step by step, each step citing its rule.
+// Every figure comes from the engine's explain.
 import { DerivationTable, Disclosure, Table, type DerivationStep } from "@ghostjima/stoa-react";
 import { TAX_HIGHER_RATE_PCT, TAX_RATE_PCT } from "@tyche/yield-twin";
 import { TAX_RULES_DAY } from "../data/market";
-import type { Explanation, Plan, Result, TaxYear, YieldTrace } from "../engine/types";
+import type { Explanation, GSpread, Plan, Result, TaxYear, YieldTrace } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
 
 /** The day-count basis the engine's yields use. */
 const BASIS = "ACT/365";
+
+/** The Bank of Russia's page of the zero-coupon curve. */
+const CURVE_PAGE = "https://www.cbr.ru/hd_base/zcyc_params/";
 
 /** The articles of the Tax Code each tax step follows. */
 const ARTICLE = { base: "214.1", relief: "219.1", rates: "224" } as const;
@@ -24,6 +28,9 @@ export type HonestYieldProps = {
   f: Formats;
   explanation: Result<Explanation>;
   plan: Plan;
+  /** An inflation-linked issue: its yield is real, so it has no G-spread
+   * to a nominal curve. */
+  realYield: boolean;
 };
 
 /** The annual return after tax and the fee, or the return over the
@@ -32,7 +39,7 @@ function afterTax(t: Strings, f: Formats, y: YieldTrace): string {
   return y.held.annualPct === null ? t.overPeriod(f.percent(y.held.periodPct / 100)) : f.percent(y.held.annualPct / 100);
 }
 
-export function HonestYield({ t, f, explanation, plan }: HonestYieldProps) {
+export function HonestYield({ t, f, explanation, plan, realYield }: HonestYieldProps) {
   if ("error" in explanation) {
     return (
       <section className="block" aria-labelledby="yield-h" data-testid="honest-yield">
@@ -49,6 +56,7 @@ export function HonestYield({ t, f, explanation, plan }: HonestYieldProps) {
     { id: "yield", label: t.colYield, value: (y) => f.percent(y.ytm) },
     { id: "fee", label: t.colAfterFee(fee), value: (y) => f.percent(y.ytmAfterFee) },
     { id: "tax", label: t.colAfterTax, value: (y) => afterTax(t, f, y) },
+    { id: "g", label: t.colGSpread, value: (y) => (realYield ? t.gSpreadNone : t.gSpreadValue(f.signed(y.gSpread.spreadBp, 0))) },
   ];
   const events: Row[] = [
     { id: "maturity", label: t.eventMaturityRow, date: f.day(e.toMaturity.eventDay), y: e.toMaturity },
@@ -94,6 +102,14 @@ export function HonestYield({ t, f, explanation, plan }: HonestYieldProps) {
           {events.map((r) => (
             <DerivationTable key={r.id} caption={t.workYield(r.id === "offer" ? t.eventOffer : t.eventMaturity)} steps={yieldSteps(t, f, e, r.y)} />
           ))}
+          {!realYield &&
+            events.map((r) => (
+              <DerivationTable
+                key={`g-${r.id}`}
+                caption={t.workGSpread(r.id === "offer" ? t.eventOffer : t.eventMaturity)}
+                steps={gSpreadSteps(t, f, r.y.gSpread)}
+              />
+            ))}
           {events.flatMap((r) =>
             r.y.tax.map((year) => (
               <DerivationTable
@@ -175,6 +191,34 @@ function yieldSteps(t: Strings, f: Formats, e: Explanation, y: YieldTrace): Deri
           value: f.percent(held.annualPct / 100),
           source: engine,
         },
+  ];
+}
+
+/** The G-spread: the duration, the curve read at it between the published
+ * terms (or at the nearest one, outside them), and the difference. */
+function gSpreadSteps(t: Strings, f: Formats, g: GSpread): DerivationStep[] {
+  const engine = { name: t.srcEngine(BASIS) };
+  const curve = { name: t.srcCurve, revision: f.day(0), href: CURVE_PAGE };
+  const pct = (v: number) => f.percent(v / 100, 2);
+  const flat = g.termBelowYears === g.termAboveYears;
+  return [
+    { id: "duration", label: t.stepDuration, value: f.years(g.durationYears), source: engine },
+    flat
+      ? { id: "curve", label: t.stepCurveFlat(f.years(g.termBelowYears)), value: pct(g.curvePct), source: curve }
+      : {
+          id: "curve",
+          label: t.stepCurveBetween(f.years(g.termBelowYears), f.years(g.termAboveYears)),
+          formula: `${pct(g.yieldBelowPct)} + (${f.decimal(g.durationYears, 4)} − ${f.decimal(g.termBelowYears, 2)}) / (${f.decimal(g.termAboveYears, 2)} − ${f.decimal(g.termBelowYears, 2)}) × (${pct(g.yieldAbovePct)} − ${pct(g.yieldBelowPct)})`,
+          value: pct(g.curvePct),
+          source: curve,
+        },
+    {
+      id: "spread",
+      label: t.stepGSpread,
+      formula: `(${f.percent(g.yieldPct / 100, 4)} − ${f.percent(g.curvePct / 100, 4)}) × ${f.integer(100)}`,
+      value: t.gSpreadValue(f.signed(g.spreadBp, 0)),
+      source: engine,
+    },
   ];
 }
 

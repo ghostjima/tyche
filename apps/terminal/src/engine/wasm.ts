@@ -4,7 +4,7 @@
 // back as Float64Array and are turned into plain arrays, so both engines
 // hand the screen the same shapes.
 import init, * as glue from "tyche-yield";
-import type { Breakdown, Calculation, Derived, Engine, ErrorCode, Explanation, Issue, Market, Plan, Result, TaxYear, YieldTrace } from "./types";
+import type { Breakdown, Calculation, Curve, Derived, Engine, ErrorCode, Explanation, GSpread, GSpreads, Issue, Market, Plan, Result, TaxYear, YieldTrace } from "./types";
 
 type Schedule = Derived["flows"];
 
@@ -42,7 +42,38 @@ function planOf(x: Plan): glue.Plan {
   return p;
 }
 
+/** A curve crosses by value: the call consumes it, so it is made for
+ * each call and not freed here. */
+function curveOf(x: Curve): glue.Curve {
+  const c = new glue.Curve();
+  c.termsYears = Float64Array.from(x.termsYears);
+  c.yieldsPct = Float64Array.from(x.yieldsPct);
+  return c;
+}
+
 const list = (a: Float64Array): number[] => Array.from(a);
+
+function gSpread(g: glue.GSpread): GSpread {
+  const out: GSpread = {
+    durationYears: g.durationYears,
+    yieldPct: g.yieldPct,
+    termBelowYears: g.termBelowYears,
+    yieldBelowPct: g.yieldBelowPct,
+    termAboveYears: g.termAboveYears,
+    yieldAbovePct: g.yieldAbovePct,
+    curvePct: g.curvePct,
+    spreadBp: g.spreadBp,
+  };
+  g.free();
+  return out;
+}
+
+function gSpreads(s: glue.GSpreads): GSpreads {
+  const toOffer = s.toOffer;
+  const out: GSpreads = { toMaturity: gSpread(s.toMaturity), toOffer: toOffer === undefined ? null : gSpread(toOffer) };
+  s.free();
+  return out;
+}
 
 function schedule(s: glue.Schedule): Schedule {
   const out = { days: list(s.days), coupons: list(s.coupons), principals: list(s.principals) };
@@ -168,6 +199,7 @@ function yieldTrace(y: glue.YieldTrace): YieldTrace {
     presentValue: y.presentValue,
     priceWithFee: y.priceWithFee,
     ytmAfterFee: y.ytmAfterFee,
+    gSpread: gSpread(y.gSpread),
     held: breakdown(y.held),
     tax: y.tax.map(taxYear),
   };
@@ -233,21 +265,26 @@ export const wasmEngine: Engine = {
     p.free();
     return out;
   },
-  explain(issue, market, plan, feePct) {
+  explain(issue, market, plan, feePct, curve) {
     const i = issueOf(issue);
     const m = marketOf(market);
     const p = planOf(plan);
-    const out = result(glue.explain(i, m, p, feePct), explanation);
+    const out = result(glue.explain(i, m, p, feePct, curveOf(curve)), explanation);
     i.free();
     m.free();
     p.free();
     return out;
   },
+  g_spread(issue, market, curve) {
+    const i = issueOf(issue);
+    const m = marketOf(market);
+    const out = result(glue.g_spread(i, m, curveOf(curve)), gSpreads);
+    i.free();
+    m.free();
+    return out;
+  },
   price_from_yield(amounts, days, y) {
     return glue.price_from_yield(Float64Array.from(amounts), Float64Array.from(days), y);
-  },
-  macaulay_duration(amounts, days, y) {
-    return glue.macaulay_duration(Float64Array.from(amounts), Float64Array.from(days), y);
   },
 };
 

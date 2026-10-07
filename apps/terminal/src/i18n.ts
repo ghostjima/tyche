@@ -63,7 +63,8 @@ const en = {
   dataBorKeyRate: "Key rate and RUONIA",
   dataBorKeyRateText: "The Bank of Russia's figures, from its DailyInfo web service.",
   dataBorCurve: "Zero-coupon yield curve of federal loan bonds",
-  dataBorCurveText: "Published by the Bank of Russia and calculated by the Moscow Exchange.",
+  dataBorCurveText:
+    "Published by the Bank of Russia and calculated by the Moscow Exchange, as yields in percent a year, compounded annually, at fixed terms. The bond engine takes the G-spreads against it, reading it linearly between the published terms and at the nearest term outside them.",
   dataBorInflation: "Inflation",
   dataBorInflationText: "Consumer prices over twelve months, from Rosstat and the Bank of Russia, as the Bank of Russia publishes them.",
   dataBorTerms: "Terms",
@@ -279,6 +280,12 @@ const en = {
   stepTax: "Tax",
   srcTaxCode: (article: string) => `Tax Code of the Russian Federation, article ${article}`,
   workingError: "The calculator's inputs give no working: the calculator says why.",
+  workGSpread: (event: string) => `G-spread, held to ${event}`,
+  stepDuration: "Macaulay duration of the payments at the yield",
+  stepCurveBetween: (below: string, above: string) => `Curve's yield at the duration, read between the terms of ${below} and ${above}`,
+  stepCurveFlat: (term: string) => `Curve's yield at the duration: outside the published terms, that of the nearest, ${term}`,
+  stepGSpread: "G-spread: the yield less the curve's, in basis points",
+  srcCurve: "Bank of Russia: zero-coupon yield curve of federal loan bonds, calculated by the Moscow Exchange",
 
   analogues: "Analogues",
   analoguesNote: "Issues within a notch of the synthetic rating and half a year of duration, the closest first.",
@@ -529,6 +536,8 @@ const en = {
     invalid_price: "This issue has no valid price, so a plan cannot be calculated.",
     amount_below_one_bond: "The amount does not buy one bond at the dirty price.",
     invalid_fee: "The broker's fee must be a number of at least zero.",
+    curve_missing: "The zero-coupon yield curve of federal loan bonds is missing, so the G-spread cannot be worked out.",
+    invalid_curve: "The zero-coupon yield curve of federal loan bonds is malformed, so the G-spread cannot be worked out.",
   } satisfies Record<ErrorCode, string>,
 };
 
@@ -576,7 +585,8 @@ const ru: Strings = {
   dataBorKeyRate: "Ключевая ставка и RUONIA",
   dataBorKeyRateText: "Данные Банка России из его веб-сервиса DailyInfo.",
   dataBorCurve: "Кривая бескупонной доходности ОФЗ",
-  dataBorCurveText: "Публикует Банк России, рассчитывает Московская биржа.",
+  dataBorCurveText:
+    "Публикует Банк России, рассчитывает Московская биржа: доходности в процентах годовых с ежегодным начислением на фиксированных сроках. Движок облигаций считает по ней G-спреды, между опубликованными сроками линейно, за их пределами по ближайшему сроку.",
   dataBorInflation: "Инфляция",
   dataBorInflationText: "Рост потребительских цен за двенадцать месяцев по данным Росстата и Банка России, как их публикует Банк России.",
   dataBorTerms: "Условия",
@@ -789,6 +799,12 @@ const ru: Strings = {
   stepTax: "Налог",
   srcTaxCode: (article) => `Налоговый кодекс Российской Федерации, статья ${article}`,
   workingError: "При этих данных калькулятора расчёт не показать: калькулятор объясняет почему.",
+  workGSpread: (event) => `G-спред, если держать до ${event}`,
+  stepDuration: "Дюрация Маколея платежей при этой доходности",
+  stepCurveBetween: (below, above) => `Доходность кривой при этой дюрации, между сроками ${below} и ${above}`,
+  stepCurveFlat: (term) => `Доходность кривой при этой дюрации: за пределами опубликованных сроков берётся ближайший, ${term}`,
+  stepGSpread: "G-спред: доходность минус доходность кривой, в базисных пунктах",
+  srcCurve: "Банк России: кривая бескупонной доходности ОФЗ, рассчитывает Московская биржа",
 
   analogues: "Похожие",
   analoguesNote: "Выпуски с синтетическим рейтингом не дальше одной ступени и дюрацией не дальше полугода, ближайшие первыми.",
@@ -1039,6 +1055,8 @@ const ru: Strings = {
     invalid_price: "У выпуска нет корректной цены, поэтому план посчитать нельзя.",
     amount_below_one_bond: "На эту сумму не купить ни одной облигации по полной цене.",
     invalid_fee: "Комиссия брокера должна быть числом не меньше нуля.",
+    curve_missing: "Нет кривой бескупонной доходности ОФЗ, поэтому G-спред не посчитать.",
+    invalid_curve: "Кривая бескупонной доходности ОФЗ повреждена, поэтому G-спред не посчитать.",
   },
 };
 

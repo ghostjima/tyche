@@ -5,7 +5,8 @@
 //! wasm-bindgen structs with camelCase fields (`Issue`, `Market` and `Plan`
 //! in; `DeriveResult`, `CalculateResult` and `ExplainResult` out, each with
 //! `ok` or `error` set). Codes cross as strings: an unknown coupon type or tax regime is
-//! the error `invalid_code`.
+//! the error `invalid_code`. `g_spread` and `explain` take a `Curve`;
+//! `undefined` or `null` in its place is the error `curve_missing`.
 //!
 //! Structs rather than JSON: on the 60-issue set the struct boundary
 //! added 4 to 6 percent to the time spent inside wasm, the JSON boundary
@@ -13,8 +14,9 @@
 
 use crate::primitives as p;
 use crate::{
-    Amortization, Breakdown, Calculation, CouponType, Derived, Error, Explanation, FlowTrace,
-    Issue, Market, Plan, PriceTrace, Schedule, TaxRegime, TaxYear, YieldTrace,
+    Amortization, Breakdown, Calculation, CouponType, Curve, Derived, Error, Explanation,
+    FlowTrace, GSpread, GSpreads, Issue, Market, Plan, PriceTrace, Schedule, TaxRegime, TaxYear,
+    YieldTrace,
 };
 use wasm_bindgen::prelude::*;
 
@@ -136,6 +138,11 @@ pub fn price_after_rate_shift(price: f64, mod_duration: f64, delta_pct: f64) -> 
 }
 
 #[wasm_bindgen]
+pub fn curve_yield_pct(terms_years: &[f64], yields_pct: &[f64], years: f64) -> f64 {
+    p::curve_yield_pct(terms_years, yields_pct, years)
+}
+
+#[wasm_bindgen]
 pub fn effective_annual_pct(invested: f64, total: f64, horizon_day: f64) -> f64 {
     crate::effective_annual_pct(invested, total, horizon_day)
 }
@@ -209,6 +216,34 @@ impl JsPlan {
     pub fn new() -> JsPlan {
         JsPlan::default()
     }
+}
+
+#[wasm_bindgen(js_name = Curve, getter_with_clone)]
+#[derive(Clone, Default)]
+pub struct JsCurve {
+    #[wasm_bindgen(js_name = termsYears)]
+    pub terms_years: Vec<f64>,
+    #[wasm_bindgen(js_name = yieldsPct)]
+    pub yields_pct: Vec<f64>,
+}
+
+#[wasm_bindgen(js_class = Curve)]
+impl JsCurve {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> JsCurve {
+        JsCurve::default()
+    }
+}
+
+/// The curve given, or an empty one for `undefined` or `null`, which the
+/// engine's check reports as `curve_missing` in its place among the
+/// checks. The curve is taken by value: wasm-bindgen consumes the
+/// JavaScript object, which must not be used or freed after the call.
+fn curve_of(c: Option<JsCurve>) -> Curve {
+    c.map_or_else(Curve::default, |c| Curve {
+        terms_years: c.terms_years,
+        yields_pct: c.yields_pct,
+    })
 }
 
 fn issue_of(i: &JsIssue) -> Result<Issue, Error> {
@@ -623,6 +658,80 @@ impl From<&FlowTrace> for JsFlowTrace {
     }
 }
 
+#[wasm_bindgen(js_name = GSpread)]
+#[derive(Clone, Copy)]
+pub struct JsGSpread {
+    #[wasm_bindgen(js_name = durationYears)]
+    pub duration_years: f64,
+    #[wasm_bindgen(js_name = yieldPct)]
+    pub yield_pct: f64,
+    #[wasm_bindgen(js_name = termBelowYears)]
+    pub term_below_years: f64,
+    #[wasm_bindgen(js_name = yieldBelowPct)]
+    pub yield_below_pct: f64,
+    #[wasm_bindgen(js_name = termAboveYears)]
+    pub term_above_years: f64,
+    #[wasm_bindgen(js_name = yieldAbovePct)]
+    pub yield_above_pct: f64,
+    #[wasm_bindgen(js_name = curvePct)]
+    pub curve_pct: f64,
+    #[wasm_bindgen(js_name = spreadBp)]
+    pub spread_bp: f64,
+}
+
+impl From<&GSpread> for JsGSpread {
+    fn from(g: &GSpread) -> JsGSpread {
+        JsGSpread {
+            duration_years: g.duration_years,
+            yield_pct: g.yield_pct,
+            term_below_years: g.term_below_years,
+            yield_below_pct: g.yield_below_pct,
+            term_above_years: g.term_above_years,
+            yield_above_pct: g.yield_above_pct,
+            curve_pct: g.curve_pct,
+            spread_bp: g.spread_bp,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = GSpreads)]
+#[derive(Clone, Copy)]
+pub struct JsGSpreads {
+    #[wasm_bindgen(js_name = toMaturity)]
+    pub to_maturity: JsGSpread,
+    #[wasm_bindgen(js_name = toOffer)]
+    pub to_offer: Option<JsGSpread>,
+}
+
+#[wasm_bindgen(js_name = GSpreadResult, getter_with_clone)]
+pub struct JsGSpreadResult {
+    pub ok: Option<JsGSpreads>,
+    pub error: Option<String>,
+}
+
+/// The G-spreads of an issue's yields to maturity and to the offer
+/// against a zero-coupon curve.
+#[wasm_bindgen]
+pub fn g_spread(issue: &JsIssue, market: &JsMarket, curve: Option<JsCurve>) -> JsGSpreadResult {
+    let r = issue_of(issue).and_then(|i| crate::g_spread(&i, &market_of(market), &curve_of(curve)));
+    match r {
+        Ok(GSpreads {
+            to_maturity,
+            to_offer,
+        }) => JsGSpreadResult {
+            ok: Some(JsGSpreads {
+                to_maturity: (&to_maturity).into(),
+                to_offer: to_offer.as_ref().map(Into::into),
+            }),
+            error: None,
+        },
+        Err(e) => JsGSpreadResult {
+            ok: None,
+            error: Some(e.code().to_owned()),
+        },
+    }
+}
+
 #[wasm_bindgen(js_name = YieldTrace, getter_with_clone)]
 #[derive(Clone)]
 pub struct JsYieldTrace {
@@ -636,6 +745,8 @@ pub struct JsYieldTrace {
     pub price_with_fee: f64,
     #[wasm_bindgen(js_name = ytmAfterFee)]
     pub ytm_after_fee: f64,
+    #[wasm_bindgen(js_name = gSpread)]
+    pub g_spread: JsGSpread,
     pub held: JsBreakdown,
     pub tax: Vec<JsTaxYear>,
 }
@@ -649,6 +760,7 @@ impl From<&YieldTrace> for JsYieldTrace {
             present_value: y.present_value,
             price_with_fee: y.price_with_fee,
             ytm_after_fee: y.ytm_after_fee,
+            g_spread: (&y.g_spread).into(),
             held: y.held.into(),
             tax: y.tax.iter().map(Into::into).collect(),
         }
@@ -689,12 +801,19 @@ pub struct JsExplainResult {
     pub error: Option<String>,
 }
 
-/// Works out an issue's figures for a plan and a broker's fee in percent.
+/// Works out an issue's figures for a plan, a broker's fee in percent and
+/// the zero-coupon curve the G-spreads are taken against.
 #[wasm_bindgen]
-pub fn explain(issue: &JsIssue, market: &JsMarket, plan: &JsPlan, fee_pct: f64) -> JsExplainResult {
+pub fn explain(
+    issue: &JsIssue,
+    market: &JsMarket,
+    plan: &JsPlan,
+    fee_pct: f64,
+    curve: Option<JsCurve>,
+) -> JsExplainResult {
     let r = issue_of(issue)
         .and_then(|i| Ok((i, plan_of(plan)?)))
-        .and_then(|(i, pl)| crate::explain(&i, &market_of(market), &pl, fee_pct));
+        .and_then(|(i, pl)| crate::explain(&i, &market_of(market), &pl, fee_pct, &curve_of(curve)));
     match r {
         Ok(e) => JsExplainResult {
             ok: Some(e.into()),

@@ -3,10 +3,10 @@
 // TypeScript twin (used when WebAssembly cannot load, and selectable in the
 // diagnostics). Inputs and outputs are plain objects in the twin's shapes;
 // errors are codes, returned as values.
-import type { Calculation, Derived, ErrorCode, Explanation, Issue, Market, Plan, Result } from "@tyche/yield-twin";
+import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result } from "@tyche/yield-twin";
 
-export type { Calculation, Derived, ErrorCode, Explanation, Issue, Market, Plan, Result };
-export type { Breakdown, FlowTrace, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
+export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result };
+export type { Breakdown, FlowTrace, GSpread, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
 
 export type EngineKind = "wasm" | "twin";
 
@@ -14,14 +14,16 @@ export type Engine = {
   kind: EngineKind;
   derive_bond(issue: Issue, market: Market): Result<Derived>;
   calculate(issue: Issue, market: Market, plan: Plan): Result<Calculation>;
-  /** The working behind the figures, for a plan and a broker's fee in
-   * percent of each trade. */
-  explain(issue: Issue, market: Market, plan: Plan, feePct: number): Result<Explanation>;
+  /** The working behind the figures, for a plan, a broker's fee in
+   * percent of each trade and the zero-coupon curve the G-spreads are
+   * taken against. */
+  explain(issue: Issue, market: Market, plan: Plan, feePct: number, curve: Curve): Result<Explanation>;
+  /** The G-spreads of the yields to maturity and to the offer to the
+   * zero-coupon curve, at their Macaulay durations. */
+  g_spread(issue: Issue, market: Market, curve: Curve): Result<GSpreads>;
   /** Dirty price of a bond from its flows at an annual effective yield
    * (a fraction). */
   price_from_yield(amounts: number[], days: number[], y: number): number;
-  /** Macaulay duration of flows at an annual effective yield, years. */
-  macaulay_duration(amounts: number[], days: number[], y: number): number;
 };
 
 /** Every code the engine can return, in its documented order of checks. */
@@ -38,4 +40,6 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "invalid_price",
   "amount_below_one_bond",
   "invalid_fee",
+  "curve_missing",
+  "invalid_curve",
 ];

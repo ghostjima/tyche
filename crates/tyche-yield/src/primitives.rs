@@ -311,6 +311,46 @@ pub fn value_along_path(
     pv
 }
 
+/// Where `years` falls on a curve of ascending `terms_years`: the index of
+/// the published term at or below it, of the term above it, and the
+/// weight of the term above (0 to 1). At or before the first term both
+/// indices are the first; beyond the last, both are the last, so the curve
+/// is held flat there. `None` when there are no terms or `years` is NaN.
+pub(crate) fn curve_bracket(terms_years: &[f64], years: f64) -> Option<(usize, usize, f64)> {
+    let n = terms_years.len();
+    if n == 0 || years.is_nan() {
+        return None;
+    }
+    if years <= terms_years[0] {
+        return Some((0, 0, 0.0));
+    }
+    for i in 1..n {
+        if years <= terms_years[i] {
+            let w = (years - terms_years[i - 1]) / (terms_years[i] - terms_years[i - 1]);
+            return Some((i - 1, i, w));
+        }
+    }
+    Some((n - 1, n - 1, 0.0))
+}
+
+/// The zero-coupon yield at a term, in percent, from a curve published as
+/// yields in percent at ascending terms in years: linear in the yield
+/// between the two published terms around `years`, and flat beyond the
+/// first and the last term. The result keeps the curve's own compounding
+/// (the Bank of Russia's zero-coupon curve of federal loan bonds is
+/// annual effective). NaN when there are no terms, the two slices differ
+/// in length or `years` is NaN.
+pub fn curve_yield_pct(terms_years: &[f64], yields_pct: &[f64], years: f64) -> f64 {
+    if terms_years.len() != yields_pct.len() {
+        return f64::NAN;
+    }
+    match curve_bracket(terms_years, years) {
+        None => f64::NAN,
+        Some((lo, hi, _)) if lo == hi => yields_pct[lo],
+        Some((lo, hi, w)) => yields_pct[lo] + w * (yields_pct[hi] - yields_pct[lo]),
+    }
+}
+
 /// First-order price change from a parallel shift of the rate curve:
 /// `price * (1 - modified_duration * delta)`, floored at zero.
 pub fn price_after_rate_shift(price: f64, mod_duration: f64, delta_pct: f64) -> f64 {

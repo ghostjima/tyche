@@ -1,6 +1,7 @@
 // Rust (the wasm build in pkg/) against the TypeScript twin
 // (packages/yield-twin/dist): every case in cases.json, then 1,000
-// generated issues with a plan and a broker's fee each.
+// generated issues with a plan, a broker's fee and a zero-coupon curve
+// each.
 // Run after building both:  node --test node/
 //
 // Tolerance: numbers agree when |a - b| <= 1e-6 * max(|a|, |b|), both NaN
@@ -31,6 +32,7 @@ const ARRAY_ARGS = {
   floater_coupons: [2],
   hold_value: [0, 1, 2],
   value_along_path: [0, 1, 4],
+  curve_yield_pct: [0, 1],
 };
 
 function call(impl, fn, args) {
@@ -77,9 +79,36 @@ function isoOf(days) {
   return new Date(days * 86_400_000).toISOString().slice(0, 10);
 }
 
+// The published terms of the Bank of Russia's zero-coupon curve, years.
+const TERMS = [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30];
+
+// A zero-coupon curve: most often the published terms, rising, flat or
+// inverted from a level of 3 to 25 percent; now and then a few of the
+// terms only, or a curve the engine refuses.
+function curveFrom(c) {
+  const x = c();
+  if (x < 0.01) return null;
+  if (x < 0.02) {
+    return [
+      { termsYears: [], yieldsPct: [] },
+      { termsYears: [1, 2], yieldsPct: [10] },
+      { termsYears: [2, 1], yieldsPct: [10, 11] },
+      { termsYears: [0, 1], yieldsPct: [10, 11] },
+      { termsYears: [1, 2], yieldsPct: [10, Number.NaN] },
+    ][Math.floor(c() * 5)];
+  }
+  const terms = x < 0.2 ? TERMS.filter(() => c() < 0.5) : TERMS;
+  const termsYears = terms.length > 0 ? terms : [1];
+  const level = 3 + 22 * c();
+  const slope = -4 + 8 * c();
+  const yieldsPct = termsYears.map((t) => Math.round((level + (slope * t) / (t + 2)) * 100) / 100);
+  return { termsYears, yieldsPct };
+}
+
 export function generate(count, seed) {
   const r = rng(seed);
   const fees = rng(seed + 1);
+  const curves = rng(seed + 2);
   const uniform = (lo, hi) => lo + (hi - lo) * r();
   const int = (lo, hi) => Math.floor(uniform(lo, hi + 1));
   const pick = (xs) => xs[Math.floor(r() * xs.length)];
@@ -131,36 +160,41 @@ export function generate(count, seed) {
     // and plans are the ones the set had before fees were added.
     const f = fees();
     const feePct = f < 0.01 ? (f < 0.005 ? -0.1 : Number.NaN) : [0, 0.05, 0.05, 0.3, 1][Math.floor(((f - 0.01) / 0.99) * 5)];
-    out.push({ issue, market, plan, feePct });
+    // A zero-coupon curve for explain and g_spread, from a third generator,
+    // so the issues, plans and fees are the ones the set had before.
+    const curve = curveFrom(curves);
+    out.push({ issue, market, plan, feePct, curve });
   }
   return out;
 }
 
-test("wasm and twin agree on 1,000 generated issues, plans and fees", (t) => {
+test("wasm and twin agree on 1,000 generated issues, plans, fees and curves", (t) => {
   const set = generate(1000, 20261004);
   const failures = [];
   let worst = 0;
   let worstAt = "";
-  const outcomes = { derived: 0, calculated: 0, explained: 0, errors: {} };
-  for (const [k, { issue, market, plan, feePct }] of set.entries()) {
+  const outcomes = { derived: 0, calculated: 0, explained: 0, spread: 0, errors: {} };
+  const done = { derive_bond: "derived", calculate: "calculated", explain: "explained", g_spread: "spread" };
+  for (const [k, { issue, market, plan, feePct, curve }] of set.entries()) {
     const pairs = [
       ["derive_bond", wasm.derive_bond(issue, market), twin.derive_bond(issue, market)],
       ["calculate", wasm.calculate(issue, market, plan), twin.calculate(issue, market, plan)],
-      ["explain", wasm.explain(issue, market, plan, feePct), twin.explain(issue, market, plan, feePct)],
+      ["explain", wasm.explain(issue, market, plan, feePct, curve), twin.explain(issue, market, plan, feePct, curve)],
+      ["g_spread", wasm.g_spread(issue, market, curve), twin.g_spread(issue, market, curve)],
     ];
     for (const [fn, w, t] of pairs) {
       const r = compare(w, t, `issue ${k} ${fn}`);
       failures.push(...r.failures);
       if (r.worst > worst) [worst, worstAt] = [r.worst, r.worstAt];
-      if ("ok" in t) outcomes[fn === "derive_bond" ? "derived" : fn === "calculate" ? "calculated" : "explained"] += 1;
+      if ("ok" in t) outcomes[done[fn]] += 1;
       else outcomes.errors[t.error] = (outcomes.errors[t.error] ?? 0) + 1;
     }
   }
   console.log(
-    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
+    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained, ${outcomes.spread} spread; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
   );
   assert.deepEqual(failures.slice(0, 20), []);
   // The set must exercise the paths, not only the errors.
-  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790);
+  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790 && outcomes.spread > 900);
   t.diagnostic(`parity ${JSON.stringify({ checked: "generated issues", count: set.length })}`);
 });

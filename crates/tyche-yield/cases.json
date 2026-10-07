@@ -3890,7 +3890,11 @@
         "otherIncome": 0,
         "rateShiftPct": -2
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -3961,6 +3965,16 @@
           "presentValue": 997.3500000000004,
           "priceWithFee": 997.848675,
           "ytmAfterFee": 0.13355808752993525,
+          "gSpread": {
+            "durationYears": 2.0892913017294896,
+            "yieldPct": 13.382932505003408,
+            "termBelowYears": 2,
+            "yieldBelowPct": 15.13,
+            "termAboveYears": 3,
+            "yieldAbovePct": 15.81,
+            "curvePct": 15.190718085176053,
+            "spreadBp": -180.77855801726452
+          },
           "held": {
             "qty": 250,
             "invested": 249337.5,
@@ -4108,7 +4122,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0
+      0,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -4179,6 +4197,16 @@
           "presentValue": 997.3500000000004,
           "priceWithFee": 997.35,
           "ytmAfterFee": 0.1338293250500341,
+          "gSpread": {
+            "durationYears": 2.0892913017294896,
+            "yieldPct": 13.382932505003408,
+            "termBelowYears": 2,
+            "yieldBelowPct": 15.13,
+            "termAboveYears": 3,
+            "yieldAbovePct": 15.81,
+            "curvePct": 15.190718085176053,
+            "spreadBp": -180.77855801726452
+          },
           "held": {
             "qty": 100,
             "invested": 99735,
@@ -4326,7 +4354,11 @@
         "otherIncome": 2400000,
         "rateShiftPct": 2
       },
-      0.3
+      0.3,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -4397,6 +4429,16 @@
           "presentValue": 997.3500000000004,
           "priceWithFee": 1000.3420499999999,
           "ytmAfterFee": 0.13220505740092403,
+          "gSpread": {
+            "durationYears": 2.0892913017294896,
+            "yieldPct": 13.382932505003408,
+            "termBelowYears": 2,
+            "yieldBelowPct": 15.13,
+            "termAboveYears": 3,
+            "yieldAbovePct": 15.81,
+            "curvePct": 15.190718085176053,
+            "spreadBp": -180.77855801726452
+          },
           "held": {
             "qty": 100,
             "invested": 99735,
@@ -4544,7 +4586,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -4705,6 +4751,16 @@
           "presentValue": 1007.9100000000008,
           "priceWithFee": 1008.4139549999999,
           "ytmAfterFee": 0.13093072655156412,
+          "gSpread": {
+            "durationYears": 4.677098141445779,
+            "yieldPct": 13.10515945932914,
+            "termBelowYears": 3,
+            "yieldBelowPct": 15.81,
+            "termAboveYears": 5,
+            "yieldAbovePct": 16.37,
+            "curvePct": 16.279587479604817,
+            "spreadBp": -317.4428020275677
+          },
           "held": {
             "qty": 99,
             "invested": 99783.09,
@@ -5037,7 +5093,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -5126,6 +5186,16 @@
           "presentValue": 985.3900000000002,
           "priceWithFee": 985.882695,
           "ytmAfterFee": 0.13208644717665174,
+          "gSpread": {
+            "durationYears": 1.8541615705078391,
+            "yieldPct": 13.239167689158126,
+            "termBelowYears": 1,
+            "yieldBelowPct": 13.58,
+            "termAboveYears": 2,
+            "yieldAbovePct": 15.13,
+            "curvePct": 14.903950434287152,
+            "spreadBp": -166.47827451290257
+          },
           "held": {
             "qty": 101,
             "invested": 99524.39000000001,
@@ -5355,7 +5425,11 @@
         "otherIncome": 2400000,
         "rateShiftPct": 2
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -5408,6 +5482,16 @@
           "presentValue": 1037.2600000000002,
           "priceWithFee": 1037.77863,
           "ytmAfterFee": 0.16425023395150296,
+          "gSpread": {
+            "durationYears": 0.5453912025279783,
+            "yieldPct": 16.531779927972202,
+            "termBelowYears": 0.5,
+            "yieldBelowPct": 12.04,
+            "termAboveYears": 0.75,
+            "yieldAbovePct": 12.91,
+            "curvePct": 12.197961384797363,
+            "spreadBp": 433.38185431748394
+          },
           "held": {
             "qty": 96,
             "invested": 99576.95999999999,
@@ -5492,6 +5576,16 @@
           "presentValue": 1037.26,
           "priceWithFee": 1037.77863,
           "ytmAfterFee": 0.15155927041528205,
+          "gSpread": {
+            "durationYears": 0.3159095337724642,
+            "yieldPct": 15.338285548483011,
+            "termBelowYears": 0.25,
+            "yieldBelowPct": 10.91,
+            "termAboveYears": 0.5,
+            "yieldAbovePct": 12.04,
+            "curvePct": 11.207911092651539,
+            "spreadBp": 413.0374455831472
+          },
           "held": {
             "qty": 96,
             "invested": 99576.95999999999,
@@ -5635,7 +5729,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      1
+      1,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -5724,6 +5822,16 @@
           "presentValue": 1070.8600000000001,
           "priceWithFee": 1081.5685999999998,
           "ytmAfterFee": 0.2055215029482883,
+          "gSpread": {
+            "durationYears": 1.0159555807764966,
+            "yieldPct": 21.737707726678813,
+            "termBelowYears": 1,
+            "yieldBelowPct": 13.58,
+            "termAboveYears": 2,
+            "yieldAbovePct": 15.13,
+            "curvePct": 13.60473115020357,
+            "spreadBp": 813.2976576475244
+          },
           "held": {
             "qty": 93,
             "invested": 99589.98,
@@ -5791,7 +5899,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -6168,6 +6280,16 @@
           "presentValue": 1003.4299999999998,
           "priceWithFee": 1003.9317149999999,
           "ytmAfterFee": 0.19611497694123903,
+          "gSpread": {
+            "durationYears": 4.650251294768813,
+            "yieldPct": 19.624354295510827,
+            "termBelowYears": 3,
+            "yieldBelowPct": 15.81,
+            "termAboveYears": 5,
+            "yieldAbovePct": 16.37,
+            "curvePct": 16.272070362535267,
+            "spreadBp": 335.22839329755595
+          },
           "held": {
             "qty": 99,
             "invested": 99339.56999999999,
@@ -6540,6 +6662,16 @@
           "presentValue": 1003.4300000000001,
           "priceWithFee": 1003.9317149999999,
           "ytmAfterFee": 0.19770109761502364,
+          "gSpread": {
+            "durationYears": 2.5902978086048245,
+            "yieldPct": 19.793224108733266,
+            "termBelowYears": 2,
+            "yieldBelowPct": 15.13,
+            "termAboveYears": 3,
+            "yieldAbovePct": 15.81,
+            "curvePct": 15.531402509851281,
+            "spreadBp": 426.1821598881985
+          },
           "held": {
             "qty": 99,
             "invested": 99339.56999999999,
@@ -6746,7 +6878,11 @@
         "otherIncome": 2399700,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -6790,6 +6926,16 @@
           "presentValue": 1100.13698630137,
           "priceWithFee": 1100.6870547945205,
           "ytmAfterFee": 0.06304844920457964,
+          "gSpread": {
+            "durationYears": 1.410477291901178,
+            "yieldPct": 6.342525796100029,
+            "termBelowYears": 1,
+            "yieldBelowPct": 13.58,
+            "termAboveYears": 2,
+            "yieldAbovePct": 15.13,
+            "curvePct": 14.216239802446827,
+            "spreadBp": -787.3714006346798
+          },
           "held": {
             "qty": 10,
             "invested": 11001.369863013699,
@@ -6937,7 +7083,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -7098,6 +7248,16 @@
           "presentValue": 1007.9068493150684,
           "priceWithFee": 1008.4108027397259,
           "ytmAfterFee": 0.13093148230196328,
+          "gSpread": {
+            "durationYears": 4.6770937369884225,
+            "yieldPct": 13.105235053826492,
+            "termBelowYears": 3,
+            "yieldBelowPct": 15.81,
+            "termAboveYears": 5,
+            "yieldAbovePct": 16.37,
+            "curvePct": 16.27958624635676,
+            "spreadBp": -317.43511925302687
+          },
           "held": {
             "qty": 99,
             "invested": 99782.77808219178,
@@ -7405,7 +7565,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "ok": {
@@ -7440,6 +7604,16 @@
           "presentValue": 499.9999999999999,
           "priceWithFee": 500.25,
           "ytmAfterFee": 0.2591809890485258,
+          "gSpread": {
+            "durationYears": 3.0054794520547947,
+            "yieldPct": 25.939043499761272,
+            "termBelowYears": 3,
+            "yieldBelowPct": 15.81,
+            "termAboveYears": 5,
+            "yieldAbovePct": 16.37,
+            "curvePct": 15.811534246575343,
+            "spreadBp": 1012.7509253185929
+          },
           "held": {
             "qty": 2000000,
             "invested": 1000000000,
@@ -7547,7 +7721,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      -0.01
+      -0.01,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "error": "invalid_fee"
@@ -7581,7 +7759,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      "NaN"
+      "NaN",
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "error": "invalid_fee"
@@ -7615,7 +7797,11 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      -1
+      -1,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "error": "amount_not_positive"
@@ -7649,10 +7835,886 @@
         "otherIncome": 0,
         "rateShiftPct": 0
       },
-      0.05
+      0.05,
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
     ],
     "expect": {
       "error": "invalid_code"
+    }
+  },
+  {
+    "name": "curve_yield_pct: halfway between the one- and two-year terms",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      1.5
+    ],
+    "expect": 14.355
+  },
+  {
+    "name": "curve_yield_pct: on a published term",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      2
+    ],
+    "expect": 15.13
+  },
+  {
+    "name": "curve_yield_pct: before the first term, held flat",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      0.1
+    ],
+    "expect": 10.91
+  },
+  {
+    "name": "curve_yield_pct: beyond the last term, held flat",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      40
+    ],
+    "expect": 17.07
+  },
+  {
+    "name": "curve_yield_pct: a quarter of the way from three to five years",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      3.5
+    ],
+    "expect": 15.950000000000001
+  },
+  {
+    "name": "curve_yield_pct: NaN term is NaN",
+    "fn": "curve_yield_pct",
+    "args": [
+      [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+      [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07],
+      "NaN"
+    ],
+    "expect": "NaN"
+  },
+  {
+    "name": "curve_yield_pct: terms and yields of different lengths are NaN",
+    "fn": "curve_yield_pct",
+    "args": [
+      [1, 2],
+      [10],
+      1.5
+    ],
+    "expect": "NaN"
+  },
+  {
+    "name": "curve_yield_pct: no terms is NaN",
+    "fn": "curve_yield_pct",
+    "args": [
+      [],
+      [],
+      1
+    ],
+    "expect": "NaN"
+  },
+  {
+    "name": "g_spread: fixed bullet, to maturity only",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 2.0892913017294896,
+          "yieldPct": 13.382932505003408,
+          "termBelowYears": 2,
+          "yieldBelowPct": 15.13,
+          "termAboveYears": 3,
+          "yieldAbovePct": 15.81,
+          "curvePct": 15.190718085176053,
+          "spreadBp": -180.77855801726452
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread: amortising, the duration of the amortised flows",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 96.9,
+        "accrued": 16.39,
+        "couponType": "fixed",
+        "couponRatePct": 11.08,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2030-01-06",
+        "offers": [],
+        "amortization": [
+          {
+            "date": "2027-07-11",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2028-01-09",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2028-07-09",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2029-01-07",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2029-07-08",
+            "fractionPct": 16.67
+          },
+          {
+            "date": "2030-01-06",
+            "fractionPct": 16.67
+          }
+        ]
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 1.8541615705078391,
+          "yieldPct": 13.239167689158126,
+          "termBelowYears": 1,
+          "yieldBelowPct": 13.58,
+          "termAboveYears": 2,
+          "yieldAbovePct": 15.13,
+          "curvePct": 14.903950434287152,
+          "spreadBp": -166.47827451290257
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread: offer and maturity, each at its own duration",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.15,
+        "accrued": 11.93,
+        "couponType": "fixed",
+        "couponRatePct": 18.14,
+        "spreadPct": 0,
+        "periodDays": 91,
+        "maturity": "2036-04-29",
+        "offers": ["2030-02-05"],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 4.650251294768813,
+          "yieldPct": 19.624354295510827,
+          "termBelowYears": 3,
+          "yieldBelowPct": 15.81,
+          "termAboveYears": 5,
+          "yieldAbovePct": 16.37,
+          "curvePct": 16.272070362535267,
+          "spreadBp": 335.22839329755595
+        },
+        "toOffer": {
+          "durationYears": 2.5902978086048245,
+          "yieldPct": 19.793224108733266,
+          "termBelowYears": 2,
+          "yieldBelowPct": 15.13,
+          "termAboveYears": 3,
+          "yieldAbovePct": 15.81,
+          "curvePct": 15.531402509851281,
+          "spreadBp": 426.1821598881985
+        }
+      }
+    }
+  },
+  {
+    "name": "g_spread: floater with an offer, at today's key rate",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.78,
+        "accrued": 29.46,
+        "couponType": "floater",
+        "couponRatePct": 17.07,
+        "spreadPct": 1.07,
+        "periodDays": 91,
+        "maturity": "2027-04-02",
+        "offers": ["2027-01-01"],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 0.5453912025279783,
+          "yieldPct": 16.531779927972202,
+          "termBelowYears": 0.5,
+          "yieldBelowPct": 12.04,
+          "termAboveYears": 0.75,
+          "yieldAbovePct": 12.91,
+          "curvePct": 12.197961384797363,
+          "spreadBp": 433.38185431748394
+        },
+        "toOffer": {
+          "durationYears": 0.3159095337724642,
+          "yieldPct": 15.338285548483011,
+          "termBelowYears": 0.25,
+          "yieldBelowPct": 10.91,
+          "termAboveYears": 0.5,
+          "yieldAbovePct": 12.04,
+          "curvePct": 11.207911092651539,
+          "spreadBp": 413.0374455831472
+        }
+      }
+    }
+  },
+  {
+    "name": "g_spread: duration under the first term, the curve held flat",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 99.9,
+        "accrued": 49,
+        "couponType": "fixed",
+        "couponRatePct": 10,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2026-11-04",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 0.16712328767123288,
+          "yieldPct": 1.068419590045544,
+          "termBelowYears": 0.25,
+          "yieldBelowPct": 10.91,
+          "termAboveYears": 0.25,
+          "yieldAbovePct": 10.91,
+          "curvePct": 10.91,
+          "spreadBp": -984.1580409954456
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread: duration beyond the last term of a short curve, held flat",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.5, 1],
+        "yieldsPct": [12, 13]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 2.0892913017294896,
+          "yieldPct": 13.382932505003408,
+          "termBelowYears": 1,
+          "yieldBelowPct": 13,
+          "termAboveYears": 1,
+          "yieldAbovePct": 13,
+          "curvePct": 13,
+          "spreadBp": 38.293250500340825
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread: one-term curve",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1],
+        "yieldsPct": [14]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": 2.0892913017294896,
+          "yieldPct": 13.382932505003408,
+          "termBelowYears": 1,
+          "yieldBelowPct": 14,
+          "termAboveYears": 1,
+          "yieldAbovePct": 14,
+          "curvePct": 14,
+          "spreadBp": -61.706749499659175
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread: zero dirty price gives NaN figures",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 0,
+        "accrued": 0,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0.25, 0.5, 0.75, 1, 2, 3, 5, 7, 10, 15, 20, 30],
+        "yieldsPct": [10.91, 12.04, 12.91, 13.58, 15.13, 15.81, 16.37, 16.61, 16.8, 16.94, 17.01, 17.07]
+      }
+    ],
+    "expect": {
+      "ok": {
+        "toMaturity": {
+          "durationYears": "NaN",
+          "yieldPct": "NaN",
+          "termBelowYears": "NaN",
+          "yieldBelowPct": "NaN",
+          "termAboveYears": "NaN",
+          "yieldAbovePct": "NaN",
+          "curvePct": "NaN",
+          "spreadBp": "NaN"
+        },
+        "toOffer": null
+      }
+    }
+  },
+  {
+    "name": "g_spread error: curve missing",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      null
+    ],
+    "expect": {
+      "error": "curve_missing"
+    }
+  },
+  {
+    "name": "g_spread error: a curve with no terms and no yields is missing",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [],
+        "yieldsPct": []
+      }
+    ],
+    "expect": {
+      "error": "curve_missing"
+    }
+  },
+  {
+    "name": "g_spread error: terms and yields of different lengths",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1, 2, 3],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: yields without terms",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [],
+        "yieldsPct": [10]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: terms not ascending",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1, 3, 2],
+        "yieldsPct": [10, 11, 12]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: a repeated term",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1, 1],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: a zero term",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [0, 1],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: a NaN yield",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1, 2],
+        "yieldsPct": [10, "NaN"]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: a NaN term",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": ["NaN", 2],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "g_spread error: the issue's errors come before the curve's",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2025-09-04",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      null
+    ],
+    "expect": {
+      "error": "matured"
+    }
+  },
+  {
+    "name": "g_spread error: unknown coupon type first",
+    "fn": "g_spread",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "zero",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "termsYears": [1, 1],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_code"
+    }
+  },
+  {
+    "name": "explain error: curve missing, checked after the fee",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05,
+      null
+    ],
+    "expect": {
+      "error": "curve_missing"
+    }
+  },
+  {
+    "name": "explain error: a malformed curve",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      0.05,
+      {
+        "termsYears": [2, 1],
+        "yieldsPct": [10, 11]
+      }
+    ],
+    "expect": {
+      "error": "invalid_curve"
+    }
+  },
+  {
+    "name": "explain error: the fee comes before the curve",
+    "fn": "explain",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 100000,
+        "horizonDay": 365,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": 0
+      },
+      -1,
+      null
+    ],
+    "expect": {
+      "error": "invalid_fee"
     }
   }
 ]

@@ -1,6 +1,6 @@
 // Loads the wasm-pack build in pkg/ under Node and wraps derive_bond,
-// calculate and explain so they take and return the same plain objects as
-// the twin.
+// calculate, explain and g_spread so they take and return the same plain
+// objects as the twin.
 // Also the reference for using the structs from JavaScript.
 
 import { readFileSync } from "node:fs";
@@ -46,6 +46,36 @@ export function wrap(w) {
     p.otherIncome = x.otherIncome;
     p.rateShiftPct = x.rateShiftPct;
     return p;
+  };
+  // A curve crosses by value: the call consumes the wasm object, so it is
+  // made for each call and never freed here. null or undefined stays
+  // undefined, which the engine reports as curve_missing.
+  const curveOf = (x) => {
+    if (x === null || x === undefined) return undefined;
+    const c = new w.Curve();
+    c.termsYears = Float64Array.from(x.termsYears);
+    c.yieldsPct = Float64Array.from(x.yieldsPct);
+    return c;
+  };
+  const gSpread = (g) => {
+    const out = {
+      durationYears: g.durationYears,
+      yieldPct: g.yieldPct,
+      termBelowYears: g.termBelowYears,
+      yieldBelowPct: g.yieldBelowPct,
+      termAboveYears: g.termAboveYears,
+      yieldAbovePct: g.yieldAbovePct,
+      curvePct: g.curvePct,
+      spreadBp: g.spreadBp,
+    };
+    g.free();
+    return out;
+  };
+  const gSpreads = (s) => {
+    const toOffer = s.toOffer;
+    const out = { toMaturity: gSpread(s.toMaturity), toOffer: toOffer === undefined ? null : gSpread(toOffer) };
+    s.free();
+    return out;
   };
   const schedule = (s) => {
     const out = { days: s.days, coupons: s.coupons, principals: s.principals };
@@ -166,6 +196,7 @@ export function wrap(w) {
       presentValue: y.presentValue,
       priceWithFee: y.priceWithFee,
       ytmAfterFee: y.ytmAfterFee,
+      gSpread: gSpread(y.gSpread),
       held: breakdown(y.held),
       tax: y.tax.map(taxYear),
     };
@@ -214,14 +245,22 @@ export function wrap(w) {
       m.free();
       return out;
     },
-    explain: (issue, market, plan, feePct) => {
+    explain: (issue, market, plan, feePct, curve) => {
       const i = issueOf(issue);
       const m = marketOf(market);
       const p = planOf(plan);
-      const out = result(w.explain(i, m, p, feePct), explanation);
+      const out = result(w.explain(i, m, p, feePct, curveOf(curve)), explanation);
       i.free();
       m.free();
       p.free();
+      return out;
+    },
+    g_spread: (issue, market, curve) => {
+      const i = issueOf(issue);
+      const m = marketOf(market);
+      const out = result(w.g_spread(i, m, curveOf(curve)), gSpreads);
+      i.free();
+      m.free();
       return out;
     },
     calculate: (issue, market, plan) => {

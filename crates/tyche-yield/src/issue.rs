@@ -40,6 +40,14 @@ pub enum Error {
     AmountBelowOneBond,
     /// The broker's fee is not a finite number of at least zero.
     InvalidFee,
+    /// No zero-coupon curve was given: no terms and no yields (at the
+    /// JavaScript boundary and in the twin, also a curve that is null or
+    /// undefined).
+    CurveMissing,
+    /// The zero-coupon curve's terms and yields differ in number, a term
+    /// is not a finite number above zero, the terms do not strictly
+    /// ascend, or a yield is not a finite number.
+    InvalidCurve,
 }
 
 impl Error {
@@ -58,6 +66,8 @@ impl Error {
             Error::InvalidPrice => "invalid_price",
             Error::AmountBelowOneBond => "amount_below_one_bond",
             Error::InvalidFee => "invalid_fee",
+            Error::CurveMissing => "curve_missing",
+            Error::InvalidCurve => "invalid_curve",
         }
     }
 }

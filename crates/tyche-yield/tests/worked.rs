@@ -15,6 +15,16 @@ macro_rules! assert_close {
     }};
 }
 
+// A zero-coupon curve of two published terms: 9 percent at one year, 12
+// at three. Read linearly between them, it rises 1.5 percentage points a
+// year; before one year it stays at 9, after three at 12.
+fn curve() -> Curve {
+    Curve {
+        terms_years: vec![1.0, 3.0],
+        yields_pct: vec![9.0, 12.0],
+    }
+}
+
 fn market(valuation_date: &str) -> Market {
     Market {
         valuation_date: valuation_date.into(),
@@ -413,7 +423,14 @@ fn bullet_plan(other_income: f64) -> Plan {
 
 #[test]
 fn explain_works_out_the_yield_and_the_fee() {
-    let e = explain(&bullet(), &market("2026-01-01"), &bullet_plan(0.0), 1.0).unwrap();
+    let e = explain(
+        &bullet(),
+        &market("2026-01-01"),
+        &bullet_plan(0.0),
+        1.0,
+        &curve(),
+    )
+    .unwrap();
     assert_close!(e.price.clean, 1000.0);
     assert_close!(e.price.accrued, 0.0);
     assert_close!(e.price.dirty, 1000.0);
@@ -434,7 +451,14 @@ fn explain_works_out_the_yield_and_the_fee() {
 
 #[test]
 fn explain_traces_the_tax_and_the_yield_after_it() {
-    let e = explain(&bullet(), &market("2026-01-01"), &bullet_plan(0.0), 1.0).unwrap();
+    let e = explain(
+        &bullet(),
+        &market("2026-01-01"),
+        &bullet_plan(0.0),
+        1.0,
+        &curve(),
+    )
+    .unwrap();
     let held = &e.to_maturity.held;
     // Ten bonds, 10,000 paid, a fee of 1 percent: 100.
     assert_close!(held.invested, 10_000.0);
@@ -467,6 +491,7 @@ fn explain_traces_the_tax_and_the_yield_after_it() {
         &market("2026-01-01"),
         &bullet_plan(2_399_900.0),
         1.0,
+        &curve(),
     )
     .unwrap();
     let t = e.to_maturity.tax[0];
@@ -507,7 +532,14 @@ fn explain_shows_accrued_interest_paid_and_received() {
         other_income: 0.0,
         rate_shift_pct: 0.0,
     };
-    let e = explain(&mid_period(), &market("2026-01-01"), &plan, COMMISSION_PCT).unwrap();
+    let e = explain(
+        &mid_period(),
+        &market("2026-01-01"),
+        &plan,
+        COMMISSION_PCT,
+        &curve(),
+    )
+    .unwrap();
     assert_close!(e.price.coupon_amount, 36.0);
     assert_close!(e.price.days_since_last, 90.0);
     assert_close!(e.price.accrued, 18.0);
@@ -541,7 +573,7 @@ fn explain_refuses_a_fee_it_cannot_use() {
     let m = market("2026-01-01");
     for fee in [-0.01, f64::NAN, f64::INFINITY] {
         assert_eq!(
-            explain(&bullet(), &m, &bullet_plan(0.0), fee),
+            explain(&bullet(), &m, &bullet_plan(0.0), fee, &curve()),
             Err(Error::InvalidFee)
         );
     }
@@ -551,7 +583,144 @@ fn explain_refuses_a_fee_it_cannot_use() {
         ..bullet_plan(0.0)
     };
     assert_eq!(
-        explain(&bullet(), &m, &plan, -1.0),
+        explain(&bullet(), &m, &plan, -1.0, &curve()),
         Err(Error::AmountNotPositive)
+    );
+}
+
+// A three-year bond, 10 percent annual coupon, at par on 2029-01-01, with
+// a put offer on its first coupon day, 2030-01-01. Its coupons fall on
+// days 365, 730 and 1,095 (2030, 2031 and 2032-01-01), whole years, and
+// no time has passed since the last coupon, so the dirty price is 1,000
+// and both yields are 10 percent.
+fn with_offer() -> Issue {
+    Issue {
+        nominal: 1000.0,
+        price_pct: 100.0,
+        accrued: None,
+        coupon_type: CouponType::Fixed,
+        coupon_rate_pct: 10.0,
+        spread_pct: 0.0,
+        period_days: 365.0,
+        maturity: "2032-01-01".into(),
+        offers: vec!["2030-01-01".into()],
+        amortization: vec![],
+    }
+}
+
+#[test]
+fn g_spread_reads_the_curve_at_each_duration() {
+    let g = g_spread(&with_offer(), &market("2029-01-01"), &curve()).unwrap();
+    // To maturity: 100, 100 and 1,100 at 10 percent are worth 100 / 1.1,
+    // 100 / 1.21 and 1,100 / 1.331, which add up to 1,000; weighted by
+    // their years, (121 + 220 + 3,300) / 1,331 = 3,641 / 1,331 = 2.7355
+    // years. The curve there: 9 + 1.5 x (3,641 / 1,331 - 1) = 9 + 3,465 /
+    // 1,331 = 11.6033 percent. The spread: (10 - 11.6033) x 100 = -2,134 /
+    // 1,331 x 100 = -160.33 basis points.
+    let m = g.to_maturity;
+    assert!((m.yield_pct - 10.0).abs() < 1e-9);
+    assert!((m.duration_years - 3641.0 / 1331.0).abs() < 1e-9);
+    assert_eq!((m.term_below_years, m.yield_below_pct), (1.0, 9.0));
+    assert_eq!((m.term_above_years, m.yield_above_pct), (3.0, 12.0));
+    assert!((m.curve_pct - (9.0 + 3465.0 / 1331.0)).abs() < 1e-9);
+    assert!((m.spread_bp - (-2134.0 / 1331.0 * 100.0)).abs() < 1e-6);
+    // To the offer: the one flow, 1,100 in a year, at 10 percent; its
+    // duration is that year, the curve's first term: 9 percent, so the
+    // spread is +100 basis points.
+    let o = g.to_offer.unwrap();
+    assert!((o.duration_years - 1.0).abs() < 1e-12);
+    assert!((o.curve_pct - 9.0).abs() < 1e-9);
+    assert!((o.spread_bp - 100.0).abs() < 1e-6);
+    // explain carries the same spreads in its trace.
+    let plan = Plan {
+        amount: 10_000.0,
+        horizon_day: 365.0,
+        reinvest: false,
+        tax_regime: TaxRegime::Standard,
+        other_income: 0.0,
+        rate_shift_pct: 0.0,
+    };
+    let e = explain(
+        &with_offer(),
+        &market("2029-01-01"),
+        &plan,
+        COMMISSION_PCT,
+        &curve(),
+    )
+    .unwrap();
+    assert_eq!(e.to_maturity.g_spread, m);
+    assert_eq!(e.to_offer.unwrap().g_spread, o);
+}
+
+#[test]
+fn g_spread_holds_the_curve_flat_beyond_its_terms() {
+    // The one-year bullet: one flow, a year away, at 10 percent; its
+    // duration is one year.
+    let m = market("2026-01-01");
+    let short = Curve {
+        terms_years: vec![0.25, 0.5],
+        yields_pct: vec![8.0, 9.0],
+    };
+    let long = Curve {
+        terms_years: vec![2.0, 5.0],
+        yields_pct: vec![11.0, 13.0],
+    };
+    // Beyond the half-year term the curve stays at 9: +100 basis points;
+    // before the two-year term it stays at 11: -100.
+    let g = g_spread(&bullet(), &m, &short).unwrap().to_maturity;
+    assert_eq!(
+        (g.term_below_years, g.term_above_years, g.curve_pct),
+        (0.5, 0.5, 9.0)
+    );
+    assert!((g.spread_bp - 100.0).abs() < 1e-6);
+    let g = g_spread(&bullet(), &m, &long).unwrap().to_maturity;
+    assert_eq!(
+        (g.term_below_years, g.term_above_years, g.curve_pct),
+        (2.0, 2.0, 11.0)
+    );
+    assert!((g.spread_bp + 100.0).abs() < 1e-6);
+    assert_eq!(g_spread(&bullet(), &m, &long).unwrap().to_offer, None);
+}
+
+#[test]
+fn g_spread_refuses_a_curve_it_cannot_read() {
+    let m = market("2026-01-01");
+    let c = |t: &[f64], y: &[f64]| Curve {
+        terms_years: t.to_vec(),
+        yields_pct: y.to_vec(),
+    };
+    assert_eq!(
+        g_spread(&bullet(), &m, &c(&[], &[])),
+        Err(Error::CurveMissing)
+    );
+    for bad in [
+        c(&[1.0, 2.0], &[10.0]),
+        c(&[], &[10.0]),
+        c(&[2.0, 1.0], &[10.0, 11.0]),
+        c(&[1.0, 1.0], &[10.0, 11.0]),
+        c(&[0.0, 1.0], &[10.0, 11.0]),
+        c(&[-1.0, 1.0], &[10.0, 11.0]),
+        c(&[1.0, f64::INFINITY], &[10.0, 11.0]),
+        c(&[1.0, 2.0], &[10.0, f64::NAN]),
+    ] {
+        assert_eq!(
+            g_spread(&bullet(), &m, &bad),
+            Err(Error::InvalidCurve),
+            "{bad:?}"
+        );
+    }
+    // The issue's errors come first; in explain, the plan's and the fee's.
+    let matured = Issue {
+        maturity: "2025-01-01".into(),
+        ..bullet()
+    };
+    assert_eq!(g_spread(&matured, &m, &c(&[], &[])), Err(Error::Matured));
+    assert_eq!(
+        explain(&bullet(), &m, &bullet_plan(0.0), -1.0, &c(&[], &[])),
+        Err(Error::InvalidFee)
+    );
+    assert_eq!(
+        explain(&bullet(), &m, &bullet_plan(0.0), 1.0, &c(&[], &[])),
+        Err(Error::CurveMissing)
     );
 }

@@ -78,6 +78,9 @@ test("the yield to maturity and to the offer, after the fee and after tax with n
   await expect(gross.getByRole("cell")).toHaveText(["15.79%", "14.60%"]);
   await expect(afterFee.getByRole("cell")).toHaveText(["15.75%", "14.53%"]);
   await expect(afterTax.getByRole("cell")).toHaveText(["12.19%", "11.82%"]);
+  // The G-spread of each yield, from the engine, to the Bank of Russia's
+  // zero-coupon curve.
+  await expect(table.getByRole("row", { name: /^G-spread/ }).getByRole("cell")).toHaveText(["+151 bp", "+145 bp"]);
   const maturity = afterTax;
   await expect(page.getByTestId("yield-note")).toContainText("No hidden reinvestment");
   // Other income above the threshold: 15 percent instead of 13, less left.
@@ -110,8 +113,32 @@ test("how it is worked out: the accrued interest, the yield and the tax per year
   await expect(tax.getByRole("row", { name: /^Coupons/ })).toContainText("article 214.1");
   await expect(tax).toContainText(/Oct\s1,\s2026/);
   await expect(page.getByRole("table", { name: "Tax for 2028, held to maturity" }).getByRole("row", { name: /^Result of the redemptions/ })).toBeVisible();
+  // The G-spread: the duration, the curve read between its published terms
+  // with the Bank of Russia named and dated, and the difference.
+  const spread = page.getByRole("table", { name: "G-spread, held to maturity" });
+  await expect(spread.getByRole("row", { name: /^Macaulay duration/ })).toContainText("1.46 years");
+  const curve = spread.getByRole("row", { name: /^Curve's yield at the duration, read between the terms of 1\.00 years and 2\.00 years/ });
+  await expect(curve).toContainText("13.58% + (1.4562 − 1.00) / (2.00 − 1.00) × (15.13% − 13.58%)");
+  await expect(curve).toContainText("14.29%");
+  await expect(curve).toContainText("Bank of Russia: zero-coupon yield curve of federal loan bonds");
+  await expect(curve).toContainText(/Oct\s5,\s2026/);
+  await expect(curve.getByRole("link")).toHaveAttribute("href", "https://www.cbr.ru/hd_base/zcyc_params/");
+  await expect(spread.getByRole("row", { name: /^G-spread: the yield less the curve's/ })).toContainText("+151 bp");
+  await expect(page.getByRole("table", { name: "G-spread, held to the offer" }).getByRole("row", { name: /^G-spread: the yield less/ })).toContainText("+145 bp");
+  // The card names the Bank of Russia and the curve's calculator.
+  await expect(page.locator(".issue-card .source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
   // Each table copies as plain text.
   await expect(working.getByRole("button", { name: /Copy/ }).first()).toBeVisible();
+});
+
+test("an inflation-linked issue's real yield has no G-spread to the nominal curve", async ({ page }) => {
+  await page.goto(`/?lang=en&issue=NEVB-01`);
+  await ready(page);
+  const table = page.getByRole("table", { name: "Yield to maturity and to the offer" });
+  await expect(table.getByRole("row", { name: /^G-spread/ }).getByRole("cell")).toHaveText(["not compared: the yield is real"]);
+  await page.getByTestId("working").locator("summary").click();
+  await expect(page.getByRole("table", { name: "Yield, held to maturity" })).toBeVisible();
+  await expect(page.getByRole("table", { name: /^G-spread/ })).toHaveCount(0);
 });
 
 test("в карточке по-русски: риски, доходность без скрытого реинвестирования и расчёт со ссылкой на Налоговый кодекс", async ({ page }) => {
@@ -126,6 +153,7 @@ test("в карточке по-русски: риски, доходность б
   await expect(page.getByTestId("yield-note")).toContainText("Без скрытого реинвестирования");
   await page.getByTestId("working").locator("summary").click();
   await expect(page.getByTestId("working")).toContainText("Налоговый кодекс Российской Федерации, статья 224");
+  await expect(page.getByRole("table", { name: "G-спред, если держать до погашения" })).toContainText("Банк России: кривая бескупонной доходности ОФЗ");
   // The banner still says it is not advice.
   await expect(page.getByRole("banner")).toContainText("Не является инвестиционной рекомендацией.");
 });

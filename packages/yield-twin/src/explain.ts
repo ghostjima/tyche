@@ -3,20 +3,22 @@
   it. The price and its accrued interest; the yields to maturity and to the
   offer solved from the discounted flows; the yields after a broker's fee;
   what holding to each event leaves after tax and the fee without
-  reinvesting anything; the tax year by year.
+  reinvesting anything; the G-spread of each yield to the zero-coupon curve;
+  the tax year by year.
 */
 
 import { breakdownOf, checkPlan, isTaxRegime, type Holding } from "./calculate.js";
 import { parseIsoDate } from "./dates.js";
 import { amountsOf, derive_bond, isCouponType } from "./issue.js";
 import { YEAR, ytm_effective } from "./primitives.js";
-import type { Explanation, FlowTrace, Issue, Market, Plan, Result, Schedule, YieldTrace } from "./types.js";
+import { checkCurve, spreadOf } from "./spread.js";
+import type { Curve, Explanation, FlowTrace, Issue, Market, Plan, Result, Schedule, YieldTrace } from "./types.js";
 
 /*
   Errors as calculate, then invalid_fee for a fee that is not a finite
-  number of at least zero
+  number of at least zero, then the curve's (curve_missing, invalid_curve)
 */
-export function explain(issue: Issue, market: Market, plan: Plan, feePct: number): Result<Explanation> {
+export function explain(issue: Issue, market: Market, plan: Plan, feePct: number, curve: Curve | null | undefined): Result<Explanation> {
   if (!isCouponType(issue.couponType) || !isTaxRegime(plan.taxRegime)) {
     return { error: "invalid_code" };
   }
@@ -26,6 +28,9 @@ export function explain(issue: Issue, market: Market, plan: Plan, feePct: number
   const qty = checkPlan(d, plan);
   if (typeof qty === "string") return { error: qty };
   if (!(Number.isFinite(feePct) && feePct >= 0)) return { error: "invalid_fee" };
+  const badCurve = checkCurve(curve);
+  if (badCurve !== null) return { error: badCurve };
+  const zc = curve as Curve;
   const holding = (reinvestRate: number, p: Plan): Holding => ({
     qty,
     dirtyPrice: d.dirtyPrice,
@@ -61,6 +66,7 @@ export function explain(issue: Issue, market: Market, plan: Plan, feePct: number
       presentValue,
       priceWithFee,
       ytmAfterFee: ytm_effective(amountsOf(flows), flows.days, priceWithFee),
+      gSpread: spreadOf(flows, ytm, zc),
       held,
       tax,
     };

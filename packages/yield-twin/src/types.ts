@@ -17,7 +17,9 @@ export type ErrorCode =
   | "invalid_other_income"
   | "invalid_price"
   | "amount_below_one_bond"
-  | "invalid_fee";
+  | "invalid_fee"
+  | "curve_missing"
+  | "invalid_curve";
 
 /* Errors are values: either `ok` or `error` is present */
 export type Result<T> = { ok: T } | { error: ErrorCode };
@@ -62,6 +64,28 @@ export type Market = {
   valuationDate: string;
   keyRatePct: number;
 };
+
+/* A zero-coupon yield curve as published: yields in percent a year, annual effective, at ascending terms in years */
+export type Curve = { termsYears: number[]; yieldsPct: number[] };
+
+/*
+  The G-spread of a yield to one event: the yield, percent, less the curve's
+  yield at the Macaulay duration of the flows to the event, in basis points.
+  The curve's yield is read between the published terms below and above the
+  duration (the same term twice where the curve is held flat)
+*/
+export type GSpread = {
+  durationYears: number;
+  yieldPct: number;
+  termBelowYears: number;
+  yieldBelowPct: number;
+  termAboveYears: number;
+  yieldAbovePct: number;
+  curvePct: number;
+  spreadBp: number;
+};
+
+export type GSpreads = { toMaturity: GSpread; toOffer: GSpread | null };
 
 export type Plan = {
   amount: number;
@@ -211,6 +235,8 @@ export type YieldTrace = {
   presentValue: number;
   priceWithFee: number;
   ytmAfterFee: number;
+  /* The G-spread of ytm to the zero-coupon curve */
+  gSpread: GSpread;
   /* Held to the event: nothing reinvested, the fee on the purchase, the plan's tax */
   held: Breakdown;
   tax: TaxYear[];

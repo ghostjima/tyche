@@ -21,7 +21,7 @@ import {
   type ThemePreference,
 } from "@ghostjima/stoa-react";
 import type { Bond } from "./data/issues";
-import { IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET, VALUATION_DATE } from "./data/market";
+import { CURVE, IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET, VALUATION_DATE } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
 import { COMMISSION_PCT } from "@tyche/yield-twin";
 import type { Plan } from "./engine/types";
@@ -199,9 +199,10 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   // engine, for the diagnostics.
   const lastDerive = useMemo(() => (engine && selected ? timed(() => engine.derive_bond(selected.bond.issue, MARKET))[1] : null), [engine, selected]);
   // The working behind the card's figures, for the calculator's plan and
-  // the broker's commission the calculator uses.
+  // the broker's commission the calculator uses, with the G-spreads to the
+  // snapshot's zero-coupon curve.
   const explanation = useMemo(
-    () => (engine && selected && enginePlan ? engine.explain(selected.bond.issue, MARKET, enginePlan, COMMISSION_PCT) : null),
+    () => (engine && selected && enginePlan ? engine.explain(selected.bond.issue, MARKET, enginePlan, COMMISSION_PCT, CURVE) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
     [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
@@ -361,14 +362,12 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           engine={engine}
           name={nameOf(selected.bond)}
           source={
-            selected.bond.issue.couponType === "floater" ? (
-              <>
-                <SimSource t={t} onData={openData} />
-                <BorSource t={t} f={f} />
-              </>
-            ) : (
+            // The Bank of Russia's curve gives the G-spreads; a floater's
+            // coupon follows its key rate too.
+            <>
               <SimSource t={t} onData={openData} />
-            )
+              <BorSource t={t} f={f} curve />
+            </>
           }
           explanation={explanation}
           plan={plan}

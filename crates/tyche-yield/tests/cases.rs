@@ -89,6 +89,17 @@ fn market(v: &Value) -> Market {
     }
 }
 
+// A null curve is a missing one, as at the JavaScript boundary.
+fn curve(v: &Value) -> Curve {
+    if v.is_null() {
+        return Curve::default();
+    }
+    Curve {
+        terms_years: arr(&v["termsYears"]),
+        yields_pct: arr(&v["yieldsPct"]),
+    }
+}
+
 fn plan(v: &Value) -> Result<Plan, Error> {
     let tax_regime = TaxRegime::from_code(v["taxRegime"].as_str().expect("tax regime"))
         .ok_or(Error::InvalidCode)?;
@@ -197,6 +208,26 @@ fn tax_year(t: &TaxYear) -> Value {
     })
 }
 
+fn g_spread_of(g: &GSpread) -> Value {
+    json!({
+        "durationYears": f(g.duration_years),
+        "yieldPct": f(g.yield_pct),
+        "termBelowYears": f(g.term_below_years),
+        "yieldBelowPct": f(g.yield_below_pct),
+        "termAboveYears": f(g.term_above_years),
+        "yieldAbovePct": f(g.yield_above_pct),
+        "curvePct": f(g.curve_pct),
+        "spreadBp": f(g.spread_bp),
+    })
+}
+
+fn g_spreads(g: &GSpreads) -> Value {
+    json!({
+        "toMaturity": g_spread_of(&g.to_maturity),
+        "toOffer": g.to_offer.as_ref().map_or(Value::Null, g_spread_of),
+    })
+}
+
 fn yield_trace(y: &YieldTrace) -> Value {
     json!({
         "eventDay": f(y.event_day),
@@ -213,6 +244,7 @@ fn yield_trace(y: &YieldTrace) -> Value {
         "presentValue": f(y.present_value),
         "priceWithFee": f(y.price_with_fee),
         "ytmAfterFee": f(y.ytm_after_fee),
+        "gSpread": g_spread_of(&y.g_spread),
         "held": breakdown(&y.held),
         "tax": y.tax.iter().map(tax_year).collect::<Vec<_>>(),
     })
@@ -291,6 +323,7 @@ fn run(name: &str, a: &[Value]) -> Value {
             num(&a[4]),
             num(&a[5]),
         )),
+        "curve_yield_pct" => f(curve_yield_pct(&arr(&a[0]), &arr(&a[1]), num(&a[2]))),
         "price_after_rate_shift" => f(price_after_rate_shift(num(&a[0]), num(&a[1]), num(&a[2]))),
         "periodic_rate_pct" => f(periodic_rate_pct(num(&a[0]), num(&a[1]))),
         "value_along_path" => f(value_along_path(
@@ -313,8 +346,12 @@ fn run(name: &str, a: &[Value]) -> Value {
         "explain" => outcome(
             issue(&a[0])
                 .and_then(|i| Ok((i, plan(&a[2])?)))
-                .and_then(|(i, p)| explain(&i, &market(&a[1]), &p, num(&a[3]))),
+                .and_then(|(i, p)| explain(&i, &market(&a[1]), &p, num(&a[3]), &curve(&a[4]))),
             explanation,
+        ),
+        "g_spread" => outcome(
+            issue(&a[0]).and_then(|i| g_spread(&i, &market(&a[1]), &curve(&a[2]))),
+            g_spreads,
         ),
         other => panic!("unknown function {other}"),
     }
@@ -405,8 +442,11 @@ fn every_case_matches() {
     );
     // Every function has cases; the table keeps the 30 original primitive
     // cases at its head.
-    assert_eq!(seen.len(), 17, "{seen:?}");
-    assert!(cases.len() >= 30 + seen["derive_bond"] + seen["calculate"] + seen["explain"]);
+    assert_eq!(seen.len(), 19, "{seen:?}");
+    assert!(
+        cases.len()
+            >= 30 + seen["derive_bond"] + seen["calculate"] + seen["explain"] + seen["g_spread"]
+    );
 }
 
 #[test]
@@ -419,7 +459,7 @@ fn explain_traces_what_calculate_computes() {
             continue;
         };
         let m = market(&a[1]);
-        let Ok(e) = explain(&i, &m, &p, num(&a[3])) else {
+        let Ok(e) = explain(&i, &m, &p, num(&a[3]), &curve(&a[4])) else {
             continue;
         };
         let near = |g: f64, w: f64| (g - w).abs() <= 1e-9 * g.abs().max(w.abs()).max(1.0);
@@ -444,6 +484,10 @@ fn explain_traces_what_calculate_computes() {
             assert!(near(years, -y.held.tax));
             assert_eq!(y.held.reinvest, 0.0);
         }
+        // The G-spreads are g_spread's, for the same issue and curve.
+        let g = g_spread(&i, &m, &curve(&a[4])).expect("spreads");
+        assert_eq!(e.to_maturity.g_spread, g.to_maturity, "{}", case["name"]);
+        assert_eq!(e.to_offer.map(|y| y.g_spread), g.to_offer);
         checked += 1;
     }
     assert!(checked >= 8, "{checked}");

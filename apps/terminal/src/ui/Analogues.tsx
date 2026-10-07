@@ -22,7 +22,8 @@ export type AnaloguesProps = {
 /** A G-spread in basis points, or why there is none. */
 export function gSpreadText(t: Strings, f: Formats, engine: Engine, item: Item): string {
   const g = gSpread(engine, item);
-  return g === null ? t.gSpreadNone : t.gSpreadValue(f.signed(g.spreadBp, 0));
+  if (g === null) return t.gSpreadNone;
+  return "error" in g ? t.errors[g.error] : t.gSpreadValue(f.signed(g.ok.spreadBp, 0));
 }
 
 export function Analogues({ t, f, engine, item, items, compared, onOpen }: AnaloguesProps) {
