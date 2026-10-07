@@ -1,8 +1,11 @@
 //! JavaScript bindings (feature `wasm`) for the synthetic market: the app
-//! builds the universe once, in a worker, and asks it for the issues and
-//! for an issue's day. Results cross the boundary as JSON text, parsed on
+//! builds the universe once, in a worker, and asks it for the issues, for
+//! an issue's day, for who may buy each issue, for a holding's events and
+//! for a depth check against an issue's book. Results cross the boundary as JSON text, parsed on
 //! the other side; the shapes are those of [`crate::synth::json`].
 
+use crate::depth::depth_check;
+use crate::message::Side;
 use crate::synth::{self, Curve, Inputs, Universe};
 use wasm_bindgen::prelude::*;
 
@@ -82,5 +85,54 @@ impl SynthMarket {
         };
         let d = synth::simulate(self.universe.seed, index as usize, issue, day, until);
         synth::json::day_json(&d, levels as usize)
+    }
+
+    /// Who may buy each issue, as JSON (`synth::json::access_json`).
+    #[wasm_bindgen(js_name = accessJson)]
+    pub fn access_json(&self) -> String {
+        synth::json::access_json(&self.universe)
+    }
+
+    /// The events of a holding of `bonds` bonds of issue `index`, as JSON
+    /// (`synth::json::events_json`); `null` for an index past the end.
+    #[wasm_bindgen(js_name = eventsJson)]
+    pub fn events_json(&self, index: u32, bonds: f64) -> String {
+        match synth::holding_events(&self.universe, index as usize, bonds) {
+            Some(events) => synth::json::events_json(&events),
+            None => "null".into(),
+        }
+    }
+
+    /// A depth check of a limit order against issue `index`'s book on day
+    /// `day` at `until_ms` (as `dayJson`): `side` "buy" or "sell",
+    /// `bonds` ordered, `limit` in price units (0.0001 percent of face).
+    /// JSON as `synth::json::depth_json`; `null` for an index past the end
+    /// or an unknown side.
+    #[wasm_bindgen(js_name = depthJson)]
+    pub fn depth_json(
+        &self,
+        index: u32,
+        day: u32,
+        until_ms: f64,
+        side: &str,
+        bonds: f64,
+        limit: f64,
+    ) -> String {
+        let Some(issue) = self.universe.issues.get(index as usize) else {
+            return "null".into();
+        };
+        let side = match side {
+            "buy" => Side::Buy,
+            "sell" => Side::Sell,
+            _ => return "null".into(),
+        };
+        let until = if until_ms < 0.0 {
+            None
+        } else {
+            Some(until_ms as u32)
+        };
+        let d = synth::simulate(self.universe.seed, index as usize, issue, day, until);
+        let check = depth_check(d.book.levels(), side, bonds.max(0.0) as u64, limit as i64);
+        synth::json::depth_json(&check)
     }
 }

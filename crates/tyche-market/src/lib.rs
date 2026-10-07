@@ -4,6 +4,8 @@
 //! Always built:
 //! - [`message`]: order and price-level messages (DEEP and DEEP+ shaped).
 //! - [`book`]: an order-by-order book and a price-level book.
+//! - [`depth`]: a depth check: how much of a limit order the visible book
+//!   fills at once, at what average price and slippage.
 //! - [`synth`]: the synthetic bond market: a universe of fictional issues
 //!   and a trading day per issue, on the order-by-order book.
 //!
@@ -22,6 +24,7 @@
 pub mod book;
 #[cfg(feature = "iex")]
 pub mod capture;
+pub mod depth;
 #[cfg(feature = "iex")]
 pub mod iextp;
 pub mod message;
@@ -38,6 +41,7 @@ pub mod wasm;
 pub mod wasm_market;
 
 pub use book::{Anomalies, LevelBook, Levels, OrderBook, Quote};
+pub use depth::{depth_check, DepthCheck};
 #[cfg(feature = "iex")]
 pub use message::decode;
 pub use message::{Message, Price, Side, Symbol};

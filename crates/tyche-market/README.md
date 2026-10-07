@@ -63,12 +63,53 @@ on aggregate figures only.
   universe and of a day's tape, and the app's unit tests check that the
   WebAssembly build gives the native digest.
 
+- **Who may buy an issue** (`synth::access::gate`): anyone, a
+  non-qualified investor after a passed test, or qualified investors
+  only, with the reasons. The rule is the synthetic universe's, modelled
+  on the Federal Law of 22 April 1996 No. 39-FZ "On the securities
+  market": article 51.2 with article 27.6 (securities for qualified
+  investors are acquired by qualified investors only) and article 3.1
+  with article 51.2-1 (a non-qualified individual's purchase goes
+  through a test, except for the securities article 3.1(2) lists, among
+  them bonds of Russian issuers that meet its credit rating conditions),
+  as amended up to the Federal Law of 4 August 2026 No. 283-FZ. An issue
+  whose terms restrict it to qualified investors (every subordinated one
+  does) is for them only; a synthetic government bond is open to
+  everyone; a corporate issue rated below BBB- on the synthetic scale
+  needs a test, a threshold the synthetic universe assumes in place of
+  the Bank of Russia's level for real ratings; the rest are open.
+- **A holding's events** (`synth::holding_events(universe, index,
+  bonds)`): its coupons, amortisations and maturity from the issue's
+  terms through tyche-yield (a floater's and a linker's coupons projected
+  at today's index), its put offer with the window to ask for redemption
+  (the five working days that end three working days before the offer
+  date; the last is the deadline) or its call offer with the day the
+  issuer gives notice by (ten working days before), and a scenario drawn
+  from the seed, one stream per issuer: a rating change of a notch in the
+  last 180 days that ended at today's rating, one ahead likelier in the
+  outlook's direction, and, for issuers rated BB- or lower, a payment
+  missed on a payment day ahead, made within ten working days or not, and
+  then a default after which nothing more is paid. Working days are
+  Monday to Friday, with no holiday calendar. Every one of these is a
+  rule of the synthetic universe, not a statement about a real issuer.
+- **The depth check** (`depth::depth_check(levels, side, bonds,
+  limit)`): how much of a limit order the visible book fills at once at
+  or better than the limit, taking the opposite side best price first as
+  the day's trades execute: the bonds filled and left, the best price,
+  the size-weighted average and the last level reached, the levels used,
+  each level's fill, and the slippage, the average's distance from the
+  best price in basis points of it (worse is positive). Only visible size
+  counts: no hidden orders, nothing that arrives while the order is
+  sent.
+
 `cargo run --release -p tyche-market --example synth_stats` prints the
 calibration statistics of the default universe's first day.
 
 The WebAssembly build (`--no-default-features --features wasm`) holds
 only the synthetic market and the book (`SynthMarket`: the universe and
-an issue's day as JSON); the app runs it in a worker.
+an issue's day as JSON, who may buy each issue (`accessJson`), a
+holding's events (`eventsJson`) and a depth check against an issue's
+book at a moment of a day (`depthJson`)); the app runs it in a worker.
 
 ## IEX decoding (feature `iex`, on by default)
 

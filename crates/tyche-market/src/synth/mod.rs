@@ -1,7 +1,8 @@
 //! A synthetic bond market: a universe of fictional issuers and issues,
 //! priced by tyche-yield from the zero-coupon yield curve, and a trading
 //! day per issue (sessions, an order book and a tape) on the crate's
-//! order book.
+//! order book; who may buy each issue ([`access`]), and what happens to a
+//! holding of it ([`events`]).
 //!
 //! Everything is seeded and deterministic: the same seed and inputs give
 //! the same universe and the same days on every platform, WebAssembly
@@ -18,15 +19,19 @@
 //! assert!(!day.prints.is_empty());
 //! ```
 
+pub mod access;
 pub mod calibration;
 pub mod day;
 pub mod det;
+pub mod events;
 pub mod inputs;
 pub mod json;
 pub mod rng;
 pub mod universe;
 
+pub use access::{gate, Access, Gate, Reason};
 pub use day::{simulate, Aggressor, Day, Print, Session, SessionKind, Snapshot};
+pub use events::{holding_events, EventKind, HoldingEvent, Source};
 pub use inputs::{Curve, Inputs};
 pub use universe::{
     generate, CouponKind, InputError, Issuer, Liquidity, Offer, OfferKind, Outlook, Sector,
