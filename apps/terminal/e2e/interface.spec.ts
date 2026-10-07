@@ -4,31 +4,31 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { ISSUES, ready } from "./helpers";
 
-/** Every table region in `scope` that is wider than its box. The
- * working's derivation tables are left out: a formula is one run that does
- * not break, so on a phone they scroll inside their own region (checked
- * below). */
+/** Every table region in `scope` that is wider than its box. */
 async function overflowing(scope: Locator): Promise<string[]> {
   return scope.locator(".stoa-table-region").evaluateAll((regions) =>
     regions
-      .filter((r) => !r.closest(".working"))
       .filter((r) => r.scrollWidth > r.clientWidth + 1)
       .map((r) => `${r.getAttribute("aria-label") ?? r.textContent?.slice(0, 40)}: ${r.scrollWidth} > ${r.clientWidth}`),
   );
 }
 
-test("at 375 px the working's derivation tables scroll inside their own regions, from the keyboard, and the page does not", async ({ page }) => {
+// Stoa's DerivationTable stacks its steps on a narrow screen: each
+// derivation in the working becomes a list named by its caption, so a
+// formula wraps in place and nothing scrolls sideways, in the working or
+// on the page.
+test("at 375 px the working's derivations are stacked lists, and nothing scrolls sideways", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(`/?lang=ru&issue=${ISSUES.offer}`);
   await ready(page);
   await page.getByTestId("working").locator("summary").click();
-  const region = page.locator(".working .stoa-table-region").nth(1);
-  const wide = await region.evaluate((r) => ({ scroll: r.scrollWidth, client: r.clientWidth, tab: (r as HTMLElement).tabIndex }));
-  expect(wide.scroll).toBeGreaterThan(wide.client);
-  expect(wide.tab).toBe(0);
-  await region.focus();
-  await page.keyboard.press("ArrowRight");
-  await expect.poll(() => region.evaluate((r) => r.scrollLeft)).toBeGreaterThan(0);
+  const working = page.locator(".working");
+  const lists = working.locator(".stoa-derivation__steps");
+  await expect(lists.first()).toBeVisible();
+  expect(await lists.count()).toBeGreaterThan(1);
+  await expect(working.locator(".stoa-table-region")).toHaveCount(0);
+  const wider = await working.locator(".stoa-derivation").evaluateAll((els) => els.filter((el) => el.scrollWidth > el.clientWidth + 1).length);
+  expect(wider).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
