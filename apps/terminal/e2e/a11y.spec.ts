@@ -103,6 +103,12 @@ const READY_STATES: Record<string, Prepare> = {
     // than it is drawn.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   },
+  // The ladder builder with three rungs, its figures and assumptions.
+  ladder: async (page, lang, theme) => {
+    await open(page, lang, theme, "&lh=3&la=1000000");
+    await ready(page);
+    await expect(page.getByTestId("rung")).toHaveCount(3);
+  },
   // A floater with amortisation: scenarios and the coupon chart.
   floater,
   // A filter with no match beside the floater: the empty state.
@@ -136,6 +142,7 @@ const PHONE_STATES: Record<string, string> = {
   comparison: `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`,
   issue: `&issue=${ISSUES.floater}`,
   holdings: `&${PORTFOLIO}`,
+  ladder: "&lh=3&la=1000000",
 };
 
 for (const lang of LANGS) {

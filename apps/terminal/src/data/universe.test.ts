@@ -8,13 +8,24 @@ import { derive_bond } from "@tyche/yield-twin";
 import { strings } from "../i18n";
 import { issuerName } from "../lib/names";
 import { MACRO, MARKET, SEED, SNAPSHOT } from "./market";
-import { parseUniverse, type Bond } from "./issues";
-import { BONDS, dayJson, fallbackInputs, generate } from "./universe.testing";
+import { parseAccess, parseUniverse, type Bond } from "./issues";
+import { BONDS, accessJson, dayJson, fallbackInputs, generate } from "./universe.testing";
 
 /** The digest tests/synth.rs pins for the native build. */
 const DIGEST = "f5adfa55cefab800";
 
 describe("the synthetic universe", () => {
+  it("says who may buy every issue: qualified-only issues for qualified investors, synthetic government bonds for everyone", () => {
+    const access = parseAccess(accessJson());
+    expect(access.size).toBe(BONDS.length);
+    for (const b of BONDS) {
+      if (b.qualifiedOnly) expect(access.get(b.id), b.id).toBe("qualified");
+      else if (b.issuer.kind === "government") expect(access.get(b.id), b.id).toBe("open");
+    }
+    expect(new Set(access.values())).toEqual(new Set(["open", "test", "qualified"]));
+    expect(() => parseAccess('{"issues":[{"ticker":"A-01","access":"maybe"}]}')).toThrow();
+  });
+
   it("is the native build's universe, bit for bit, and the same on every run", () => {
     // On the figures the crate's digests are pinned to.
     expect(generate(SEED, fallbackInputs()).digest).toBe(DIGEST);

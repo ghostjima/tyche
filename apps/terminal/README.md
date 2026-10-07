@@ -143,6 +143,21 @@ Status: early. Performance record, with stamps:
   "Monthly income" goal: the coupons over the year, a month on average and
   the months without a coupon (Stoa's StatBar), and a table of the
   coupons and the principal returned per month.
+- **The ladder**: "Build a ladder" over the list opens a builder for a
+  horizon of one to ten years and an amount (kept in the URL: `?lh=`
+  years, `?la=` the amount, `?lr=` each rung's issue, "-" for an empty
+  one). Each year of the horizon is a rung; for each the terminal
+  proposes, among the issues the filters leave, the one with the highest
+  yield to its exit (a put offer, or maturity) in that year, and the
+  person can pick another or none. Only issues open to every investor
+  are proposed (tyche-market's access rule); linkers and issues with a
+  call offer are left out. The amount is split equally over the rungs
+  with an issue, in whole lots at today's dirty price; each rung is held
+  to its exit with nothing reinvested, after tax in an ordinary brokerage
+  account and the broker's fee, as the engine's `explain` works it out,
+  and the ladder's yield is the engine's `ytm_effective` of what the
+  rungs bring at their exits against what they cost. The payments by
+  year, before tax, and every assumption are listed under it.
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the
@@ -192,7 +207,8 @@ URL (`?lang=ru|en`, `?theme=system|light|dark`) and in localStorage,
 under `tyche.lang` and `tyche.theme`, and set before the first paint by
 Stoa's first-paint script, built from the same choices the app reads
 (`src/preferences.ts`). `?issue=TICKER` opens an issue,
-`?hold=TICKER*BONDS` holds bonds of it,
+`?hold=TICKER*BONDS` holds bonds of it, `?lh=3&la=1000000` opens the
+ladder,
 `?fee=0.3` sets the broker's fee in percent, `?page=data` the data and
 licensing page, `?engine=twin` starts on the TypeScript engine.
 
@@ -209,10 +225,10 @@ What the tests cover, and nothing wider:
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   holdings with every kind of event and the income by month, the
-  confirmation of a request to redeem at an offer,
+  confirmation of a request to redeem at an offer, the ladder,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison, an
-  issue and the holdings at 375 px.
+  issue, the holdings and a ten-rung ladder at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the
   broker's fee by the arrow keys a hundredth of a percent at a time, the
@@ -225,7 +241,9 @@ What the tests cover, and nothing wider:
   button; a holding's Remove moves the focus on to the next stop; the
   request to redeem at an offer opens a confirmation with the focus on
   its safe action, and recording or cancelling the request puts the
-  focus on the button that replaces the one pressed; after "Try WebAssembly again" succeeds, the focus moves on to
+  focus on the button that replaces the one pressed; "Build a ladder"
+  puts the focus on the ladder's first field, and closing it returns the
+  focus to that button; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The

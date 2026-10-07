@@ -10,7 +10,7 @@ import type { MacroInputs } from "../data/issues";
 export type HeldIssue = { index: number; bonds: number };
 
 export type Request = { id: number; seed: number; inputs: MacroInputs } | { id: number; events: HeldIssue[] };
-export type Response = { id: number; json: string; digest: string } | { id: number; events: string[] } | { id: number; error: string };
+export type Response = { id: number; json: string; digest: string; access: string } | { id: number; events: string[] } | { id: number; error: string };
 
 let market: Promise<typeof SynthMarket> | null = null;
 /** The universe built last. */
@@ -32,7 +32,7 @@ self.onmessage = async (event: MessageEvent<Request>) => {
     const m = new Market(seed, inputs.valuationDate, inputs.keyRatePct, inputs.ruoniaPct, inputs.inflationPct, Float64Array.from(inputs.curve.termsYears), Float64Array.from(inputs.curve.yieldsPct));
     built?.free();
     built = m;
-    const reply: Response = { id, json: m.universeJson(), digest: m.digest() };
+    const reply: Response = { id, json: m.universeJson(), digest: m.digest(), access: m.accessJson() };
     self.postMessage(reply);
   } catch (e) {
     // Forgotten, so the next request loads again.

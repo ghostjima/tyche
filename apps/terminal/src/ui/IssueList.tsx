@@ -2,7 +2,7 @@
 // and the issues as a record list: one tab stop, the arrow keys move
 // through it, and picking an issue opens it.
 import type { RefObject } from "react";
-import { FilterBar, Ltr, RecordList, Select, type RecordListItem } from "@ghostjima/stoa-react";
+import { Button, FilterBar, Ltr, RecordList, Select, type RecordListItem } from "@ghostjima/stoa-react";
 import type { Bond } from "../data/issues";
 import type { Strings } from "../i18n";
 import { VALUATION_DATE } from "../data/market";
@@ -95,9 +95,11 @@ export type IssueListProps = {
   textsOf: SearchTexts;
   /** Around the filters, for the search shortcut to find the search box. */
   searchRef: RefObject<HTMLDivElement | null>;
+  /** Opens the ladder builder on the issues the filters leave. */
+  onLadder: () => void;
 };
 
-export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef }: IssueListProps) {
+export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef, onLadder }: IssueListProps) {
   const counts = chipCounts(all, query, textsOf, VALUATION_DATE);
   const by = query.by ?? defaultMonth(VALUATION_DATE);
   // The ticker names the record (typing it jumps there); the issuer, the
@@ -156,6 +158,9 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
       >
         <div className="issue-list__results">
           <div className="issue-list__sort">
+            <Button id="ladder-open" variant="ghost" size="small" onPress={onLadder}>
+              {t.ladderOpen}
+            </Button>
             <Select<SortKey>
               label={t.sortBy}
               size="small"

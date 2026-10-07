@@ -50,3 +50,12 @@ export function eventsJson(index: number, bonds: number, seed = SEED, inputs: Ma
   }
   return m.eventsJson(index, bonds);
 }
+
+/** Who may buy each issue, as tyche-market writes it for the universe the
+ * app shows. */
+export function accessJson(): string {
+  const m = new SynthMarket(SEED, MACRO.valuationDate, MACRO.keyRatePct, MACRO.ruoniaPct, MACRO.inflationPct, Float64Array.from(MACRO.curve.termsYears), Float64Array.from(MACRO.curve.yieldsPct));
+  const out = m.accessJson();
+  m.free();
+  return out;
+}
