@@ -15,6 +15,7 @@ import {
   SkeletonLines,
   ThemeSwitch,
   groupShortcuts,
+  focusWhenReady,
   keepFocusInPlace,
   useBreakpoint,
   useShortcuts,
@@ -27,6 +28,7 @@ import type { Plan } from "./engine/types";
 import { LANGS, strings, type Lang } from "./i18n";
 import { readFee, writeFee } from "./lib/fee";
 import { HOLDINGS_MAX, readHoldings, setHolding, writeHoldings, type Holding } from "./lib/holdings";
+import { LADDER_DEFAULT, readLadder, writeLadder, type LadderParams } from "./lib/ladder";
 import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
 import { useAppFormats } from "./lib/format";
 import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH } from "./lib/liquidity";
@@ -43,6 +45,7 @@ import { IssueCard } from "./ui/IssueCard";
 import { IssueList } from "./ui/IssueList";
 import { COMPARE_MAX, Compare } from "./ui/Compare";
 import { Holdings, type HeldItem } from "./ui/Holdings";
+import { Ladder } from "./ui/Ladder";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
  * once the universe is ready. */
@@ -158,6 +161,22 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     writeHoldings(url.searchParams, holdings);
     if (url.href !== location.href) history.replaceState(history.state, "", url);
   }, [holdings]);
+  // The ladder builder, in ?lh=, ?la= and ?lr=, when it is open.
+  const [ladder, setLadder] = useState<LadderParams | null>(() => readLadder(new URLSearchParams(location.search)));
+  useEffect(() => {
+    const url = new URL(location.href);
+    writeLadder(url.searchParams, ladder);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [ladder]);
+  const openLadder = () => {
+    // The ladder's first field takes the focus once it is drawn.
+    focusWhenReady(() => document.querySelector<HTMLElement>(".ladder input"));
+    setLadder((l) => l ?? { years: LADDER_DEFAULT.years, amount: LADDER_DEFAULT.amount, picks: [] });
+  };
+  const closeLadder = () => {
+    focusWhenReady("ladder-open");
+    setLadder(null);
+  };
   const hold = (id: string, bonds: number) => setHoldings((all) => setHolding(all, id, bonds));
   const unhold = (id: string) => setHoldings((all) => all.filter((h) => h.id !== id));
   const compare = (id: string, on: boolean) =>
@@ -381,6 +400,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
       nameOf={nameOf}
       textsOf={textsOf}
       searchRef={search}
+      onLadder={openLadder}
     />
   );
 
@@ -593,6 +613,22 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
             events={events}
             nameOf={(i) => nameOf(i.bond)}
             onRemove={unhold}
+            source={<SimSource t={t} onData={openData} />}
+          />
+        )}
+
+        {!dataOpen && !loading && !marketFailed && ladder && items && engine && market.status === "ready" && (
+          <Ladder
+            t={t}
+            f={f}
+            engine={engine}
+            items={visible}
+            access={market.access}
+            ladder={ladder}
+            onLadder={setLadder}
+            onClose={closeLadder}
+            feePct={feePct}
+            nameOf={(i) => nameOf(i.bond)}
             source={<SimSource t={t} onData={openData} />}
           />
         )}

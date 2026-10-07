@@ -133,6 +133,22 @@ export function parseUniverse(json: string): Universe {
   return { seed: raw.seed, inputs: raw.inputs, bonds };
 }
 
+/** Who may buy an issue, by tyche-market's rule for the synthetic
+ * universe: anyone, a non-qualified investor after a passed test, or
+ * qualified investors only. */
+export type Access = "open" | "test" | "qualified";
+
+/** Reads tyche-market's accessJson: each issue's access, by ticker. */
+export function parseAccess(json: string): Map<string, Access> {
+  const raw = JSON.parse(json) as { issues: { ticker: string; access: string }[] };
+  const out = new Map<string, Access>();
+  for (const i of raw.issues) {
+    if (i.access !== "open" && i.access !== "test" && i.access !== "qualified") throw new Error(`${i.ticker}: unknown access ${i.access}`);
+    out.set(i.ticker, i.access);
+  }
+  return out;
+}
+
 export function ratingIndex(r: Rating): number {
   return RATINGS.indexOf(r);
 }

@@ -98,4 +98,13 @@ describe("WebAssembly and twin through the app's adapters", () => {
       close(wasm.price_from_yield(amounts, days, y), twinEngine.price_from_yield(amounts, days, y), `y=${y}`);
     }
   });
+
+  it("solve the same yield from the same flows, as the ladder asks", () => {
+    const amounts = [380_000, 428_000, 460_000];
+    const days = [356, 690, 1_100];
+    for (const price of [900_000, 1_000_000, 1_268_000, 0, -1]) {
+      close(wasm.ytm_effective(amounts, days, price), twinEngine.ytm_effective(amounts, days, price), `price=${price}`);
+    }
+    expect(Number.isNaN(twinEngine.ytm_effective([], [], 100))).toBe(true);
+  });
 });

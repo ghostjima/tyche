@@ -3,10 +3,13 @@
 // left on the performance timeline as the measure "tyche:universe".
 import { useCallback, useEffect, useState } from "react";
 import { MACRO, SEED } from "../data/market";
-import { parseUniverse, type Universe } from "../data/issues";
+import { parseAccess, parseUniverse, type Access, type Universe } from "../data/issues";
 import type { Request, Response } from "./worker";
 
-export type UniverseState = { status: "loading" } | { status: "ready"; universe: Universe } | { status: "failed"; error: string };
+export type UniverseState =
+  | { status: "loading" }
+  | { status: "ready"; universe: Universe; access: Map<string, Access> }
+  | { status: "failed"; error: string };
 
 let worker: Worker | null = null;
 let pending: Promise<UniverseState> | null = null;
@@ -33,8 +36,9 @@ function request(): Promise<UniverseState> {
       if (!("json" in r)) return fail("unexpected_reply");
       try {
         const universe = parseUniverse(r.json);
+        const access = parseAccess(r.access);
         performance.measure("tyche:universe", "tyche:universe-start");
-        resolve({ status: "ready", universe });
+        resolve({ status: "ready", universe, access });
       } catch (e) {
         fail(e instanceof Error ? e.message : String(e));
       }
