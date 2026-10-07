@@ -112,15 +112,6 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .diagnostics > * { max-inline-size: 100%; }
 .timing-call { display: grid; }
 
-/* Where a widget's figures come from, at its top. The line height is a
-   token and the tag sits at the line's top, so the note keeps its height
-   when the web fonts replace the fallback (a "normal" line height follows
-   the font's metrics, and moved the page below by a pixel). */
-.source-note { margin: 0 0 var(--stoa-space-3); color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); line-height: var(--stoa-font-line-height-normal); }
-.source-note .stoa-tag { vertical-align: top; }
-.source-note a { color: inherit; }
-.source-note + .source-note { margin-block-start: calc(-1 * var(--stoa-space-2)); }
-
 /* The demo banner sits in the header on every screen. */
 .demo-banner { font-weight: var(--stoa-font-weight-semibold); color: var(--stoa-color-text); }
 

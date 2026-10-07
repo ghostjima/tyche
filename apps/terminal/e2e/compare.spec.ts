@@ -63,9 +63,9 @@ test("the comparison sets the measures side by side, the G-spread with them, and
   // A G-spread in basis points; an inflation-linked issue's is not compared.
   await expect(row("G-spread").first()).toHaveText("+145 bp");
   await expect(row("G-spread").nth(1)).toHaveText("not compared: the yield is real");
-  const sources = compare(page).locator(":scope .source-note");
+  const sources = compare(page).locator(":scope .stoa-source-note");
   await expect(sources).toHaveCount(2);
-  await expect(compare(page).locator(".source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
+  await expect(compare(page).locator(".stoa-source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
   // An issue the universe does not have leaves the link.
   await page.goto(`/?lang=en&cmp=${ISSUES.offer}&cmp=NOPE-01`);
   await ready(page);

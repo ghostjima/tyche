@@ -2,11 +2,10 @@
 // what is synthetic. A page of its own within the app (?page=data), with
 // its heading as the focus target when it opens.
 import { forwardRef } from "react";
-import { Button, DescriptionList, Panel } from "@ghostjima/stoa-react";
+import { Button, DescriptionList, Panel, SourceNote } from "@ghostjima/stoa-react";
 import { SNAPSHOT, TAX_RULES_DAY, dayOf } from "../data/market";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
-import { SourceNote } from "./SourceNote";
 
 /** The articles of the Tax Code the engine's tax rules follow. */
 const TAX_ARTICLES = "214.1, 219.1, 224";

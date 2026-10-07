@@ -255,7 +255,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     // The widget's label link, by the widget, since the widget is drawn
     // anew when the terminal comes back.
     const widget = ["pane-list", "issue-card", "calculator"].find((c) => e.currentTarget.closest(`.${c}`));
-    dataOpener.current = widget ? `.${widget} .source-note a` : null;
+    dataOpener.current = widget ? `.${widget} .stoa-source-note a` : null;
     history.pushState({ ...history.state, [PUSHED_PAGE]: "data" }, "", dataHref());
     setDataOpen(true);
   };
