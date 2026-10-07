@@ -67,22 +67,14 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .compare-action { margin-block-start: var(--stoa-space-3); }
 .compare__head { display: grid; gap: var(--stoa-space-1); justify-items: start; }
 
-/* The map of peers: the app's own scatter chart, in Stoa's chart tokens. */
-.peer-map { display: grid; gap: var(--stoa-space-2); margin: 0; min-inline-size: 0; }
-.peer-map figcaption { display: grid; gap: var(--stoa-space-1); }
-.peer-map__desc { color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
-.peer-map__plot { min-inline-size: 0; }
-.peer-map__svg { display: block; overflow: visible; }
-.peer-map__tick { fill: var(--stoa-color-text-muted); font-family: var(--stoa-font-family-mono); font-size: var(--stoa-font-size-2xs); }
-.peer-map__axis-label { fill: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-2xs); }
-.peer-map__grid { stroke: var(--stoa-color-border); stroke-width: 1; }
-.peer-map__axis { stroke: var(--stoa-color-border-strong); stroke-width: 1; }
-.peer-map__mark--other { fill: var(--stoa-color-text-muted); opacity: 0.45; }
-.peer-map__mark--compared { fill: var(--stoa-color-warning); stroke: var(--stoa-color-bg); stroke-width: 1; }
-.peer-map__mark--analogue { fill: none; stroke: var(--stoa-color-accent); stroke-width: 2; }
-.peer-map__mark--self { fill: var(--stoa-color-accent); stroke: var(--stoa-color-bg); stroke-width: 1.5; }
-.peer-map__legend { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1) var(--stoa-space-4); margin: 0; padding: 0; list-style: none; font-size: var(--stoa-font-size-xs); color: var(--stoa-color-text-muted); }
-.peer-map__legend-item { display: inline-flex; align-items: center; gap: var(--stoa-space-1); }
+/* The map of peers: its title and description over Stoa's ScatterChart. */
+.peer-map { display: grid; gap: var(--stoa-space-2); min-inline-size: 0; }
+.peer-map__head { display: grid; gap: var(--stoa-space-1); }
+.peer-map__desc { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
+/* The chart's data table takes as many lines per header as it needs, as
+   Stoa's Table does with wrapHeaders, which ScatterChart does not pass:
+   so the table fits a phone without scrolling sideways. */
+.peer-map .stoa-chart__data .stoa-table th { white-space: normal; }
 .issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
 .tags { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1); }
 .block { display: grid; gap: var(--stoa-space-3); margin-block-start: var(--stoa-space-4); min-inline-size: 0; }
