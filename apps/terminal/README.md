@@ -94,9 +94,9 @@ Status: early. Performance record, with stamps:
   nearest exit less the Bank of Russia's zero-coupon yield of federal
   loan bonds at the same Macaulay duration, read linearly between the
   curve's terms, as the engine's `g_spread` works it out from the
-  snapshot's curve. The map of peers is the app's own
-  scatter chart (Stoa has none yet), in Stoa's chart tokens, with a table
-  alternative.
+  snapshot's curve. The map of peers is Stoa's ScatterChart: one tab
+  stop whose arrow keys walk the points and read each one, a legend of
+  the shapes, and its highlighted points as a data table.
 - **The calculator**: amount, holding horizon (with presets for one year,
   the offer and maturity), reinvestment of coupons and of principal
   repaid early, the account (an ordinary brokerage account or an
@@ -230,7 +230,8 @@ What the tests cover, and nothing wider:
   at 1440 px; and the list, "Money by a date", the comparison, an
   issue, the holdings and a ten-rung ladder at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
-  stop), the arrow keys through it and Enter to open an issue, the
+  stop), the arrow keys through it and Enter to open an issue, the map
+  of peers one tab stop whose Home and arrow keys walk its points, the
   broker's fee by the arrow keys a hundredth of a percent at a time, the
   horizon and key-rate sliders by arrow and page keys, the
   reinvestment switch by Space, `?` for the shortcuts dialog, Escape to

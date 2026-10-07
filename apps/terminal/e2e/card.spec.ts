@@ -59,7 +59,7 @@ test("a floater shows its coupon resets from the Bank of Russia's figures, and a
   await expect(resets.locator("tbody tr").first()).toContainText("+2.10%");
   await expect(risk(page, "Coupon resets")).toContainText("The coupon is RUONIA on the first day of each period plus the issue's spread.");
   // The card names the Bank of Russia beside the synthetic data.
-  await expect(page.locator(".issue-card > .source-note, .issue-card .source-note").filter({ hasText: "Bank of Russia" })).toHaveCount(1);
+  await expect(page.locator(".issue-card > .stoa-source-note, .issue-card .stoa-source-note").filter({ hasText: "Bank of Russia" })).toHaveCount(1);
   const schedule = page.getByRole("table", { name: "Face value repaid per bond" });
   await expect(schedule.locator("tbody tr")).toHaveCount(3);
   await expect(schedule).toContainText("33.33%");
@@ -126,7 +126,7 @@ test("how it is worked out: the accrued interest, the yield and the tax per year
   await expect(spread.getByRole("row", { name: /^G-spread: the yield less the curve's/ })).toContainText("+151 bp");
   await expect(page.getByRole("table", { name: "G-spread, held to the offer" }).getByRole("row", { name: /^G-spread: the yield less/ })).toContainText("+145 bp");
   // The card names the Bank of Russia and the curve's calculator.
-  await expect(page.locator(".issue-card .source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
+  await expect(page.locator(".issue-card .stoa-source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
   // Each table copies as plain text.
   await expect(working.getByRole("button", { name: /Copy/ }).first()).toBeVisible();
 });

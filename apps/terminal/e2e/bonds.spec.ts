@@ -234,7 +234,7 @@ test("without WebAssembly the TypeScript engine takes over, and WebAssembly can 
   await expect(page.getByTestId("figures")).toContainText("15.79%");
   // The notice left with the retry: the focus moved on to the next stop
   // where it was, the list's source link, instead of falling to the page.
-  await expect(page.locator(".pane-list .source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
+  await expect(page.locator(".pane-list .stoa-source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
 });
 
 test("on a phone, after WebAssembly loads on a retry, the focus moves on to the Back button", async ({ page }) => {

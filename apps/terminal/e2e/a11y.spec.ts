@@ -84,7 +84,7 @@ const READY_STATES: Record<string, Prepare> = {
   "comparison and analogues": async (page, lang, theme) => {
     await open(page, lang, theme, `&issue=BELB-02&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=NEVB-01`);
     await ready(page);
-    await page.getByTestId("analogues").locator(".peer-map__data summary").click();
+    await page.getByTestId("analogues").locator(".stoa-chart__data summary").click();
     await expect(page.locator(".compare")).toBeVisible();
   },
   // Holdings with every kind of event, and the income by month.

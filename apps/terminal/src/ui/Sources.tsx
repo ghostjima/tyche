@@ -2,10 +2,10 @@
 // universe, with a link to the data page, and the Bank of Russia with the
 // snapshot's date and a link to cbr.ru, as its terms ask.
 import type { MouseEvent } from "react";
+import { SourceNote } from "@ghostjima/stoa-react";
 import { SNAPSHOT } from "../data/market";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
-import { SourceNote } from "./SourceNote";
 
 /** Opens the data page in the app, keeping the link a real one. */
 export type OpenData = (e: MouseEvent<HTMLAnchorElement>) => void;

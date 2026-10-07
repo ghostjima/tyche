@@ -16,7 +16,7 @@ async function widgets(page: Page) {
   return page.locator(".app .stoa-panel").evaluateAll((panels) =>
     panels.map((p) => ({
       title: p.querySelector(".stoa-panel__title")?.textContent ?? "",
-      sources: [...p.querySelectorAll(":scope > .source-note")].map((n) => n.getAttribute("data-source")),
+      sources: [...p.querySelectorAll(":scope > .stoa-source-note")].map((n) => n.getAttribute("data-source")),
     })),
   );
 }
@@ -47,15 +47,18 @@ test("every widget names its source: SIM for the universe, the Bank of Russia wi
   expect(all.find((w) => w.title === "Calculator")!.sources).toEqual(["sim", "official"]);
   expect(all.find((w) => w.title === "Bank of Russia benchmarks")!.sources).toEqual(["official"]);
 
-  const sim = page.locator(".pane-list .source-note");
+  const sim = page.locator(".pane-list .stoa-source-note");
   await expect(sim.locator(".stoa-tag")).toHaveText("SIM");
+  // Stoa's SourceNote: "Source:" is read before the tag, not drawn.
+  await expect(sim).toContainText(/^Source: SIM /);
+  await expect(sim.getByText("Source:")).toHaveClass(/stoa-visually-hidden/);
   await expect(sim).toContainText("Synthetic data");
-  const bank = page.locator(".benchmarks .source-note");
+  const bank = page.locator(".benchmarks .stoa-source-note");
   await expect(bank.locator(".stoa-tag")).toHaveText("Bank of Russia");
   await expect(bank).toContainText("Figures as of Oct 5, 2026");
   await expect(bank.getByRole("link", { name: "cbr.ru" })).toHaveAttribute("href", "https://www.cbr.ru/");
   await expect(bank.getByRole("link", { name: "moex.com" })).toHaveAttribute("href", "https://www.moex.com/a3642");
-  await expect(page.locator(".calculator .source-note").getByRole("link", { name: "cbr.ru" })).toHaveAttribute("href", "https://www.cbr.ru/");
+  await expect(page.locator(".calculator .stoa-source-note").getByRole("link", { name: "cbr.ru" })).toHaveAttribute("href", "https://www.cbr.ru/");
   // The benchmarks show the snapshot's figures and the curve.
   const benchmarks = page.getByRole("region", { name: "Bank of Russia benchmarks" });
   await expect(benchmarks).toContainText("Key rate");
@@ -80,7 +83,7 @@ test("on a phone the list and the issue carry their labels too", async ({ page }
 test("the data page opens from a source label by keyboard, is a region of the main landmark with headings, and Back returns the focus", async ({ page }) => {
   await page.goto("/?lang=en&theme=light");
   await ready(page);
-  const link = page.locator(".pane-list .source-note").getByRole("link", { name: "Data and licensing" });
+  const link = page.locator(".pane-list .stoa-source-note").getByRole("link", { name: "Data and licensing" });
   await link.focus();
   await page.keyboard.press("Enter");
   const heading = page.getByRole("heading", { level: 2, name: "Data and licensing" });
@@ -108,7 +111,7 @@ test("the data page opens from a source label by keyboard, is a region of the ma
   await region.getByRole("button", { name: "Back to the terminal" }).click();
   await expect(page.locator(".pane-list")).toBeVisible();
   expect(new URL(page.url()).searchParams.get("page")).toBeNull();
-  await expect(page.locator(".pane-list .source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
+  await expect(page.locator(".pane-list .stoa-source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
   // It went back in the history: Forward opens the page again.
   await page.goForward();
   await expect(heading).toBeVisible();
@@ -150,7 +153,7 @@ test("the labels and the benchmarks keep their height when the web fonts arrive"
   await page.goto("/?lang=ru", { waitUntil: "commit" });
   await ready(page);
   const heights = () =>
-    page.evaluate(() => [".pane-list .source-note", ".benchmarks"].map((s) => document.querySelector(s)!.getBoundingClientRect().height));
+    page.evaluate(() => [".pane-list .stoa-source-note", ".benchmarks"].map((s) => document.querySelector(s)!.getBoundingClientRect().height));
   const before = await heights();
   release();
   await page.waitForFunction(() => [...document.fonts].some((f) => f.family.includes("IBM Plex Sans") && f.status === "loaded"));

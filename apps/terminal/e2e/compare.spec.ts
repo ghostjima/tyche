@@ -63,9 +63,9 @@ test("the comparison sets the measures side by side, the G-spread with them, and
   // A G-spread in basis points; an inflation-linked issue's is not compared.
   await expect(row("G-spread").first()).toHaveText("+145 bp");
   await expect(row("G-spread").nth(1)).toHaveText("not compared: the yield is real");
-  const sources = compare(page).locator(":scope .source-note");
+  const sources = compare(page).locator(":scope .stoa-source-note");
   await expect(sources).toHaveCount(2);
-  await expect(compare(page).locator(".source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
+  await expect(compare(page).locator(".stoa-source-note").filter({ hasText: "Bank of Russia" }).getByRole("link", { name: "moex.com" })).toBeVisible();
   // An issue the universe does not have leaves the link.
   await page.goto(`/?lang=en&cmp=${ISSUES.offer}&cmp=NOPE-01`);
   await ready(page);
@@ -87,10 +87,20 @@ test("analogues are one step from opening, and sit on the map of peers with a ta
   await expect(rows.first()).toContainText("duration");
   const map = analogues.getByRole("figure", { name: "Peers by rating and duration" });
   await expect(map).toHaveAccessibleDescription(/BELB-02 is the diamond, its analogues are squares/);
-  await map.getByText("The highlighted points as a table").click();
+  // Stoa's ScatterChart: a legend of the four shapes, one tab stop whose
+  // arrow keys walk the points and read each one, and the data table of
+  // the highlighted points behind its disclosure.
+  // The legend names the categories that have points: nothing is compared here.
+  await expect(map.locator(".stoa-chart__legend-item")).toHaveText(["This issue", "Analogue", "Other issue"]);
+  const plot = map.getByRole("application", { name: "Peers by rating and duration" });
+  await plot.focus();
+  await page.keyboard.press("Home");
+  await expect(map.getByRole("status")).toContainText(/ · /);
+  await map.getByText("Data table").click();
   const points = map.getByRole("table", { name: "Highlighted issues on the map" });
   await expect(points.locator("tbody tr")).toHaveCount(6);
   await expect(points.locator("tbody tr").first()).toContainText("This issue");
+  await expect(points.locator("tbody tr").first()).toContainText("BELB-02");
   // Opening an analogue opens its card, and the focus stays in the card.
   const first = (await rows.first().getByRole("button").innerText()).trim();
   await table.getByRole("button", { name: `Open ${first}` }).click();
