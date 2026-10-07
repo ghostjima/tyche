@@ -18,6 +18,7 @@ import {
   keepFocusInPlace,
   useBreakpoint,
   useShortcuts,
+  type RecordListHandle,
   type ThemePreference,
 } from "@ghostjima/stoa-react";
 import type { Bond } from "./data/issues";
@@ -71,16 +72,6 @@ const readPage = (): boolean => new URLSearchParams(location.search).get("page")
 /** The history entry's mark for the data page opened from the app. */
 const PUSHED_PAGE = "tychePage";
 const pushedPage = (): unknown => (history.state as Record<string, unknown> | null)?.[PUSHED_PAGE];
-
-/** Focuses an issue's row in the list. The list's rows can take the
- * focus only a commit after it mounts: Stoa's RecordList draws them in its
- * first frame, but as a stand-in until React Aria has built its options,
- * so this waits for the row, for a few frames at most. */
-function focusRecord(id: string, frames = 10) {
-  const row = document.querySelector<HTMLElement>(`.pane-list [role="option"][data-key="${CSS.escape(id)}"]`);
-  if (row) row.focus();
-  else if (frames > 0) requestAnimationFrame(() => focusRecord(id, frames - 1));
-}
 
 /** A glossary entry's text, given the values its sentence takes. */
 const termText = (text: string | ((...values: string[]) => string), values: string[]) => (typeof text === "function" ? text(...values) : text);
@@ -155,6 +146,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   const [wasmNoticeDismissed, setWasmNoticeDismissed] = useState(false);
   const search = useRef<HTMLDivElement>(null);
   const back = useRef<HTMLDivElement>(null);
+  const records = useRef<RecordListHandle>(null);
   const returnTo = useRef<string | null>(null);
   const [dataOpen, setDataOpen] = useState(readPage);
   const dataHeading = useRef<HTMLHeadingElement>(null);
@@ -297,9 +289,10 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     if (wide) return;
     // Stoa's RecordList picks on the pointer's release, after the
     // browser's own focus for the press, so the Back button can take the
-    // focus at once.
+    // focus at once. The list is drawn anew with the closing commit, and
+    // its `focusRecord` focuses the row as soon as the row's option exists.
     if (selectedId !== null) back.current?.querySelector("button")?.focus();
-    else if (returnTo.current) focusRecord(returnTo.current);
+    else if (returnTo.current) records.current?.focusRecord(returnTo.current);
   }, [selectedId, wide]);
 
   // What the glossary's sentences take: the last day an account of type B
@@ -356,6 +349,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
       nameOf={nameOf}
       textsOf={textsOf}
       searchRef={search}
+      listRef={records}
     />
   );
 
