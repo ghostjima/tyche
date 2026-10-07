@@ -24,9 +24,12 @@ export type IssueCardProps = {
   name: string;
   /** Where the figures come from, at the top of the card. */
   source: ReactNode;
-  /** The engine's working for the calculator's plan. */
+  /** The engine's working for the calculator's plan and the fee. */
   explanation: Result<Explanation>;
   plan: Plan;
+  /** The broker's fee in percent, set in the yield block. */
+  feePct: number;
+  onFee: (feePct: number) => void;
   /** Every issue, for the analogues and the map of peers. */
   items: readonly Item[];
   /** The issues in the comparison. */
@@ -60,7 +63,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, items, compared, onCompare, onOpen }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, feePct, onFee, items, compared, onCompare, onOpen }: IssueCardProps) {
   const inComparison = compared.includes(bond.id);
   const { issue } = bond;
   const floater = issue.couponType === "floater";
@@ -151,7 +154,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source, explan
         )}
       </div>
       <Risks t={t} f={f} bond={bond} derived={d} />
-      <HonestYield t={t} f={f} explanation={explanation} plan={plan} realYield={bond.coupon.kind === "linker"} />
+      <HonestYield t={t} f={f} explanation={explanation} plan={plan} realYield={bond.coupon.kind === "linker"} feePct={feePct} onFee={onFee} />
       <Analogues t={t} f={f} engine={engine} item={{ bond, derived: d }} items={items} compared={compared} onOpen={onOpen} />
 
       <section className="block" aria-labelledby="figures-h">

@@ -25,7 +25,9 @@
 //! together.
 //!
 //! ```
-//! use tyche_yield::{calculate, derive_bond, CouponType, Issue, Market, Plan, TaxRegime};
+//! use tyche_yield::{
+//!     calculate, derive_bond, CouponType, Issue, Market, Plan, TaxRegime, COMMISSION_PCT,
+//! };
 //!
 //! let issue = Issue {
 //!     nominal: 1000.0,
@@ -53,7 +55,7 @@
 //!     other_income: 0.0,
 //!     rate_shift_pct: 2.0,
 //! };
-//! let b = calculate(&issue, &market, &plan).unwrap().plan;
+//! let b = calculate(&issue, &market, &plan, COMMISSION_PCT).unwrap().plan;
 //! let lines = b.coupons + b.reinvest + b.amort + b.body + b.tax + b.commission;
 //! assert!((lines - b.total).abs() < 1e-6);
 //! ```

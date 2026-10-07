@@ -155,9 +155,10 @@ export function generate(count, seed) {
       otherIncome: chance(0.01) ? pick([-1, Number.NaN]) : chance(0.6) ? 0 : pick([100_000, 2_000_000, 2_399_000, 5_000_000]),
       rateShiftPct: chance(0.3) ? 0 : round(uniform(-3, 3), 2),
     };
-    // A broker's fee in percent for explain: the usual ones, now and then
-    // one the engine refuses. From a generator of its own, so the issues
-    // and plans are the ones the set had before fees were added.
+    // A broker's fee in percent for calculate and explain: the usual
+    // ones, now and then one the engine refuses. From a generator of its
+    // own, so the issues and plans are the ones the set had before fees
+    // were added.
     const f = fees();
     const feePct = f < 0.01 ? (f < 0.005 ? -0.1 : Number.NaN) : [0, 0.05, 0.05, 0.3, 1][Math.floor(((f - 0.01) / 0.99) * 5)];
     // A zero-coupon curve for explain and g_spread, from a third generator,
@@ -178,7 +179,7 @@ test("wasm and twin agree on 1,000 generated issues, plans, fees and curves", (t
   for (const [k, { issue, market, plan, feePct, curve }] of set.entries()) {
     const pairs = [
       ["derive_bond", wasm.derive_bond(issue, market), twin.derive_bond(issue, market)],
-      ["calculate", wasm.calculate(issue, market, plan), twin.calculate(issue, market, plan)],
+      ["calculate", wasm.calculate(issue, market, plan, feePct), twin.calculate(issue, market, plan, feePct)],
       ["explain", wasm.explain(issue, market, plan, feePct, curve), twin.explain(issue, market, plan, feePct, curve)],
       ["g_spread", wasm.g_spread(issue, market, curve), twin.g_spread(issue, market, curve)],
     ];

@@ -10,7 +10,7 @@ WebAssembly, with a TypeScript twin in
 of the same functions, written separately and checked against the Rust
 one on every case.
 
-Status: early. Both implementations pass the 154 cases in `cases.json`
+Status: early. Both implementations pass the 160 cases in `cases.json`
 and the hand-computed worked examples,
 and the WebAssembly build agrees with the twin on those cases and on
 1,000 generated issues within 1e-6 relative. Sizes, timings and how the
@@ -47,9 +47,10 @@ For an issue:
   maturity, the flows to maturity and to the nearest offer, accrued
   interest, the dirty price, yields to maturity and to the offer, the
   simple yield, and durations.
-- `calculate(issue, market, plan)`: for an amount, a horizon,
+- `calculate(issue, market, plan, fee_pct)`: for an amount, a horizon,
   reinvestment on or off, the account (ordinary or IIS type B), the
-  holder's other investment income and a key-rate change by the horizon:
+  holder's other investment income, a key-rate change by the horizon and
+  a broker's fee in percent of each trade:
   the plan's totals, its return over the period and, for a horizon of 30
   days or more, its effective annual return, as a signed breakdown; the
   early exit under the key-rate change; three floater scenarios (key rate
@@ -76,9 +77,8 @@ For an issue:
   in a sale, redemptions and the sale, the cost written off, the result
   (a loss is netted against the year's coupons), the long-term holding
   relief, the base, the parts of it taxed at 13 and at 15 percent with
-  the holder's other income, and the tax. With the fee at the standard
-  commission, the plan is `calculate`'s and the years' tax adds up to
-  its tax.
+  the holder's other income, and the tax. The plan is `calculate`'s with
+  the same fee, and the years' tax adds up to its tax.
 
 How `calculate` models the holding:
 
@@ -136,8 +136,10 @@ Conventions: days are whole-day offsets from the valuation date, ACT/365;
 amounts are per bond in currency units unless the field is a total; rates
 ending in `_pct` (`Pct` in JavaScript) are percents, others are
 fractions. In a breakdown, income lines are positive and costs (`tax`,
-`commission`) negative, and `total` is their sum. Commission is 0.05
-percent on the purchase and on a sale before redemption. Outputs are
+`commission`) negative, and `total` is their sum. The broker's fee
+`calculate` and `explain` take is charged on the purchase and on a sale
+before redemption, not at redemption; `COMMISSION_PCT`, 0.05 percent, is
+the usual one. Outputs are
 numbers, codes and day offsets; there is no human-language text.
 
 Errors are values. `derive_bond`, `calculate`, `explain` and `g_spread`
@@ -157,7 +159,7 @@ its own inputs):
 | `invalid_other_income` | other investment income is not a finite number of at least zero |
 | `invalid_price` | dirty price is not a positive finite number |
 | `amount_below_one_bond` | the amount does not buy one bond |
-| `invalid_fee` | the broker's fee given to `explain` is not a finite number of at least zero |
+| `invalid_fee` | the broker's fee given to `calculate` or `explain` is not a finite number of at least zero |
 | `curve_missing` | no zero-coupon curve: neither terms nor yields (in JavaScript, also `null` or `undefined`) |
 | `invalid_curve` | the curve's terms and yields differ in number, a term is not a finite number above zero, the terms do not strictly ascend, or a yield is not a finite number |
 
@@ -180,7 +182,9 @@ it is.
 Rust:
 
 ```rust
-use tyche_yield::{calculate, derive_bond, CouponType, Issue, Market, Plan, TaxRegime};
+use tyche_yield::{
+    calculate, derive_bond, CouponType, Issue, Market, Plan, TaxRegime, COMMISSION_PCT,
+};
 
 let issue = Issue {
     nominal: 1000.0,
@@ -205,7 +209,7 @@ let plan = Plan {
     other_income: 0.0,
     rate_shift_pct: 2.0,
 };
-let result = calculate(&issue, &market, &plan)?;
+let result = calculate(&issue, &market, &plan, COMMISSION_PCT)?;
 ```
 
 The primitives (`price_from_yield`, `ytm_effective`, `ytm_simple`,
@@ -283,9 +287,9 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
 
 ## Parity
 
-- `cases.json` holds 154 cases: 50 for the primitives (six of them
-  edge cases, and three of `curve_yield_pct`'s), 25 for `derive_bond`, 42 for `calculate`, 18 for
-  `explain` and 19 for `g_spread`
+- `cases.json` holds 160 cases: 50 for the primitives (six of them
+  edge cases, and three of `curve_yield_pct`'s), 25 for `derive_bond`,
+  48 for `calculate`, 18 for `explain` and 19 for `g_spread`
   (amortisation, offers, floaters, both accounts, the 15 percent rate,
   the long-term holding relief on either side of the third anniversary
   and at its cap, moved valuation dates and every error code). NaN is
@@ -295,11 +299,14 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
   until the tax, floater and reinvestment model changed; the cases it
   changed were recomputed by the twin and the Rust crate agrees with
   them. The new primitive cases and the error expectations are written by
-  hand. The `explain` cases reuse `calculate`'s issues and plans with a
-  fee; their expected values were computed by the twin, and both runners
-  also check that the years' tax adds up to the breakdown's, that the
-  plan is `calculate`'s at the standard commission, and that the
-  discounted flows give the dirty price. The `explain` cases take the
+  hand. The first 42 `calculate` cases take the usual fee, 0.05 percent,
+  which was the fixed commission when their values were computed; the
+  six with other fees, or fees it refuses, were computed by the Rust
+  crate and the twin agrees with them. The `explain` cases reuse
+  `calculate`'s issues and plans with a fee; their expected values were
+  computed by the twin, and both runners also check that the years' tax
+  adds up to the breakdown's, that the plan is `calculate`'s with the
+  same fee, and that the discounted flows give the dirty price. The `explain` cases take the
   app's snapshot of the zero-coupon curve; the expected G-spreads in
   them, in the `g_spread` cases and in the `curve_yield_pct` cases were
   computed by the Rust crate, and the twin, written separately, agrees
@@ -312,7 +319,8 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
   15 percent rate, the long-term holding relief and its cap, the
   shortest annualised horizon, and `explain`'s yield and fee, its tax
   year with a loss netted and with both rates, the accrued interest
-  paid at purchase and received in a sale, and the G-spread at each
+  paid at purchase and received in a sale, `calculate`'s fee on the
+  purchase and on a sale, and the G-spread at each
   duration, with the curve held flat beyond its terms and the curves it
   refuses.
 - `tests/cases.rs` checks the Rust crate against the table;

@@ -7,7 +7,7 @@
   the tax year by year.
 */
 
-import { breakdownOf, checkPlan, isTaxRegime, type Holding } from "./calculate.js";
+import { breakdownOf, checkPlan, isFee, isTaxRegime, type Holding } from "./calculate.js";
 import { parseIsoDate } from "./dates.js";
 import { amountsOf, derive_bond, isCouponType } from "./issue.js";
 import { YEAR, ytm_effective } from "./primitives.js";
@@ -27,7 +27,7 @@ export function explain(issue: Issue, market: Market, plan: Plan, feePct: number
   const d = derived.ok;
   const qty = checkPlan(d, plan);
   if (typeof qty === "string") return { error: qty };
-  if (!(Number.isFinite(feePct) && feePct >= 0)) return { error: "invalid_fee" };
+  if (!isFee(feePct)) return { error: "invalid_fee" };
   const badCurve = checkCurve(curve);
   if (badCurve !== null) return { error: badCurve };
   const zc = curve as Curve;

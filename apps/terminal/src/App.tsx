@@ -23,9 +23,9 @@ import {
 import type { Bond } from "./data/issues";
 import { CURVE, IIS_B_LAST_OPEN_DAY, KEY_RATE_PCT, MARKET, VALUATION_DATE } from "./data/market";
 import { activeEngine, useEngineChoice, useEngines } from "./engine/useEngines";
-import { COMMISSION_PCT } from "@tyche/yield-twin";
 import type { Plan } from "./engine/types";
 import { LANGS, strings, type Lang } from "./i18n";
+import { readFee, writeFee } from "./lib/fee";
 import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
 import { useAppFormats } from "./lib/format";
 import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH } from "./lib/liquidity";
@@ -129,6 +129,15 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     writeListState(url.searchParams, query, sort);
     if (url.href !== location.href) history.replaceState(history.state, "", url);
   }, [query, sort]);
+  // The broker's fee, one for the session, in the URL so a shared link
+  // reproduces the figures: set in the card's yield block, used by the
+  // card, the calculator and the comparison.
+  const [feePct, setFeePct] = useState<number>(() => readFee(new URLSearchParams(location.search)));
+  useEffect(() => {
+    const url = new URL(location.href);
+    writeFee(url.searchParams, feePct);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [feePct]);
   const [selectedId, setSelectedId] = useState<string | null>(readIssue);
   const [plans, setPlans] = useState<Record<string, PlanInput>>({});
   // The issues in the comparison, in ?cmp= once each, three at most.
@@ -199,17 +208,17 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   // engine, for the diagnostics.
   const lastDerive = useMemo(() => (engine && selected ? timed(() => engine.derive_bond(selected.bond.issue, MARKET))[1] : null), [engine, selected]);
   // The working behind the card's figures, for the calculator's plan and
-  // the broker's commission the calculator uses, with the G-spreads to the
-  // snapshot's zero-coupon curve.
+  // the session's broker's fee, with the G-spreads to the snapshot's
+  // zero-coupon curve.
   const explanation = useMemo(
-    () => (engine && selected && enginePlan ? engine.explain(selected.bond.issue, MARKET, enginePlan, COMMISSION_PCT, CURVE) : null),
+    () => (engine && selected && enginePlan ? engine.explain(selected.bond.issue, MARKET, enginePlan, feePct, CURVE) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
-    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
+    [engine, selected, feePct, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
   const calc = useMemo(
-    () => (engine && selected && enginePlan ? timed(() => engine.calculate(selected.bond.issue, MARKET, enginePlan)) : null),
+    () => (engine && selected && enginePlan ? timed(() => engine.calculate(selected.bond.issue, MARKET, enginePlan, feePct)) : null),
     // The plan object is rebuilt on every render; its fields are what matter.
-    [engine, selected, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
+    [engine, selected, feePct, plan?.amount, plan?.horizonDay, plan?.reinvest, plan?.taxRegime, plan?.otherIncome, plan?.rateShiftPct],
   );
 
   // On a narrow screen the issue replaces the list like a page, so opening
@@ -371,6 +380,8 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           }
           explanation={explanation}
           plan={plan}
+          feePct={feePct}
+          onFee={setFeePct}
           items={items ?? []}
           compared={compared}
           onCompare={compare}
@@ -390,6 +401,8 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           plan={plan}
           onPlan={(p) => setPlans((all) => ({ ...all, [selected.bond.id]: p }))}
           result={calc[0]}
+          feePct={feePct}
+          onFee={setFeePct}
         />
       </div>
     ) : null;
@@ -532,6 +545,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
             engine={engine}
             items={compared.flatMap((id) => items.filter((i) => i.bond.id === id))}
             planOf={(i) => plans[i.bond.id] ?? defaultPlan(i.derived)}
+            feePct={feePct}
             onRemove={(id) => compare(id, false)}
             nameOf={(i) => nameOf(i.bond)}
             source={
@@ -573,7 +587,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
         activeKind={engine?.kind ?? null}
         lastDeriveMs={lastDerive}
         lastCalculateMs={calc ? calc[1] : null}
-        subject={selected && enginePlan ? { issue: selected.bond.issue, market: MARKET, plan: enginePlan } : null}
+        subject={selected && enginePlan ? { issue: selected.bond.issue, market: MARKET, plan: enginePlan, feePct } : null}
       />
       <ShortcutsDialog title={t.shortcutsTitle} isOpen={helpOpen} onOpenChange={setHelpOpen} groups={groupShortcuts(help, t.scGeneral)} />
     </PageShell>

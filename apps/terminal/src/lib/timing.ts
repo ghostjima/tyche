@@ -25,10 +25,10 @@ function sample(run: () => void, samples: number, batch: number, warmup: number)
   return { median: median(out), p95: percentile(out, PERCENTILE) };
 }
 
-export function timeEngine(engine: Engine, issue: Issue, market: Market, plan: Plan, samples = SAMPLES, batch = BATCH): EngineTiming {
+export function timeEngine(engine: Engine, issue: Issue, market: Market, plan: Plan, feePct: number, samples = SAMPLES, batch = BATCH): EngineTiming {
   return {
     derive: sample(() => engine.derive_bond(issue, market), samples, batch, WARMUP),
-    calculate: sample(() => engine.calculate(issue, market, plan), samples, batch, WARMUP),
+    calculate: sample(() => engine.calculate(issue, market, plan, feePct), samples, batch, WARMUP),
   };
 }
 

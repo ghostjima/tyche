@@ -65,7 +65,13 @@ fn floater_plan(rate_shift_pct: f64) -> Plan {
 
 #[test]
 fn floater_sale_follows_the_key_rate_not_duration() {
-    let c = calculate(&floater(), &market("2026-01-01"), &floater_plan(2.0)).unwrap();
+    let c = calculate(
+        &floater(),
+        &market("2026-01-01"),
+        &floater_plan(2.0),
+        COMMISSION_PCT,
+    )
+    .unwrap();
     // The plan: coupon 180 x 10 = 1,800; the day-730 flow sold on day 365
     // at 18 percent: 1,180 / 1.18 = 1,000 x 10 = 10,000; commission 0.05
     // percent of 10,000 bought and 10,000 sold = 10.
@@ -88,7 +94,13 @@ fn floater_sale_follows_the_key_rate_not_duration() {
 
 #[test]
 fn floater_scenarios_keep_the_price_at_par() {
-    let c = calculate(&floater(), &market("2026-01-01"), &floater_plan(0.0)).unwrap();
+    let c = calculate(
+        &floater(),
+        &market("2026-01-01"),
+        &floater_plan(0.0),
+        COMMISSION_PCT,
+    )
+    .unwrap();
     let s = c.floater.unwrap().scenarios;
     // Key rate -2 over four coupons: 16 - 0.5 = 15.5, then 15 percent; the
     // coupons pay 17.5 and 17 percent (175 and 170). The day-730 flow, 1,170,
@@ -155,7 +167,7 @@ fn amortising_plan_earns_about_its_yield() {
         other_income: 0.0,
         rate_shift_pct: 0.0,
     };
-    let b = calculate(&amortising(), &market("2026-01-01"), &plan)
+    let b = calculate(&amortising(), &market("2026-01-01"), &plan, COMMISSION_PCT)
         .unwrap()
         .plan;
     // Ten bonds for 10,000. Coupons 1,000 + 500; the 5,000 repaid on day
@@ -184,7 +196,7 @@ fn no_annual_return_under_a_month() {
             horizon_day,
             ..floater_plan(0.0)
         };
-        calculate(&floater(), &market("2026-01-01"), &plan)
+        calculate(&floater(), &market("2026-01-01"), &plan, COMMISSION_PCT)
             .unwrap()
             .plan
     };
@@ -237,7 +249,7 @@ fn above_par() -> Issue {
 #[test]
 fn tax_nets_accrued_interest_and_the_loss_against_coupons() {
     let plan = above_par_plan(0.0);
-    let b = calculate(&above_par(), &market("2026-01-01"), &plan)
+    let b = calculate(&above_par(), &market("2026-01-01"), &plan, COMMISSION_PCT)
         .unwrap()
         .plan;
     // Ten bonds: invested 11,001.369863, of which accrued interest
@@ -280,6 +292,7 @@ fn the_threshold_applies_to_each_year() {
             &above_par(),
             &market("2026-01-01"),
             &above_par_plan(other_income),
+            COMMISSION_PCT,
         )
         .unwrap()
         .plan
@@ -326,11 +339,11 @@ fn long_term_relief_starts_the_day_after_the_third_anniversary() {
     // gain of 995.5.
     let (issue, plan, m) = zero_coupon(90.0, "2029-09-04");
     assert_eq!(plan.horizon_day, 1096.0);
-    let b = calculate(&issue, &m, &plan).unwrap().plan;
+    let b = calculate(&issue, &m, &plan, COMMISSION_PCT).unwrap().plan;
     // Redeemed on the anniversary: 13 percent of 995.5 = 129.415.
     assert_close!(b.tax, -129.415);
     let (issue, plan, m) = zero_coupon(90.0, "2029-09-05");
-    let b = calculate(&issue, &m, &plan).unwrap().plan;
+    let b = calculate(&issue, &m, &plan, COMMISSION_PCT).unwrap().plan;
     // A day later the gain is exempt.
     assert_close!(b.tax, 0.0);
 }
@@ -347,7 +360,7 @@ fn long_term_relief_is_capped_at_3_million_a_year_held() {
         amount: 1e9,
         ..plan
     };
-    let b = calculate(&issue, &m, &plan).unwrap().plan;
+    let b = calculate(&issue, &m, &plan, COMMISSION_PCT).unwrap().plan;
     assert_close!(b.qty, 2_000_000.0);
     assert_close!(b.tax, -148_527_000.0);
     assert_close!(b.total, 1_850_973_000.0);
@@ -378,7 +391,7 @@ fn long_term_relief_leaves_coupons_taxed() {
         other_income: 0.0,
         rate_shift_pct: 0.0,
     };
-    let b = calculate(&issue, &market("2026-01-01"), &plan)
+    let b = calculate(&issue, &market("2026-01-01"), &plan, COMMISSION_PCT)
         .unwrap()
         .plan;
     // Every coupon, the last one too, is taxed: 4 x 1,000 x 13 percent =
@@ -564,7 +577,7 @@ fn explain_shows_accrued_interest_paid_and_received() {
     let per_bond = 36.0 * (1.0 + y).powf(-90.0 / 365.0) + 1036.0 * (1.0 + y).powf(-270.0 / 365.0);
     assert_close!(t.sale, 10.0 * per_bond);
     // The same plan through calculate pays the same tax.
-    let c = calculate(&mid_period(), &market("2026-01-01"), &plan).unwrap();
+    let c = calculate(&mid_period(), &market("2026-01-01"), &plan, COMMISSION_PCT).unwrap();
     assert_close!(c.plan.tax, -t.tax);
 }
 
@@ -722,5 +735,59 @@ fn g_spread_refuses_a_curve_it_cannot_read() {
     assert_eq!(
         explain(&bullet(), &m, &bullet_plan(0.0), 1.0, &c(&[], &[])),
         Err(Error::CurveMissing)
+    );
+}
+
+#[test]
+fn calculate_charges_the_fee_asked_for() {
+    let m = market("2026-01-01");
+    // The one-year bullet, ten bonds held to maturity. A fee of 1 percent
+    // of the 10,000 paid is 100, and nothing is charged at redemption. Tax:
+    // coupons 1,000 less the 100 lost on the redemption (10,000 against a
+    // cost of 10,100), 900 at 13 percent: 117. Total 1,000 + 10,000 - 117 -
+    // 100 = 10,783, as explain's holding to maturity.
+    let c = calculate(&bullet(), &m, &bullet_plan(0.0), 1.0)
+        .unwrap()
+        .plan;
+    assert_close!(c.commission, -100.0);
+    assert_close!(c.tax, -117.0);
+    assert_close!(c.total, 10_783.0);
+    // No fee: 1,000 of coupons taxed at 13 percent, 130; total 10,870.
+    let c = calculate(&bullet(), &m, &bullet_plan(0.0), 0.0)
+        .unwrap()
+        .plan;
+    assert_close!(c.commission, 0.0);
+    assert_close!(c.tax, -130.0);
+    assert_close!(c.total, 10_870.0);
+    // Sold on day 100 the fee is charged on the sale too: the 1,100 due on
+    // day 365, discounted 265 days at the 10 percent yield, for each of
+    // ten bonds, and 1 percent of the 10,000 paid plus that.
+    let plan = Plan {
+        horizon_day: 100.0,
+        ..bullet_plan(0.0)
+    };
+    let c = calculate(&bullet(), &m, &plan, 1.0).unwrap().plan;
+    let sale = 10.0 * 1100.0 * 1.1_f64.powf(-265.0 / 365.0);
+    assert!((c.body - sale).abs() < 1e-6);
+    assert!((c.commission + (10_000.0 + sale) * 0.01).abs() < 1e-6);
+}
+
+#[test]
+fn calculate_refuses_a_fee_it_cannot_use() {
+    let m = market("2026-01-01");
+    for fee in [-0.01, f64::NAN, f64::INFINITY] {
+        assert_eq!(
+            calculate(&bullet(), &m, &bullet_plan(0.0), fee),
+            Err(Error::InvalidFee)
+        );
+    }
+    // The plan's errors come first.
+    let plan = Plan {
+        amount: 0.0,
+        ..bullet_plan(0.0)
+    };
+    assert_eq!(
+        calculate(&bullet(), &m, &plan, -1.0),
+        Err(Error::AmountNotPositive)
     );
 }

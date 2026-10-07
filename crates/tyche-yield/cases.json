@@ -1243,7 +1243,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1312,7 +1313,8 @@
         "taxRegime": "standard",
         "otherIncome": 2400000,
         "rateShiftPct": 2
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1381,7 +1383,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": -2
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1450,7 +1453,8 @@
         "taxRegime": "iis_b",
         "otherIncome": 0,
         "rateShiftPct": 3
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1519,7 +1523,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1588,7 +1593,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1664,7 +1670,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1740,7 +1747,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 1.5
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1809,7 +1817,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -1944,7 +1953,8 @@
         "taxRegime": "iis_b",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2074,7 +2084,8 @@
         "taxRegime": "standard",
         "otherIncome": 2400000,
         "rateShiftPct": 2
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2235,7 +2246,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2340,7 +2352,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2440,7 +2453,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2540,7 +2554,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2609,7 +2624,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2709,7 +2725,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2778,7 +2795,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2852,7 +2870,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 1
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -2957,7 +2976,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -3087,7 +3107,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_too_large"}
   },
@@ -3115,7 +3136,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_not_positive"}
   },
@@ -3143,7 +3165,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_not_positive"}
   },
@@ -3171,7 +3194,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_not_positive"}
   },
@@ -3199,7 +3223,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_below_one_bond"}
   },
@@ -3227,7 +3252,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "horizon_out_of_range"}
   },
@@ -3255,7 +3281,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "horizon_out_of_range"}
   },
@@ -3283,7 +3310,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "horizon_out_of_range"}
   },
@@ -3311,7 +3339,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "horizon_out_of_range"}
   },
@@ -3339,7 +3368,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "amount_not_positive"}
   },
@@ -3367,7 +3397,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_price"}
   },
@@ -3395,7 +3426,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_price"}
   },
@@ -3423,7 +3455,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "matured"}
   },
@@ -3451,7 +3484,8 @@
         "taxRegime": "flat",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_code"}
   },
@@ -3479,7 +3513,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_code"}
   },
@@ -3507,7 +3542,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_date"}
   },
@@ -3595,7 +3631,8 @@
         "taxRegime": "standard",
         "otherIncome": 2399700,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -3664,7 +3701,8 @@
         "taxRegime": "standard",
         "otherIncome": -1,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_other_income"}
   },
@@ -3692,7 +3730,8 @@
         "taxRegime": "standard",
         "otherIncome": "NaN",
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "horizon_out_of_range"}
   },
@@ -3720,7 +3759,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -3789,7 +3829,8 @@
         "taxRegime": "standard",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {
       "ok": {
@@ -3858,7 +3899,8 @@
         "taxRegime": "ldv",
         "otherIncome": 0,
         "rateShiftPct": 0
-      }
+      },
+      0.05
     ],
     "expect": {"error": "invalid_code"}
   },
@@ -8715,6 +8757,419 @@
     ],
     "expect": {
       "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "calculate: fixed, sold before maturity, no fee",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      0
+    ],
+    "expect": {
+      "ok": {
+        "earlyExit": {
+          "applicable": true,
+          "diff": 5488.368352140125,
+          "modDurationAtHorizon": 1.2105148857302443,
+          "rateShiftPct": -2,
+          "result": {
+            "amort": 0,
+            "annualPct": 13.977833077424684,
+            "body": 266878.1428472939,
+            "commission": 0,
+            "coupons": 14996.301369863013,
+            "horizonDay": 300,
+            "invested": 249337.5,
+            "periodPct": 11.352941883562043,
+            "profit": 28307.141468926508,
+            "qty": 250,
+            "reinvest": 0,
+            "tax": -4229.802748230395,
+            "total": 277644.6414689265
+          }
+        },
+        "floater": null,
+        "offer": null,
+        "plan": {
+          "amort": 0,
+          "annualPct": 11.242500909379105,
+          "body": 260569.67347701787,
+          "commission": 0,
+          "coupons": 14996.301369863013,
+          "horizonDay": 300,
+          "invested": 249337.5,
+          "periodPct": 9.151761414462879,
+          "profit": 22818.773116786382,
+          "qty": 250,
+          "reinvest": 0,
+          "tax": -3409.7017300945154,
+          "total": 272156.2731167864
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: fixed, sold before maturity, fee 1",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      1
+    ],
+    "expect": {
+      "ok": {
+        "earlyExit": {
+          "applicable": true,
+          "diff": 5433.484668618708,
+          "modDurationAtHorizon": 1.2105148857302443,
+          "rateShiftPct": -2,
+          "result": {
+            "amort": 0,
+            "annualPct": 11.738657379558258,
+            "body": 266878.1428472939,
+            "commission": -5162.156428472938,
+            "coupons": 14996.301369863013,
+            "horizonDay": 300,
+            "invested": 249337.5,
+            "periodPct": 9.551738256842642,
+            "profit": 23816.06537615502,
+            "qty": 250,
+            "reinvest": 0,
+            "tax": -3558.722412528911,
+            "total": 273153.565376155
+          }
+        },
+        "floater": null,
+        "offer": null,
+        "plan": {
+          "amort": 0,
+          "annualPct": 9.040266684464981,
+          "body": 260569.67347701787,
+          "commission": -5099.071734770179,
+          "coupons": 14996.301369863013,
+          "horizonDay": 300,
+          "invested": 249337.5,
+          "periodPct": 7.372569592434476,
+          "profit": 18382.580707536312,
+          "qty": 250,
+          "reinvest": 0,
+          "tax": -2746.8224045743927,
+          "total": 267720.0807075363
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate: floater with an offer, scenarios and offer pair at fee 0.3",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 100.78,
+        "accrued": 29.46,
+        "couponType": "floater",
+        "couponRatePct": 17.07,
+        "spreadPct": 1.07,
+        "periodDays": 91,
+        "maturity": "2027-04-02",
+        "offers": ["2027-01-01"],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 500000,
+        "horizonDay": 200,
+        "reinvest": true,
+        "taxRegime": "standard",
+        "otherIncome": 2000000,
+        "rateShiftPct": 1.5
+      },
+      0.3
+    ],
+    "expect": {
+      "ok": {
+        "earlyExit": {
+          "applicable": true,
+          "diff": 3028.399415390799,
+          "modDurationAtHorizon": null,
+          "rateShiftPct": 1.5,
+          "result": {
+            "amort": 0,
+            "annualPct": 14.480069378074155,
+            "body": 502007.80647067126,
+            "commission": -3005.9013794120137,
+            "coupons": 42828.539178082196,
+            "horizonDay": 200,
+            "invested": 499959.32,
+            "periodPct": 7.691334400612772,
+            "profit": 38453.54316822969,
+            "qty": 482,
+            "reinvest": 2328.350636669803,
+            "tax": -5745.931737781453,
+            "total": 538412.8631682297
+          }
+        },
+        "floater": {
+          "days": [28, 119, 210],
+          "scenarios": [
+            {
+              "breakdown": {
+                "amort": 0,
+                "annualPct": 12.140488190075427,
+                "body": 498813.69311812037,
+                "commission": -2996.319039354361,
+                "coupons": 39223.44328767123,
+                "horizonDay": 200,
+                "invested": 499959.32,
+                "periodPct": 6.479766900419329,
+                "profit": 32396.198532921553,
+                "qty": 482,
+                "reinvest": 2155.512441518455,
+                "tax": -4840.811275034232,
+                "total": 532355.5185329216
+              },
+              "coupons": [41.311506849315066, 40.06493150684931, 38.81835616438356],
+              "shiftPct": -2
+            },
+            {
+              "breakdown": {
+                "amort": 0,
+                "annualPct": 13.307654461473174,
+                "body": 500411.0644190321,
+                "commission": -3001.1111532570962,
+                "coupons": 41025.99123287671,
+                "horizonDay": 200,
+                "invested": 499959.32,
+                "periodPct": 7.085605235409731,
+                "profit": 35425.14375283889,
+                "qty": 482,
+                "reinvest": 2241.9315390941288,
+                "tax": -5293.412284906945,
+                "total": 535384.4637528389
+              },
+              "coupons": [42.55808219178082, 42.55808219178082, 42.55808219178082],
+              "shiftPct": 0
+            },
+            {
+              "breakdown": {
+                "amort": 0,
+                "annualPct": 14.480069378074155,
+                "body": 502007.80647067126,
+                "commission": -3005.9013794120137,
+                "coupons": 42828.539178082196,
+                "horizonDay": 200,
+                "invested": 499959.32,
+                "periodPct": 7.691334400612772,
+                "profit": 38453.54316822969,
+                "qty": 482,
+                "reinvest": 2328.350636669803,
+                "tax": -5745.931737781453,
+                "total": 538412.8631682297
+              },
+              "coupons": [43.80465753424657, 45.051232876712334, 46.29780821917809],
+              "shiftPct": 2
+            }
+          ]
+        },
+        "offer": {
+          "after": {
+            "amort": 0,
+            "annualPct": 7.404843433991992,
+            "body": 482000,
+            "commission": -1499.87796,
+            "coupons": 41146.161095890406,
+            "horizonDay": 210,
+            "invested": 499959.32,
+            "periodPct": 4.195592304887427,
+            "profit": 20976.254757487506,
+            "qty": 482,
+            "reinvest": 2423.6745163941177,
+            "tax": -3134.382894796983,
+            "total": 520935.5747574875
+          },
+          "before": {
+            "amort": 0,
+            "annualPct": 12.42357908744589,
+            "body": 482000,
+            "commission": -1499.87796,
+            "coupons": 41025.99123287671,
+            "horizonDay": 119,
+            "invested": 499959.32,
+            "periodPct": 3.8917132405580777,
+            "profit": 19456.98305384413,
+            "qty": 482,
+            "reinvest": 797.555064875172,
+            "tax": -2907.365283907738,
+            "total": 519416.30305384414
+          }
+        },
+        "plan": {
+          "amort": 0,
+          "annualPct": 13.307654461473174,
+          "body": 500411.0644190321,
+          "commission": -3001.1111532570962,
+          "coupons": 41025.99123287671,
+          "horizonDay": 200,
+          "invested": 499959.32,
+          "periodPct": 7.085605235409731,
+          "profit": 35425.14375283889,
+          "qty": 482,
+          "reinvest": 2241.9315390941288,
+          "tax": -5293.412284906945,
+          "total": 535384.4637528389
+        }
+      }
+    }
+  },
+  {
+    "name": "calculate error: negative fee",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      -0.01
+    ],
+    "expect": {
+      "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "calculate error: NaN fee",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 250000,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      "NaN"
+    ],
+    "expect": {
+      "error": "invalid_fee"
+    }
+  },
+  {
+    "name": "calculate error: plan errors come before the fee",
+    "fn": "calculate",
+    "args": [
+      {
+        "nominal": 1000,
+        "pricePct": 98.12,
+        "accrued": 16.15,
+        "couponType": "fixed",
+        "couponRatePct": 12.03,
+        "spreadPct": 0,
+        "periodDays": 182,
+        "maturity": "2029-01-12",
+        "offers": [],
+        "amortization": []
+      },
+      {
+        "valuationDate": "2026-09-04",
+        "keyRatePct": 16
+      },
+      {
+        "amount": 0,
+        "horizonDay": 300,
+        "reinvest": false,
+        "taxRegime": "standard",
+        "otherIncome": 0,
+        "rateShiftPct": -2
+      },
+      -1
+    ],
+    "expect": {
+      "error": "amount_not_positive"
     }
   }
 ]

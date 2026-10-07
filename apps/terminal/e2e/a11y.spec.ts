@@ -62,6 +62,17 @@ const READY_STATES: Record<string, Prepare> = {
     await page.getByTestId("working").locator("summary").click();
     await expect(page.locator(".working .stoa-table").first()).toBeVisible();
   },
+  // A broker's fee out of range: the field's message, the yield block's
+  // and the calculator's.
+  "fee out of range": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=${ISSUES.offer}`);
+    await ready(page);
+    const fee = page.getByTestId("fee").locator("input");
+    await fee.fill("2");
+    await fee.press("Enter");
+    await expect(page.getByTestId("fee").getByRole("alert")).toBeVisible();
+    await expect(page.locator(".calculator").getByTestId("calc-error")).toBeVisible();
+  },
   // The risks at their fullest: subordinated, qualified only, a
   // negative outlook, a thin market.
   "issue with every risk": async (page, lang, theme) => {

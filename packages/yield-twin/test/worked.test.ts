@@ -48,7 +48,7 @@ const floaterPlan = (rateShiftPct: number): Plan => ({
 
 describe("floaters", () => {
   it("sells a floater at the spread to the key rate, not by duration", () => {
-    const c = ok(calculate(floater, market("2026-01-01"), floaterPlan(2)));
+    const c = ok(calculate(floater, market("2026-01-01"), floaterPlan(2), COMMISSION_PCT));
     // The plan: coupon 180 x 10 = 1,800; the day-730 flow sold on day 365 at
     // 18 percent: 1,180 / 1.18 = 1,000 x 10 = 10,000; commission 0.05
     // percent of 10,000 bought and 10,000 sold = 10. Total 11,790.
@@ -67,7 +67,7 @@ describe("floaters", () => {
   });
 
   it("keeps a floater at par in every key-rate scenario", () => {
-    const s = ok(calculate(floater, market("2026-01-01"), floaterPlan(0))).floater!.scenarios;
+    const s = ok(calculate(floater, market("2026-01-01"), floaterPlan(0), COMMISSION_PCT)).floater!.scenarios;
     // -2 over four coupons: 15.5 then 15 percent; coupons 175 and 170; the
     // day-730 flow, 1,170, discounted at 17 percent: 1,000.
     close(s[0]!.breakdown.body, 10_000);
@@ -106,7 +106,7 @@ describe("amortisation", () => {
 
   it("earns about the yield on an amortising plan", () => {
     const plan: Plan = { amount: 10_000, horizonDay: 730, reinvest: true, taxRegime: "iis_b", otherIncome: 0, rateShiftPct: 0 };
-    const b = ok(calculate(amortising, market("2026-01-01"), plan)).plan;
+    const b = ok(calculate(amortising, market("2026-01-01"), plan, COMMISSION_PCT)).plan;
     // Coupons 1,000 + 500; the 5,000 repaid on day 365 and the 1,000
     // coupon earn 10 percent for a year: 600. Redemption 5,000; commission
     // 5. Total 12,095; annual sqrt(1.2095) - 1 = 9.977 percent.
@@ -123,7 +123,7 @@ describe("short horizons", () => {
   it("gives no annual return under a month", () => {
     // The par floater for 29 and for 30 days: under 30 days only the return
     // over the period.
-    const at = (horizonDay: number) => ok(calculate(floater, market("2026-01-01"), { ...floaterPlan(0), horizonDay })).plan;
+    const at = (horizonDay: number) => ok(calculate(floater, market("2026-01-01"), { ...floaterPlan(0), horizonDay }, COMMISSION_PCT)).plan;
     const short = at(29);
     expect(short.annualPct).toBeNull();
     close(short.periodPct, (short.total / short.invested - 1) * 100);
@@ -161,7 +161,7 @@ const aboveParPlan = (otherIncome: number): Plan => ({
 
 describe("tax", () => {
   it("nets the accrued interest paid and the loss against coupons", () => {
-    const b = ok(calculate(abovePar, market("2026-01-01"), aboveParPlan(0))).plan;
+    const b = ok(calculate(abovePar, market("2026-01-01"), aboveParPlan(0), COMMISSION_PCT)).plan;
     // Ten bonds: invested 11,001.369863, accrued interest 501.369863,
     // purchase commission 5.500685.
     // 2026: coupon 1,000 less the accrued interest paid: 498.630137.
@@ -189,7 +189,7 @@ describe("tax rates", () => {
     // Bases 498.630137 (2026) and 494.499315 (2027); with 2,399,700 of other
     // income, 300 of each at 13 percent and the rest at 15: 68.794521 +
     // 68.174897 = 136.969418.
-    const at = (other: number) => ok(calculate(abovePar, market("2026-01-01"), aboveParPlan(other))).plan.tax;
+    const at = (other: number) => ok(calculate(abovePar, market("2026-01-01"), aboveParPlan(other), COMMISSION_PCT)).plan.tax;
     close(at(2_399_700), -136.969_417_808_219_2);
     close(at(3_000_000), -148.969_417_808_219_16);
   });
@@ -221,15 +221,15 @@ describe("long-term holding relief", () => {
     // anniversary and exempt a day later.
     const [issue, m, plan] = zeroCoupon(90, "2029-09-04");
     expect(plan.horizonDay).toBe(1096);
-    close(ok(calculate(issue, m, plan)).plan.tax, -129.415);
-    close(ok(calculate(...zeroCoupon(90, "2029-09-05"))).plan.tax, 0);
+    close(ok(calculate(issue, m, plan, COMMISSION_PCT)).plan.tax, -129.415);
+    close(ok(calculate(...zeroCoupon(90, "2029-09-05"), COMMISSION_PCT)).plan.tax, 0);
   });
 
   it("is capped at 3 million for each full year held", () => {
     // 2,000,000 bonds at 500; gain 2,000,000,000 - 1,000,500,000 =
     // 999,500,000; 9,000,000 exempt; 990,500,000 taxed: 312,000 + 15
     // percent of 988,100,000 = 148,527,000.
-    const b = ok(calculate(...zeroCoupon(50, "2029-09-05", 1e9))).plan;
+    const b = ok(calculate(...zeroCoupon(50, "2029-09-05", 1e9), COMMISSION_PCT)).plan;
     close(b.qty, 2_000_000);
     close(b.tax, -148_527_000);
     close(b.total, 1_850_973_000);
@@ -241,7 +241,7 @@ describe("long-term holding relief", () => {
     // of 995.5 exempt. Total 4,000 + 10,000 - 520 - 4.5 = 13,475.5.
     const issue: Issue = { ...abovePar, pricePct: 90, maturity: "2029-12-31" };
     const plan: Plan = { amount: 9_000, horizonDay: 1460, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
-    const b = ok(calculate(issue, market("2026-01-01"), plan)).plan;
+    const b = ok(calculate(issue, market("2026-01-01"), plan, COMMISSION_PCT)).plan;
     close(b.tax, -520);
     close(b.total, 13_475.5);
   });
@@ -355,7 +355,7 @@ describe("explain", () => {
     close(t.result, t.sale - t.cost);
     const y = e.toMaturity.ytm;
     close(t.sale, 10 * (36 * Math.pow(1 + y, -90 / 365) + 1036 * Math.pow(1 + y, -270 / 365)));
-    close(ok(calculate(midPeriod, market("2026-01-01"), plan)).plan.tax, -t.tax);
+    close(ok(calculate(midPeriod, market("2026-01-01"), plan, COMMISSION_PCT)).plan.tax, -t.tax);
   });
 
   it("refuses a fee it cannot use, after the plan's own errors", () => {
@@ -436,5 +436,35 @@ describe("g_spread", () => {
     expect(g_spread({ ...bullet, maturity: "2025-01-01" }, m, null)).toEqual({ error: "matured" });
     expect(explain(bullet, m, bulletPlan(0), -1, null)).toEqual({ error: "invalid_fee" });
     expect(explain(bullet, m, bulletPlan(0), 1, null)).toEqual({ error: "curve_missing" });
+  });
+});
+
+describe("calculate's fee", () => {
+  it("is charged on the purchase and on a sale, not at redemption", () => {
+    const m = market("2026-01-01");
+    // The one-year bullet, ten bonds to maturity at a fee of 1 percent: 100
+    // on the 10,000 paid; tax on 1,000 of coupons less the 100 lost, 900 at
+    // 13 percent, 117; total 10,783, as explain's holding to maturity.
+    const c = ok(calculate(bullet, m, bulletPlan(0), 1)).plan;
+    close(c.commission, -100);
+    close(c.tax, -117);
+    close(c.total, 10_783);
+    // No fee: 130 of tax on 1,000; total 10,870.
+    const c0 = ok(calculate(bullet, m, bulletPlan(0), 0)).plan;
+    close(c0.commission, 0);
+    close(c0.tax, -130);
+    close(c0.total, 10_870);
+    // Sold on day 100: 1 percent of the 10,000 paid and of the sale, the
+    // 1,100 due on day 365 discounted 265 days at 10 percent, ten bonds.
+    const s = ok(calculate(bullet, m, { ...bulletPlan(0), horizonDay: 100 }, 1)).plan;
+    const sale = 10 * 1100 * Math.pow(1.1, -265 / 365);
+    expect(Math.abs(s.body - sale)).toBeLessThan(1e-6);
+    expect(Math.abs(s.commission + (10_000 + sale) * 0.01)).toBeLessThan(1e-6);
+  });
+
+  it("refuses a fee it cannot use, after the plan's own errors", () => {
+    const m = market("2026-01-01");
+    for (const fee of [-0.01, Number.NaN, Number.POSITIVE_INFINITY]) expect(calculate(bullet, m, bulletPlan(0), fee)).toEqual({ error: "invalid_fee" });
+    expect(calculate(bullet, m, { ...bulletPlan(0), amount: 0 }, -1)).toEqual({ error: "amount_not_positive" });
   });
 });

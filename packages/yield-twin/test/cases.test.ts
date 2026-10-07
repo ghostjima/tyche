@@ -55,7 +55,7 @@ function run(fn: string, args: unknown[]): unknown {
     case "derive_bond":
       return twin.derive_bond(x[0] as Issue, x[1] as Market);
     case "calculate":
-      return twin.calculate(x[0] as Issue, x[1] as Market, x[2] as Plan);
+      return twin.calculate(x[0] as Issue, x[1] as Market, x[2] as Plan, n(x[3]));
     case "explain":
       return twin.explain(x[0] as Issue, x[1] as Market, x[2] as Plan, n(x[3]), x[4] as Curve | null);
     case "g_spread":
@@ -90,11 +90,10 @@ describe("TypeScript twin against cases.json", () => {
         near(t.redemptions + t.sale - t.cost, t.result + t.relieved);
         near(t.taxedLow + t.taxedHigh, Math.max(t.base, 0));
       }
-      if (e.feePct === twin.COMMISSION_PCT) {
-        const calc = twin.calculate(...(decodeNaN(c.args) as [Issue, Market, Plan]));
-        if (!("ok" in calc)) throw new Error(calc.error);
-        expect(e.plan).toEqual(calc.ok.plan);
-      }
+      // The plan is calculate's with the same fee.
+      const calc = twin.calculate(...(decodeNaN(c.args.slice(0, 4)) as [Issue, Market, Plan, number]));
+      if (!("ok" in calc)) throw new Error(calc.error);
+      expect(e.plan).toEqual(calc.ok.plan);
       for (const y of [e.toMaturity, ...(e.toOffer ? [e.toOffer] : [])]) {
         expect(Math.abs(y.presentValue - e.price.dirty)).toBeLessThan(1e-6 * e.price.dirty);
         expect(y.ytmAfterFee).toBeLessThanOrEqual(y.ytm);
