@@ -12,6 +12,7 @@
 import type { ErrorCode } from "./engine/types";
 import type { EventKind } from "./data/events";
 import type { Outlook, Place, Sector } from "./data/issues";
+import type { BookState } from "./data/placements";
 
 export type Lang = "ru" | "en";
 
@@ -409,6 +410,36 @@ const en = {
   incomeAverage: "A month on average",
   incomeNoCoupon: "Months without a coupon",
   incomeProjected: "projected",
+  placements: "Placements",
+  placementsOpen: "Placements",
+  placementsClose: "Close the placements",
+  placementsNote:
+    "New issues of the synthetic universe's fictional issuers, placed by book-building: a book takes requests between two dates, the final coupon is set within the guidance when it closes, and the requests are allotted. A synthetic scenario: no real placement, and nothing here can be requested.",
+  plState: { upcoming: "Book opens soon", open: "Book open", closed: "Book closed" } satisfies Record<BookState, string>,
+  plBook: "Book",
+  plBookWindow: (open: string, close: string) => `Requests from ${open} to ${close}`,
+  plClosesIn: (days: string) => `Working days to the close: ${days}`,
+  plOpensIn: (days: string) => `Working days to the opening: ${days}`,
+  plGuidance: "Coupon guidance",
+  plGuidanceRange: (low: string, high: string, frequency: string) => `${low} to ${high} a year, paid ${frequency.toLowerCase()}`,
+  plFinal: "Final coupon",
+  plFinalWhy: (demand: string) => `Requests came to ${demand} times the size, so the coupon was set this far down the guidance (synthetic scenario).`,
+  plFinalPending: (close: string) => `Set when the book closes on ${close}`,
+  plAllotment: "Allotment",
+  plAllotted: (request: string, amount: string, share: string) =>
+    `A request of ${request} at face value without a coupon limit got ${amount}, ${share} of it, pro rata to the demand (synthetic scenario).`,
+  plAllotmentPending: "Known when the book closes: requests are allotted pro rata to the demand.",
+  plSize: "Size, at face value",
+  plTerm: "Maturity",
+  plTermValue: (years: string, maturity: string) => `${maturity}; years from the settlement: ${years}`,
+  plSettlement: "Settlement",
+  plRules: "How the synthetic books work",
+  plRuleGuidance: (step: string) =>
+    `The top of the guidance is the coupon whose yield is the Bank of Russia's zero-coupon curve at the issue's term, plus the issuer's credit and sector spreads and a premium for a new issue; the range runs down from it in steps of ${step} percentage points.`,
+  plRuleFinal: (full: string) =>
+    `The final coupon falls from the top of the guidance towards its bottom as demand grows: at the top with requests of the size or less, at the bottom from ${full} times the size, linearly in between, on the guidance's step.`,
+  plRuleAllotment: "A request without a coupon limit is allotted the size over the demand, and all of it when the book is not covered.",
+  plRuleSettlement: (days: string) => `The issue settles on the working day number ${days} after the book closes; working days are Monday to Friday.`,
   ladder: "Ladder",
   ladderOpen: "Build a ladder",
   ladderClose: "Close the ladder",
@@ -1079,6 +1110,36 @@ const ru: Strings = {
   incomeAverage: "В среднем за месяц",
   incomeNoCoupon: "Месяцев без купона",
   incomeProjected: "прогноз",
+  placements: "Размещения",
+  placementsOpen: "Размещения",
+  placementsClose: "Закрыть размещения",
+  placementsNote:
+    "Новые выпуски вымышленных эмитентов синтетического рынка, которые размещаются через книгу заявок: книга принимает заявки между двумя датами, при закрытии финальный купон устанавливается в пределах ориентира, а заявки удовлетворяются. Синтетический сценарий: это не реальные размещения, и заявку здесь подать нельзя.",
+  plState: { upcoming: "Книга скоро откроется", open: "Книга открыта", closed: "Книга закрыта" },
+  plBook: "Книга заявок",
+  plBookWindow: (open, close) => `Заявки с ${open} по ${close}`,
+  plClosesIn: (days) => `Рабочих дней до закрытия: ${days}`,
+  plOpensIn: (days) => `Рабочих дней до открытия: ${days}`,
+  plGuidance: "Ориентир купона",
+  plGuidanceRange: (low, high, frequency) => `от ${low} до ${high} годовых, выплата ${frequency.toLowerCase()}`,
+  plFinal: "Финальный купон",
+  plFinalWhy: (demand) => `Спрос превысил объём в ${demand} раза, поэтому купон установлен ниже в пределах ориентира (синтетический сценарий).`,
+  plFinalPending: (close) => `Устанавливается при закрытии книги ${close}`,
+  plAllotment: "Аллокация",
+  plAllotted: (request, amount, share) =>
+    `Заявка на ${request} по номиналу без ограничения по купону получила ${amount}, то есть ${share}, пропорционально спросу (синтетический сценарий).`,
+  plAllotmentPending: "Станет известна при закрытии книги: заявки удовлетворяются пропорционально спросу.",
+  plSize: "Объём по номиналу",
+  plTerm: "Погашение",
+  plTermValue: (years, maturity) => `${maturity}; лет с даты размещения: ${years}`,
+  plSettlement: "Техническое размещение",
+  plRules: "Как устроены синтетические книги",
+  plRuleGuidance: (step) =>
+    `Верх ориентира: купон, доходность которого равна кривой бескупонной доходности Банка России на сроке выпуска плюс кредитный и отраслевой спреды эмитента и премия за новый выпуск; диапазон идёт от него вниз шагами по ${step} процентного пункта.`,
+  plRuleFinal: (full) =>
+    `Финальный купон снижается от верха ориентира к его низу по мере роста спроса: на верху при заявках не больше объёма, на низу начиная со спроса в ${full} раза больше объёма, между ними линейно, с шагом ориентира.`,
+  plRuleAllotment: "Заявка без ограничения по купону получает объём выпуска, делённый на спрос, и полностью, если книга не покрыта.",
+  plRuleSettlement: (days) => `Техническое размещение проходит на рабочий день номер ${days} после закрытия книги; рабочие дни с понедельника по пятницу.`,
   ladder: "Лесенка облигаций",
   ladderOpen: "Собрать лесенку",
   ladderClose: "Закрыть лесенку",

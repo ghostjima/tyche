@@ -30,6 +30,7 @@ import { LANGS, strings, type Lang } from "./i18n";
 import { readFee, writeFee } from "./lib/fee";
 import { HOLDINGS_MAX, readHoldings, setHolding, writeHoldings, type Holding } from "./lib/holdings";
 import { LADDER_DEFAULT, readLadder, writeLadder, type LadderParams } from "./lib/ladder";
+import { readPlacementsOpen, writePlacementsOpen } from "./lib/placements";
 import { applyQuery, readListState, sortItems, writeListState, type Item, type Query, type SortKey } from "./lib/filters";
 import { useAppFormats } from "./lib/format";
 import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH } from "./lib/liquidity";
@@ -47,6 +48,7 @@ import { IssueList } from "./ui/IssueList";
 import { COMPARE_MAX, Compare } from "./ui/Compare";
 import { Holdings, type HeldItem } from "./ui/Holdings";
 import { Ladder } from "./ui/Ladder";
+import { Placements } from "./ui/Placements";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
  * once the universe is ready. */
@@ -167,6 +169,22 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   const closeLadder = () => {
     focusWhenReady("ladder-open");
     setLadder(null);
+  };
+  // The placements by book-building, in ?pl=1, when they are open.
+  const [placementsOpen, setPlacementsOpen] = useState(() => readPlacementsOpen(new URLSearchParams(location.search)));
+  useEffect(() => {
+    const url = new URL(location.href);
+    writePlacementsOpen(url.searchParams, placementsOpen);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [placementsOpen]);
+  const openPlacements = () => {
+    // The panel's Close button takes the focus once it is drawn.
+    focusWhenReady("placements-close");
+    setPlacementsOpen(true);
+  };
+  const closePlacements = () => {
+    focusWhenReady("placements-open");
+    setPlacementsOpen(false);
   };
   const hold = (id: string, bonds: number) => setHoldings((all) => setHolding(all, id, bonds));
   const unhold = (id: string) => setHoldings((all) => all.filter((h) => h.id !== id));
@@ -389,6 +407,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
       searchRef={search}
       listRef={records}
       onLadder={openLadder}
+      onPlacements={openPlacements}
     />
   );
 
@@ -619,6 +638,22 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
             feePct={feePct}
             nameOf={(i) => nameOf(i.bond)}
             source={<SimSource t={t} onData={openData} />}
+          />
+        )}
+
+        {!dataOpen && !loading && !marketFailed && placementsOpen && market.status === "ready" && (
+          <Placements
+            t={t}
+            f={f}
+            placements={market.placements}
+            onClose={closePlacements}
+            source={
+              // The guidance is priced from the Bank of Russia's curve.
+              <>
+                <SimSource t={t} onData={openData} />
+                <BorSource t={t} f={f} curve />
+              </>
+            }
           />
         )}
 

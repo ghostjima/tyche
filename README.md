@@ -77,8 +77,8 @@ Workflows:
 
 Today the prototype covers the first three workflows, the
 single-issue calculator, the events of a synthetic portfolio with its
-monthly coupon income, and a ladder builder: see
-[What is built](#what-is-built).
+monthly coupon income, a ladder builder, and placements by
+book-building: see [What is built](#what-is-built).
 
 ## Constraints
 
@@ -174,8 +174,11 @@ monthly coupon income, and a ladder builder: see
   rung is netted against another and the rungs share the threshold of
   the 13 percent rate, with the working shown; the ladder's yield after
   tax and the fee, the payments by year and every assumption, kept in
-  the link); the Bank of Russia's benchmarks with the yield
-  curve. Every widget names its
+  the link); placements of new synthetic issues by book-building
+  (each book's window with a countdown in working days, the coupon
+  guidance, the final coupon once the book has closed and what an
+  indicative request was allotted, with the rules that set them); the
+  Bank of Russia's benchmarks with the yield curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
   cbr.ru), a banner in the header says the terminal is a demonstration
   with synthetic data and not investment advice, and a "Data and
@@ -205,9 +208,13 @@ monthly coupon income, and a ladder builder: see
   as national-scale ratings (an assumption stated apart from the rule),
   lists a holding's events (payments,
   offers with the window to act in, and a scenario of rating changes and
-  defaults), and checks an order's depth against an issue's book (filled
+  defaults), checks an order's depth against an issue's book (filled
   at or better than the limit, the average price, the slippage, the
-  levels used). The app runs its WebAssembly build in a worker. The IEX decoding stays
+  levels used), and places new issues of its fictional issuers by
+  book-building around the valuation date (the book's window, the coupon
+  guidance from the zero-coupon curve and the issuer's spreads, the final
+  coupon and the allotment from the book's demand, a scenario of its
+  seed). The app runs its WebAssembly build in a worker. The IEX decoding stays
   behind a feature for its tests; the product does not use it.
 - **The Bank of Russia snapshot** ([`data/cbr`](data/cbr)): the key
   rate, RUONIA, the zero-coupon yield curve and inflation, each with the
