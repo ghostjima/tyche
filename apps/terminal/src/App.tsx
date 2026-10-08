@@ -307,23 +307,21 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   };
   // The focus goes to the page's heading when it opens from the app, and
   // back to the link that opened it (or the foot's link) when it closes. A
-  // page loaded as it is keeps the browser's own start.
+  // page loaded as it is keeps the browser's own start. Both are drawn in
+  // the commit that opens or closes the page, so the effect finds them.
   const wasOpen = useRef(dataOpen);
   useEffect(() => {
     if (dataOpen === wasOpen.current) return;
     wasOpen.current = dataOpen;
-    if (dataOpen) requestAnimationFrame(() => dataHeading.current?.focus());
+    if (dataOpen) dataHeading.current?.focus();
     else {
       const opener = dataOpener.current;
       dataOpener.current = null;
-      // The terminal draws its widgets a frame or two later: wait for them.
-      const focusBack = (frames: number) => {
-        const target = opener ? document.querySelector<HTMLElement>(opener) : dataLink.current;
-        if (target) target.focus();
-        else if (frames > 0) requestAnimationFrame(() => focusBack(frames - 1));
-        else dataLink.current?.focus();
-      };
-      if (opener !== false) requestAnimationFrame(() => focusBack(10));
+      if (opener === false) return;
+      // The widget's label when the widget is drawn again, else the foot's
+      // link.
+      const target = (opener ? document.querySelector<HTMLElement>(opener) : null) ?? dataLink.current;
+      target?.focus();
     }
   }, [dataOpen]);
 
@@ -361,14 +359,10 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           returnTo.current = null;
           close();
         }
-        // After Back the list comes back with the history's next event, so
-        // wait for the field for a few frames.
-        const focusSearch = (frames: number) => {
-          const input = search.current?.querySelector("input");
-          if (input) input.focus();
-          else if (frames > 0) requestAnimationFrame(() => focusSearch(frames - 1));
-        };
-        requestAnimationFrame(() => focusSearch(10));
+        // After Back the list comes back with the history's next event, and
+        // while the engines load it is not drawn yet: the search takes the
+        // focus as soon as it is there.
+        focusWhenReady(() => search.current?.querySelector("input"));
       },
     },
     { key: "?", description: t.scHelp, group: t.scGeneral, onTrigger: () => setHelpOpen(true) },

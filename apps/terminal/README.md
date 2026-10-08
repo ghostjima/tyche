@@ -252,7 +252,8 @@ What the tests cover, and nothing wider:
   at 1440 px; and the list, "Money by a date", the comparison, an
   issue, the holdings, the holdings' calendar and a ten-rung ladder at
   375 px.
-- Keyboard paths: `/` to the search, Tab to the issue list (one tab
+- Keyboard paths: `/` to the search (pressed while the engines load, the
+  focus goes to the search once it is drawn), Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the map
   of peers one tab stop whose Home and arrow keys walk its points, the
   broker's fee by the arrow keys a hundredth of a percent at a time, the

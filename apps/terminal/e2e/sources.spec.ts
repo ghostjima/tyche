@@ -112,11 +112,47 @@ test("the data page opens from a source label by keyboard, is a region of the ma
   await expect(page.locator(".pane-list")).toBeVisible();
   expect(new URL(page.url()).searchParams.get("page")).toBeNull();
   await expect(page.locator(".pane-list .stoa-source-note").getByRole("link", { name: "Data and licensing" })).toBeFocused();
-  // It went back in the history: Forward opens the page again.
+  // It went back in the history: Forward opens the page again, with the
+  // focus on its heading, and Back returns it to the foot's link, since no
+  // label opened the page this time.
   await page.goForward();
-  await expect(heading).toBeVisible();
+  await expect(heading).toBeFocused();
   await page.goBack();
   await expect(page.locator(".pane-list")).toBeVisible();
+  await expect(page.locator(".foot").getByRole("link", { name: "Data and licensing" })).toBeFocused();
+});
+
+test("on a phone the issue card's label opens the data page, and Back returns the focus to that label in the card", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(`/?lang=en&issue=${ISSUES.offer}`);
+  await ready(page);
+  const label = page.locator(".issue-card .stoa-source-note").getByRole("link", { name: "Data and licensing" });
+  await label.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { level: 2, name: "Data and licensing" })).toBeFocused();
+  await page.getByRole("button", { name: "Back to the terminal" }).click();
+  // The card comes back from the history's entry, with the issue in it.
+  await expect(page.locator(".issue-card")).toBeVisible();
+  expect(new URL(page.url()).searchParams.get("issue")).toBe(ISSUES.offer);
+  await expect(label).toBeFocused();
+});
+
+test("the search shortcut pressed while the engines load puts the focus in the search once the list is drawn", async ({ page }) => {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/*.wasm", async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/?lang=en");
+  await expect(page.locator(".app")).toHaveAttribute("data-state", "loading");
+  await expect(page.getByRole("searchbox")).toHaveCount(0);
+  await page.keyboard.press("/");
+  // Many frames go by before the engines answer.
+  await page.waitForTimeout(500);
+  release();
+  await ready(page);
+  await expect(page.getByLabel("Search by issuer or ticker")).toBeFocused();
 });
 
 test("the foot's link opens the data page, and the search shortcut leaves it for the search", async ({ page }) => {
