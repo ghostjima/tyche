@@ -5,7 +5,8 @@
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 use tyche_market::synth::{
-    self, events, gate, inputs, json, Access, EventKind, Reason, Segment, Source, Universe, RATINGS,
+    self, events, gate, inputs, json, Access, EventKind, Reason, Sector, Segment, Source, Universe,
+    RATINGS,
 };
 use tyche_market::{depth_check, Levels, Side};
 use tyche_yield::{derive_bond, Market};
@@ -127,30 +128,55 @@ fn the_depth_check_on_generated_books_fills_what_the_book_shows_at_or_better_tha
 }
 
 #[test]
-fn the_gate_follows_the_synthetic_rule_for_every_issue() {
+fn the_gate_follows_the_law_at_the_bank_of_russia_level_for_every_issue() {
     let u = universe();
+    // A+ on the synthetic scale stands for the board's level: A+ on the
+    // national scale from at least two agencies.
+    assert_eq!(RATINGS[synth::access::TEST_BELOW], "A+");
     let mut seen: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut tested_from_a_to_bbb_minus = 0;
+    let mut bank_subordinated = 0;
     for s in &u.issues {
-        let g = gate(s);
+        let issuer = &u.issuers[s.issuer];
+        let g = gate(s, issuer);
         *seen.entry(g.access.code()).or_default() += 1;
-        if s.qualified_only {
+        let bank_sub = s.subordinated && issuer.sector == Sector::Banking;
+        assert_eq!(
+            g.reasons.contains(&Reason::SubordinatedBank),
+            bank_sub,
+            "{}",
+            s.ticker
+        );
+        if bank_sub {
+            bank_subordinated += 1;
+        }
+        if s.qualified_only || bank_sub {
             assert_eq!(g.access, Access::Qualified, "{}", s.ticker);
-            assert_eq!(g.reasons.contains(&Reason::Subordinated), s.subordinated);
+            assert_eq!(g.reasons.contains(&Reason::QualifiedOnly), s.qualified_only);
         } else if s.segment == Segment::Government {
             assert_eq!(g.access, Access::Open);
+            assert_eq!(g.reasons, [Reason::Government]);
         } else if s.rating > synth::access::TEST_BELOW {
             assert_eq!(g.access, Access::Test, "{} {}", s.ticker, RATINGS[s.rating]);
+            assert_eq!(g.reasons, [Reason::RatingBelowThreshold]);
+            // Rated A to BBB-: open under a BBB- threshold, a test at the
+            // board's level.
+            if s.rating <= 9 {
+                tested_from_a_to_bbb_minus += 1;
+            }
         } else {
-            assert_eq!(g.access, Access::Open);
-        }
-        // Every subordinated issue is for qualified investors only.
-        if s.subordinated {
-            assert_eq!(g.access, Access::Qualified);
+            assert_eq!(g.access, Access::Open, "{} {}", s.ticker, RATINGS[s.rating]);
+            assert_eq!(g.reasons, [Reason::RatingAtThreshold]);
         }
     }
     assert!(seen.len() == 3 && seen.values().all(|&n| n > 5), "{seen:?}");
+    assert!(
+        tested_from_a_to_bbb_minus > 10,
+        "{tested_from_a_to_bbb_minus}"
+    );
+    assert!(bank_subordinated > 0);
     let text = json::access_json(u);
-    assert!(text.starts_with("{\"testBelow\":\"BBB-\""));
+    assert!(text.starts_with("{\"testBelow\":\"A+\""));
     assert_eq!(text.matches("\"ticker\"").count(), u.issues.len());
 }
 

@@ -138,6 +138,15 @@ export function parseUniverse(json: string): Universe {
  * qualified investors only. */
 export type Access = "open" | "test" | "qualified";
 
+/** The lowest synthetic rating at which a corporate issue needs no test:
+ * tyche-market's `TEST_BELOW`, the Bank of Russia board's level as the
+ * synthetic scale reads it (universe.test.ts checks they agree). */
+export const TEST_LEVEL: Rating = "A+";
+/** What a non-qualified investor may buy without a passed test in a
+ * calendar year, after the broker's notice of the risks, roubles (law
+ * No. 39-FZ, article 3.1, paragraph 7). */
+export const WITHOUT_TEST_PER_YEAR = 300_000;
+
 /** Reads tyche-market's accessJson: each issue's access, by ticker. */
 export function parseAccess(json: string): Map<string, Access> {
   const raw = JSON.parse(json) as { issues: { ticker: string; access: string }[] };
