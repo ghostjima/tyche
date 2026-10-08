@@ -1,13 +1,13 @@
 // The ladder: its URL, the issues each rung can take, and its figures
 // from the engine (the twin here; the two engines agree, parity.test.ts).
 import { describe, expect, it } from "vitest";
-import { derive_bond, explain, ytm_effective, type Plan } from "@tyche/yield-twin";
+import { derive_bond, explain, portfolio_tax, ytm_effective, type Plan } from "@tyche/yield-twin";
 import { parseAccess } from "../data/issues";
 import { CURVE, MARKET, VALUATION_DATE } from "../data/market";
 import { BONDS, accessJson } from "../data/universe.testing";
 import { twinEngine } from "../engine/twin";
 import type { Item } from "./filters";
-import { LADDER_DEFAULT, candidates, chooseRungs, excluded, exitDay, flowsByYear, readLadder, workLadder, writeLadder, type Rung } from "./ladder";
+import { LADDER_DEFAULT, candidates, chooseRungs, excluded, exitDay, flowsByYear, lastPaymentByYear, readLadder, workLadder, writeLadder, type Rung } from "./ladder";
 
 const ITEMS: Item[] = BONDS.flatMap((bond) => {
   const r = derive_bond(bond.issue, MARKET);
@@ -77,19 +77,51 @@ describe("the ladder's figures", () => {
       if (!("ok" in e)) throw new Error(e.error);
       const trace = rung.offer ? e.ok.toOffer! : e.ok.toMaturity;
       expect(rung.held).toEqual(trace.held);
+      expect(rung.tax).toEqual(trace.tax);
+      expect(rung.before).toBe(trace.held.total - trace.held.tax);
       expect(rung.held.qty).toBe(rung.bonds);
       expect(rung.held.reinvest).toBe(0);
     }
   });
 
-  it("give the ladder's yield as the engine's yield of what the rungs bring at their exits against what they cost", () => {
+  it("tax the rungs together: their tax years in one base per calendar year, as the engine's portfolio tax", () => {
+    const want = portfolio_tax(done.flatMap((x) => x.tax), 0);
+    if (!("ok" in want)) throw new Error(want.error);
+    expect(r.taxYears).toEqual(want.ok);
+    expect(r.tax).toBeCloseTo(want.ok.reduce((s, y) => s + y.tax, 0), 6);
+    // Under the threshold the rungs together pay no more than each on its
+    // own: a loss on one rung can only lower the tax on another.
+    expect(r.tax).toBeLessThanOrEqual(done.reduce((s, x) => s - x.held.tax, 0) + 1e-6);
+  });
+
+  it("share the threshold of the 13 percent rate between the rungs", () => {
+    // 100 million over ten rungs: each rung's coupons stay under 2.4
+    // million a year, the rungs' together do not, so the ladder pays more
+    // than the rungs on their own would.
+    const ten = chooseRungs(candidates(ITEMS, ACCESS, 10), []).filter((x) => x !== null);
+    const big = workLadder(twinEngine, MARKET, CURVE, ten, 100_000_000, 0.05);
+    const rungsOf = big.rungs.filter((x): x is Rung => x !== null && "held" in x);
+    expect(big.taxYears.some((y) => y.taxedHigh > 0)).toBe(true);
+    expect(big.tax).toBeGreaterThan(rungsOf.reduce((s, x) => s - x.held.tax, 0));
+  });
+
+  it("give the ladder's yield as the engine's yield of what the rungs bring at their exits, less each year's tax on its last payment, against what they cost", () => {
     expect(r.invested).toBeCloseTo(done.reduce((s, x) => s + x.held.invested, 0), 6);
-    expect(r.received).toBeCloseTo(done.reduce((s, x) => s + x.held.total, 0), 6);
-    expect(r.yieldAfter).toBe(ytm_effective(done.map((x) => x.held.total), done.map((x) => x.exit), r.invested));
-    // Between the rungs' own yields after tax and the fee.
-    const own = done.map((x) => x.held.annualPct! / 100);
-    expect(r.yieldAfter).toBeGreaterThanOrEqual(Math.min(...own) - 1e-9);
-    expect(r.yieldAfter).toBeLessThanOrEqual(Math.max(...own) + 1e-9);
+    expect(r.before).toBeCloseTo(done.reduce((s, x) => s + x.before, 0), 6);
+    expect(r.received).toBeCloseTo(r.before - r.tax, 6);
+    const last = lastPaymentByYear(VALUATION_DATE, done);
+    const owed = r.taxYears.filter((y) => y.tax > 0);
+    expect(owed.length).toBeGreaterThan(0);
+    for (const y of owed) expect(last.has(y.year), String(y.year)).toBe(true);
+    expect(r.yieldAfter).toBe(
+      ytm_effective(
+        [...done.map((x) => x.before), ...owed.map((y) => -y.tax)],
+        [...done.map((x) => x.exit), ...owed.map((y) => last.get(y.year)!)],
+        r.invested,
+      ),
+    );
+    // Below the yield before tax, which has the same flows and no tax.
+    expect(r.yieldAfter).toBeLessThan(ytm_effective(done.map((x) => x.before), done.map((x) => x.exit), r.invested));
   });
 
   it("say when a rung's share does not buy a lot, and leave an emptied rung out of the split", () => {

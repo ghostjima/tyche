@@ -8,7 +8,9 @@
 //! the error `invalid_code`. `g_spread` and `explain` take a `Curve`;
 //! `undefined` or `null` in its place is the error `curve_missing`.
 //! `order_ticket` takes an `Order` (`side` "buy" or "sell", `limit`
-//! "price" or "yield") and gives a `TicketResult`.
+//! "price" or "yield") and gives a `TicketResult`. `portfolio_tax` takes
+//! its holdings' tax years as six `Float64Array`s and gives a
+//! `PortfolioResult`, its `ok` a `Portfolio` with the `years`.
 //!
 //! Structs rather than JSON: on the 60-issue set the struct boundary
 //! added 4 to 6 percent to the time spent inside wasm, the JSON boundary
@@ -17,8 +19,8 @@
 use crate::primitives as p;
 use crate::{
     Amortization, Breakdown, Calculation, CouponType, Curve, Derived, Error, Explanation,
-    FlowTrace, GSpread, GSpreads, Issue, Limit, Market, Order, Plan, PriceTrace, Schedule, Side,
-    TaxRegime, TaxYear, Ticket, YieldTrace,
+    FlowTrace, GSpread, GSpreads, HoldingYear, Issue, Limit, Market, Order, Plan, PortfolioYear,
+    PriceTrace, Schedule, Side, TaxRegime, TaxYear, Ticket, YieldTrace,
 };
 use wasm_bindgen::prelude::*;
 
@@ -942,6 +944,116 @@ pub fn order_ticket(issue: &JsIssue, market: &JsMarket, order: &JsOrder) -> JsTi
             error: None,
         },
         Err(e) => JsTicketResult {
+            ok: None,
+            error: Some(e.code().to_owned()),
+        },
+    }
+}
+
+#[wasm_bindgen(js_name = PortfolioYear)]
+#[derive(Clone, Copy)]
+pub struct JsPortfolioYear {
+    pub year: i32,
+    pub holdings: u32,
+    pub income: f64,
+    pub result: f64,
+    pub relieved: f64,
+    #[wasm_bindgen(js_name = relievedProceeds)]
+    pub relieved_proceeds: f64,
+    #[wasm_bindgen(js_name = relievedYears)]
+    pub relieved_years: f64,
+    #[wasm_bindgen(js_name = reliefCap)]
+    pub relief_cap: f64,
+    pub exempt: f64,
+    pub base: f64,
+    #[wasm_bindgen(js_name = taxedLow)]
+    pub taxed_low: f64,
+    #[wasm_bindgen(js_name = taxedHigh)]
+    pub taxed_high: f64,
+    pub tax: f64,
+}
+
+impl From<&PortfolioYear> for JsPortfolioYear {
+    fn from(y: &PortfolioYear) -> JsPortfolioYear {
+        JsPortfolioYear {
+            // A calendar year fits an i32; JavaScript gets a number, not a
+            // BigInt.
+            year: y.year as i32,
+            holdings: y.holdings,
+            income: y.income,
+            result: y.result,
+            relieved: y.relieved,
+            relieved_proceeds: y.relieved_proceeds,
+            relieved_years: y.relieved_years,
+            relief_cap: y.relief_cap,
+            exempt: y.exempt,
+            base: y.base,
+            taxed_low: y.taxed_low,
+            taxed_high: y.taxed_high,
+            tax: y.tax,
+        }
+    }
+}
+
+#[wasm_bindgen(js_name = Portfolio, getter_with_clone)]
+#[derive(Clone)]
+pub struct JsPortfolio {
+    pub years: Vec<JsPortfolioYear>,
+}
+
+#[wasm_bindgen(js_name = PortfolioResult, getter_with_clone)]
+pub struct JsPortfolioResult {
+    pub ok: Option<JsPortfolio>,
+    pub error: Option<String>,
+}
+
+/// A portfolio's tax year by year from its holdings' tax years, one
+/// holding's year at each index of the six lists (a year, then the
+/// `TaxYear` fields of the same names), with the holder's other investment
+/// income. Lists of different lengths, or a year that is not a whole
+/// number, are the error `invalid_tax_year`, after `invalid_other_income`.
+#[wasm_bindgen]
+pub fn portfolio_tax(
+    years: &[f64],
+    income: &[f64],
+    result: &[f64],
+    relieved: &[f64],
+    relieved_proceeds: &[f64],
+    relieved_years: &[f64],
+    other_income: f64,
+) -> JsPortfolioResult {
+    let n = years.len();
+    let r = if !(other_income.is_finite() && other_income >= 0.0) {
+        Err(Error::InvalidOtherIncome)
+    } else if [income, result, relieved, relieved_proceeds, relieved_years]
+        .iter()
+        .any(|l| l.len() != n)
+        || years
+            .iter()
+            .any(|&y| !(y.is_finite() && y.fract() == 0.0 && y.abs() <= 9_999.0))
+    {
+        Err(Error::InvalidTaxYear)
+    } else {
+        let holdings: Vec<HoldingYear> = (0..n)
+            .map(|i| HoldingYear {
+                year: years[i] as i64,
+                income: income[i],
+                result: result[i],
+                relieved: relieved[i],
+                relieved_proceeds: relieved_proceeds[i],
+                relieved_years: relieved_years[i],
+            })
+            .collect();
+        crate::portfolio_tax(&holdings, other_income)
+    };
+    match r {
+        Ok(years) => JsPortfolioResult {
+            ok: Some(JsPortfolio {
+                years: years.iter().map(Into::into).collect(),
+            }),
+            error: None,
+        },
+        Err(e) => JsPortfolioResult {
             ok: None,
             error: Some(e.code().to_owned()),
         },

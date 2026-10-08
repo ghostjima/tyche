@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { compare, decodeNaN } from "../../../crates/tyche-yield/node/compare.mjs";
 import * as twin from "../src/index.js";
-import type { Curve, Issue, Market, Order, Plan } from "../src/index.js";
+import type { Curve, HoldingYear, Issue, Market, Order, Plan } from "../src/index.js";
 
 type Case = { name: string; fn: string; args: unknown[]; expect: unknown };
 
@@ -64,6 +64,8 @@ function run(fn: string, args: unknown[]): unknown {
       return twin.order_ticket(x[0] as Issue, x[1] as Market, x[2] as Order);
     case "curve_yield_pct":
       return twin.curve_yield_pct(a(x[0]), a(x[1]), n(x[2]));
+    case "portfolio_tax":
+      return twin.portfolio_tax(x[0] as HoldingYear[], n(x[1]));
     default:
       throw new Error(`unknown function ${fn}`);
   }
@@ -71,7 +73,7 @@ function run(fn: string, args: unknown[]): unknown {
 
 describe("TypeScript twin against cases.json", () => {
   it("covers every function", () => {
-    expect(new Set(cases.map((c) => c.fn)).size).toBe(20);
+    expect(new Set(cases.map((c) => c.fn)).size).toBe(21);
   });
 
   it.each(cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
@@ -110,6 +112,37 @@ describe("TypeScript twin against cases.json", () => {
       checked += 1;
     }
     expect(checked).toBeGreaterThanOrEqual(8);
+  });
+
+  it("taxes a portfolio of one holding as the holding, year by year", () => {
+    let checked = 0;
+    for (const c of cases.filter((x) => x.fn === "explain")) {
+      const r = run(c.fn, c.args) as ReturnType<typeof twin.explain>;
+      if (!("ok" in r)) continue;
+      const plan = decodeNaN(c.args[2]) as Plan;
+      const p = twin.portfolio_tax(r.ok.planTax, plan.otherIncome);
+      if (!("ok" in p)) throw new Error(p.error);
+      expect(p.ok.map((y) => y.year)).toEqual(r.ok.planTax.map((t) => t.year));
+      p.ok.forEach((y, i) => {
+        const t = r.ok.planTax[i]!;
+        for (const [got, want] of [
+          [y.exempt, t.exempt],
+          [y.base, t.base],
+          [y.taxedLow, t.taxedLow],
+          [y.taxedHigh, t.taxedHigh],
+          [y.tax, t.tax],
+        ] as const) {
+          expect(Math.abs(got - want)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(got), Math.abs(want), 1));
+        }
+      });
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThanOrEqual(8);
+  });
+
+  it("refuses a portfolio year that is not a whole number", () => {
+    const h = { year: 2027.5, income: 1, result: 0, relieved: 0, relievedProceeds: 0, relievedYears: 0 };
+    expect(twin.portfolio_tax([h], 0)).toEqual({ error: "invalid_tax_year" });
   });
 
   it("adds the breakdown lines up to the total", () => {

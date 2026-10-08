@@ -6,11 +6,13 @@
 // a rung's issue once per rung, in order ("-" for a rung left empty).
 //
 // The figures come from the engine: each rung held to its exit with
-// nothing reinvested, after tax and the broker's fee (`explain`), and the
-// ladder's yield is the engine's yield (`ytm_effective`) of what the rungs
-// bring at their exits against what they cost.
+// nothing reinvested, after the broker's fee (`explain`); the tax of the
+// rungs together, their tax years in one base per calendar year
+// (`portfolio_tax`); and the ladder's yield, the engine's yield
+// (`ytm_effective`) of what the rungs bring at their exits less each
+// year's tax, against what they cost.
 import type { Access } from "../data/issues";
-import type { Breakdown, Engine, Explanation, Market, Curve, Plan, Schedule } from "../engine/types";
+import type { Breakdown, Engine, Explanation, Market, Curve, Plan, PortfolioYear, Schedule, TaxYear } from "../engine/types";
 import type { Item } from "./filters";
 
 export const LADDER_YEARS = { min: 1, max: 10 } as const;
@@ -98,8 +100,14 @@ export type Rung = {
   offer: boolean;
   /** Bonds bought: whole lots at the dirty price within the rung's share. */
   bonds: number;
-  /** Held to the exit with nothing reinvested, after tax and the fee. */
+  /** Held to the exit with nothing reinvested, after the fee; its `tax`
+   * is the rung's tax on its own, which the ladder does not use. */
   held: Breakdown;
+  /** Back at the exit after the fee, before tax: `held.total - held.tax`. */
+  before: number;
+  /** The rung's tax years, as explain traces them: what the ladder's tax
+   * is built from. */
+  tax: TaxYear[];
   /** The flows to the exit, per bond. */
   flows: Schedule;
 };
@@ -109,16 +117,25 @@ export type LadderResult = {
    * (`below_lot`) or that the engine refuses (its code); or none. */
   rungs: (Rung | { item: Item; error: string } | null)[];
   invested: number;
+  /** What the rungs bring at their exits after the fee, before tax. */
+  before: number;
+  /** The tax of the rungs together, year by year; empty with no rung. */
+  taxYears: PortfolioYear[];
+  /** The years' tax added up. */
+  tax: number;
+  /** `before - tax`. */
   received: number;
   /** The ladder's yield after tax and the fee, nothing reinvested: the
-   * engine's annual effective yield of what the rungs bring at their exits
-   * against what they cost; NaN with no rung. */
+   * engine's annual effective yield of what the rungs bring at their exits,
+   * less each year's tax on the ladder's last payment of that year, against
+   * what they cost; NaN with no rung. */
   yieldAfter: number;
 };
 
 /** Works out a ladder: the amount split equally over the rungs with an
  * issue, whole lots bought at today's dirty price, each rung held to its
- * exit in an ordinary brokerage account with no other income. */
+ * exit, the rungs taxed together in an ordinary brokerage account with no
+ * other income. */
 export function workLadder(engine: Engine, market: Market, curve: Curve, rungs: (Item | null)[], amount: number, feePct: number): LadderResult {
   const filled = rungs.filter((r) => r !== null).length;
   const share = filled > 0 ? amount / filled : 0;
@@ -145,20 +162,60 @@ export function workLadder(engine: Engine, market: Market, curve: Curve, rungs: 
       continue;
     }
     const trace = pickTrace(r.ok, offer);
-    out.push({ item, exit, offer, bonds, held: trace.held, flows: offer && item.derived.flowsToOffer ? item.derived.flowsToOffer : item.derived.flows });
+    out.push({
+      item,
+      exit,
+      offer,
+      bonds,
+      held: trace.held,
+      before: trace.held.total - trace.held.tax,
+      tax: trace.tax,
+      flows: offer && item.derived.flowsToOffer ? item.derived.flowsToOffer : item.derived.flows,
+    });
   }
   const done = out.filter((r): r is Rung => r !== null && "held" in r);
   const invested = done.reduce((s, r) => s + r.held.invested, 0);
-  const received = done.reduce((s, r) => s + r.held.total, 0);
+  const before = done.reduce((s, r) => s + r.before, 0);
+  const t = engine.portfolio_tax(
+    done.flatMap((r) => r.tax),
+    0,
+  );
+  // The rungs' tax years come from the engine and are valid; were one
+  // refused, the tax and the yield after it would be unknown, not zero.
+  const taxYears = "ok" in t ? t.ok : [];
+  const tax = "ok" in t ? taxYears.reduce((s, y) => s + y.tax, 0) : Number.NaN;
+  const last = lastPaymentByYear(market.valuationDate, done);
+  const owed = taxYears.filter((y) => y.tax > 0);
   const yieldAfter =
-    done.length > 0
+    done.length > 0 && Number.isFinite(tax)
       ? engine.ytm_effective(
-          done.map((r) => r.held.total),
-          done.map((r) => r.exit),
+          [...done.map((r) => r.before), ...owed.map((y) => -y.tax)],
+          [...done.map((r) => r.exit), ...owed.map((y) => last.get(y.year) ?? Number.NaN)],
           invested,
         )
       : Number.NaN;
-  return { rungs: out, invested, received, yieldAfter };
+  return { rungs: out, invested, before, taxYears, tax, received: before - tax, yieldAfter };
+}
+
+/** Calendar year of a day offset from the valuation date. */
+function yearOfDay(valuationDate: string, day: number): number {
+  const [y0, m0, d0] = valuationDate.split("-").map(Number) as [number, number, number];
+  return new Date(Date.UTC(y0, m0 - 1, d0) + day * 86_400_000).getUTCFullYear();
+}
+
+/** The day of the ladder's last payment in each calendar year, from the
+ * rungs' flows to their exits: the day a year's tax is taken, as a broker
+ * withholds it from payments. */
+export function lastPaymentByYear(valuationDate: string, rungs: readonly Rung[]): Map<number, number> {
+  const last = new Map<number, number>();
+  for (const r of rungs) {
+    for (const day of r.flows.days) {
+      if (day > r.exit) continue;
+      const year = yearOfDay(valuationDate, day);
+      last.set(year, Math.max(last.get(year) ?? day, day));
+    }
+  }
+  return last;
 }
 
 function pickTrace(e: Explanation, offer: boolean) {
