@@ -168,9 +168,12 @@ monthly coupon income, and a ladder builder: see
   never an order; rating changes and defaults from the synthetic
   universe's scenario) and its coupon income by month; a ladder builder
   (a horizon and an amount, an issue proposed for each year from the
-  filters and changeable, each rung's and the ladder's yield after tax and
-  the fee from the engine, the payments by year and every assumption,
-  kept in the link); the Bank of Russia's benchmarks with the yield
+  filters and changeable, each rung after the fee and the rungs' tax
+  worked out together by the engine, one base a year, so a loss on one
+  rung is netted against another and the rungs share the threshold of
+  the 13 percent rate, with the working shown; the ladder's yield after
+  tax and the fee, the payments by year and every assumption, kept in
+  the link); the Bank of Russia's benchmarks with the yield
   curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
   cbr.ru), a banner in the header says the terminal is a demonstration
@@ -187,7 +190,8 @@ monthly coupon income, and a ladder builder: see
   the accrued interest, lots and the fee), and the working
   behind them: the yields solved from the discounted flows, the yields
   after a broker's fee and after tax without reinvestment, the G-spreads,
-  and the tax year by year.
+  and the tax year by year; and the tax of several holdings together,
+  their tax years combined into one base per calendar year.
 - **The market engine** ([`crates/tyche-market`](crates/tyche-market)):
   the synthetic universe and a trading day per issue (the exchange's
   session schedule, an order book built message by message, a tape),
@@ -216,9 +220,8 @@ design system of this product and of Ariadne Desk.
 ## What comes next
 
 - The order ticket's screen against the synthetic order book.
-- In the engine: a portfolio's tax counted across its holdings (the
-  ladder counts each rung on its own), inflation-linked bonds with
-  forecast indexation. In the app: the
+- In the engine: inflation-linked bonds with forecast indexation. In the
+  app: the
   order book and the tape of the synthetic market.
 
 ## Validation plan and target metrics

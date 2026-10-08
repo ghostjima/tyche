@@ -58,6 +58,12 @@ pub enum Error {
     InvalidTick,
     /// An order's limit price is not on the price step.
     PriceOffTick,
+    /// A holding's tax year given to
+    /// [`portfolio_tax`](crate::portfolio_tax) has an amount that is not
+    /// finite, or relieved proceeds or years below zero (at the JavaScript
+    /// boundary and in the twin, also a year that is not a whole number,
+    /// or lists of different lengths).
+    InvalidTaxYear,
 }
 
 impl Error {
@@ -82,6 +88,7 @@ impl Error {
             Error::InvalidLimit => "invalid_limit",
             Error::InvalidTick => "invalid_tick",
             Error::PriceOffTick => "price_off_tick",
+            Error::InvalidTaxYear => "invalid_tax_year",
         }
     }
 }

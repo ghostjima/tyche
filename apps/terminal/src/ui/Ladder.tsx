@@ -1,19 +1,19 @@
 // The ladder builder: a horizon and an amount; one rung a year, each with
 // an issue whose exit falls in that year, proposed from the list the
-// filters leave and changeable; each rung held to its exit after tax and
-// the fee, the ladder's yield, its payments by year, and every
-// assumption the figures rest on. The engine works every figure out
-// (lib/ladder.ts).
+// filters leave and changeable; each rung held to its exit after the fee,
+// the rungs' tax worked out together, the ladder's yield after tax and the
+// fee, its payments by year, and every assumption the figures rest on. The
+// engine works every figure out (lib/ladder.ts).
 import { useMemo, type ReactNode } from "react";
-import { Button, DescriptionList, Ltr, NumberField, Panel, Select, StatBar, Table, useBreakpoint } from "@ghostjima/stoa-react";
+import { Button, DerivationTable, DescriptionList, Disclosure, Ltr, NumberField, Panel, Select, StatBar, Table, useBreakpoint, type DerivationStep } from "@ghostjima/stoa-react";
 import type { Access } from "../data/issues";
-import { CURVE, MARKET, VALUATION_DATE } from "../data/market";
-import type { Engine } from "../engine/types";
+import { CURVE, MARKET, TAX_RULES_DAY, VALUATION_DATE } from "../data/market";
+import type { Engine, PortfolioYear } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Item } from "../lib/filters";
 import type { Formats } from "../lib/format";
 import { LADDER_AMOUNT, LADDER_YEARS, candidates, chooseRungs, flowsByYear, rungSpan, workLadder, type LadderParams, type Rung, type YearFlow } from "../lib/ladder";
-import { TAX_HIGHER_RATE_PCT, TAX_THRESHOLD } from "@tyche/yield-twin";
+import { LDV_CAP_PER_YEAR, MIN_ANNUALISED_DAYS, TAX_HIGHER_RATE_PCT, TAX_RATE_PCT, TAX_THRESHOLD } from "@tyche/yield-twin";
 
 /** A rung's Select value for "no issue". */
 const NONE = "-";
@@ -116,8 +116,12 @@ export function Ladder({ t, f, engine, items, access, ladder, onLadder, onClose,
                       { term: t.ladderYieldExit, description: f.percent(item.derived.yieldEvent) },
                       { term: t.ladderBonds, description: f.integer(r.bonds) },
                       { term: t.ladderPaid, description: f.money(r.held.invested) },
-                      { term: t.ladderBack, description: f.money(r.held.total) },
-                      { term: t.ladderYieldAfter, description: r.held.annualPct === null ? "" : f.percent(r.held.annualPct / 100) },
+                      { term: t.ladderBack, description: f.money(r.before) },
+                      {
+                        term: t.ladderYieldAfter,
+                        // Not annualised under a month, as the engine's own yields.
+                        description: r.exit < MIN_ANNUALISED_DAYS ? "" : f.percent(engine.ytm_effective([r.before], [r.exit], r.held.invested)),
+                      },
                     ]}
                   />
                 )}
@@ -136,6 +140,7 @@ export function Ladder({ t, f, engine, items, access, ladder, onLadder, onClose,
             label={t.ladderSummary}
             items={[
               { label: t.ladderInvested, value: f.money(result.invested) },
+              { label: t.ladderTax, value: f.money(result.tax) },
               { label: t.ladderReceived, value: f.money(result.received) },
               { label: t.ladderYield, value: f.percent(result.yieldAfter) },
               { label: t.ladderFilled, value: `${f.integer(done.length)} / ${f.integer(ladder.years)}` },
@@ -155,6 +160,15 @@ export function Ladder({ t, f, engine, items, access, ladder, onLadder, onClose,
           rowHeader="year"
           emptyText={t.ladderNoCandidate}
         />
+        {amountValid && result.taxYears.length > 0 && (
+          <Disclosure summary={t.ladderTaxWorking} className="working" data-testid="ladder-tax">
+            <div className="working__tables">
+              {result.taxYears.map((y) => (
+                <DerivationTable key={y.year} caption={t.ladderTaxYear(String(y.year))} steps={taxSteps(t, f, y)} />
+              ))}
+            </div>
+          </Disclosure>
+        )}
       </section>
 
       <section className="block" aria-labelledby="ladder-as-h">
@@ -169,8 +183,57 @@ export function Ladder({ t, f, engine, items, access, ladder, onLadder, onClose,
           <li>{t.ladderA5}</li>
           <li>{t.ladderA6}</li>
           <li>{t.ladderA7}</li>
+          <li>{t.ladderA8(t.srcTaxCodeAt("214.1", "16"), t.srcTaxCode("220.1"))}</li>
         </ul>
       </section>
     </Panel>
   );
+}
+
+/** The tax of one year of the ladder, the rungs together, step by step,
+ * each step with the Tax Code's article and paragraph it follows. */
+function taxSteps(t: Strings, f: Formats, y: PortfolioYear): DerivationStep[] {
+  const revision = f.day(TAX_RULES_DAY);
+  const code = (article: string, paragraph: string, sub?: string) => ({ name: t.srcTaxCodeAt(article, paragraph, sub), revision });
+  const steps: DerivationStep[] = [{ id: "income", label: t.ladderStepIncome, value: f.money(y.income), source: code("214.1", "7") }];
+  if (y.result !== 0) steps.push({ id: "result", label: t.ladderStepResult, value: f.money(y.result, { signed: true }), source: code("214.1", "12") });
+  if (y.relieved !== 0) steps.push({ id: "relieved", label: t.ladderStepRelieved, value: f.money(y.relieved, { signed: true }), source: code("219.1", "1", "1") });
+  if (y.exempt !== 0) {
+    steps.push({
+      id: "exempt",
+      label: t.ladderStepExempt(f.money(LDV_CAP_PER_YEAR, { fractionDigits: 0 })),
+      formula: `min(${f.money(y.relieved)}; ${f.money(LDV_CAP_PER_YEAR, { fractionDigits: 0 })} × ${f.decimal(y.relievedYears / y.relievedProceeds, 4)})`,
+      value: f.money(-y.exempt),
+      source: code("219.1", "2", "2"),
+    });
+  }
+  steps.push(
+    { id: "base", label: t.stepBase, formula: sum(f, [y.income, y.result, y.relieved, -y.exempt]), value: f.money(y.base), source: code("214.1", "14") },
+    {
+      id: "low",
+      label: t.stepAtLow(f.percent(TAX_RATE_PCT / 100, 0)),
+      formula: `${f.money(y.taxedLow)} × ${f.percent(TAX_RATE_PCT / 100, 0)}`,
+      value: f.money((y.taxedLow * TAX_RATE_PCT) / 100),
+      source: code("224", "1.1"),
+    },
+  );
+  if (y.taxedHigh !== 0) {
+    steps.push({
+      id: "high",
+      label: t.stepAtHigh(f.percent(TAX_HIGHER_RATE_PCT / 100, 0)),
+      formula: `${f.money(y.taxedHigh)} × ${f.percent(TAX_HIGHER_RATE_PCT / 100, 0)}`,
+      value: f.money((y.taxedHigh * TAX_HIGHER_RATE_PCT) / 100),
+      source: code("224", "1.1"),
+    });
+  }
+  steps.push({ id: "tax", label: t.stepTax, value: f.money(y.tax), source: code("224", "1.1") });
+  return steps;
+}
+
+/** Amounts written as a sum, the zero ones left out; none at all when a
+ * single amount is left. */
+function sum(f: Formats, amounts: number[]): string | undefined {
+  const terms = amounts.filter((v) => v !== 0);
+  if (terms.length < 2) return undefined;
+  return terms.map((v, i) => (i === 0 ? f.money(v) : `${v < 0 ? "−" : "+"} ${f.money(Math.abs(v))}`)).join(" ");
 }

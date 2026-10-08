@@ -1,7 +1,8 @@
 // Rust (the wasm build in pkg/) against the TypeScript twin
 // (packages/yield-twin/dist): every case in cases.json, then 1,000
 // generated issues with a plan, a broker's fee, a zero-coupon curve and
-// an order each.
+// an order each, the explained plans' tax years also taxed four at a time
+// as one portfolio.
 // Run after building both:  node --test node/
 //
 // Tolerance: numbers agree when |a - b| <= 1e-6 * max(|a|, |b|), both NaN
@@ -205,7 +206,8 @@ test("wasm and twin agree on 1,000 generated issues, plans, fees, curves and ord
   const failures = [];
   let worst = 0;
   let worstAt = "";
-  const outcomes = { derived: 0, calculated: 0, explained: 0, spread: 0, ticketed: 0, errors: {} };
+  const outcomes = { derived: 0, calculated: 0, explained: 0, spread: 0, ticketed: 0, portfolios: 0, errors: {} };
+  const held = [];
   const done = { derive_bond: "derived", calculate: "calculated", explain: "explained", g_spread: "spread", order_ticket: "ticketed" };
   for (const [k, { issue, market, plan, feePct, curve, order }] of set.entries()) {
     const pairs = [
@@ -222,12 +224,26 @@ test("wasm and twin agree on 1,000 generated issues, plans, fees, curves and ord
       if ("ok" in t) outcomes[done[fn]] += 1;
       else outcomes.errors[t.error] = (outcomes.errors[t.error] ?? 0) + 1;
     }
+    // The explained plans' tax years, four plans at a time, as the
+    // holdings of one portfolio with the first plan's other income.
+    const e = pairs[2][2];
+    if ("ok" in e) held.push({ tax: e.ok.planTax, otherIncome: plan.otherIncome });
+  }
+  for (let k = 0; k + 4 <= held.length; k += 4) {
+    const group = held.slice(k, k + 4);
+    const holdings = group.flatMap((h) => h.tax);
+    const w = wasm.portfolio_tax(holdings, group[0].otherIncome);
+    const t = twin.portfolio_tax(holdings, group[0].otherIncome);
+    const r = compare(w, t, `portfolio ${k / 4} portfolio_tax`);
+    failures.push(...r.failures);
+    if (r.worst > worst) [worst, worstAt] = [r.worst, r.worstAt];
+    if ("ok" in t) outcomes.portfolios += 1;
   }
   console.log(
-    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained, ${outcomes.spread} spread, ${outcomes.ticketed} ticketed; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
+    `1,000 issues: ${outcomes.derived} derived, ${outcomes.calculated} calculated, ${outcomes.explained} explained, ${outcomes.spread} spread, ${outcomes.ticketed} ticketed, ${outcomes.portfolios} portfolios of four taxed; errors ${JSON.stringify(outcomes.errors)}; worst relative difference ${worst.toExponential(2)} at ${worstAt}`,
   );
   assert.deepEqual(failures.slice(0, 20), []);
   // The set must exercise the paths, not only the errors.
-  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790 && outcomes.spread > 900 && outcomes.ticketed > 850);
+  assert.ok(outcomes.derived > 900 && outcomes.calculated > 800 && outcomes.explained > 790 && outcomes.spread > 900 && outcomes.ticketed > 850 && outcomes.portfolios > 190);
   t.diagnostic(`parity ${JSON.stringify({ checked: "generated issues", count: set.length })}`);
 });
