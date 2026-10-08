@@ -10,6 +10,12 @@
 :root {
   font-family: var(--stoa-font-family-sans);
   font-size: var(--stoa-font-size-md);
+  /* Every line takes a set height instead of the face's own ascent and
+     descent (line-height: normal), so nothing on the page changes height
+     when the web fonts take the fallback's place: the header, the panels'
+     titles, whatever comes next. Stoa's own line heights still apply where
+     it sets them. */
+  line-height: var(--stoa-font-line-height-normal);
   background: var(--stoa-color-bg);
   color: var(--stoa-color-text);
 }
@@ -135,6 +141,15 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .ticket__verdict { padding-inline-start: var(--stoa-space-3); border-inline-start: 3px solid var(--stoa-color-up); }
 .ticket__verdict--held { border-inline-start-color: var(--stoa-color-warning); font-weight: var(--stoa-font-weight-semibold); }
 .ticket__actions, .ticket__recorded { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; margin-block-start: var(--stoa-space-4); }
+
+/* The placements by book-building: a card per placement. */
+.placements__list { display: grid; gap: var(--stoa-space-5); margin: var(--stoa-space-4) 0 0; padding: 0; list-style: none; }
+.placement { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.placement > * { max-inline-size: 100%; }
+.placement + .placement { padding-block-start: var(--stoa-space-4); border-block-start: 1px solid var(--stoa-color-border); }
+.placement__stack { display: grid; gap: var(--stoa-space-1); justify-items: start; }
+.placement__title { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1) var(--stoa-space-2); align-items: baseline; margin: 0; font-size: var(--stoa-font-size-md); font-weight: var(--stoa-font-weight-semibold); }
+.placements__rules { margin: 0; padding-inline-start: var(--stoa-space-5); display: grid; gap: var(--stoa-space-1); }
 
 /* The ladder builder. */
 .ladder__inputs {

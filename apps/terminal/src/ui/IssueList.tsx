@@ -100,9 +100,11 @@ export type IssueListProps = {
   listRef?: RefObject<RecordListHandle | null>;
   /** Opens the ladder builder on the issues the filters leave. */
   onLadder: () => void;
+  /** Opens the placements by book-building. */
+  onPlacements: () => void;
 };
 
-export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef, listRef, onLadder }: IssueListProps) {
+export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, selectedId, onOpen, nameOf, textsOf, searchRef, listRef, onLadder, onPlacements }: IssueListProps) {
   const counts = chipCounts(all, query, textsOf, VALUATION_DATE);
   const by = query.by ?? defaultMonth(VALUATION_DATE);
   // The ticker names the record (typing it jumps there); the issuer, the
@@ -163,6 +165,9 @@ export function IssueList({ t, f, all, visible, query, onQuery, sort, onSort, se
           <div className="issue-list__sort">
             <Button id="ladder-open" variant="ghost" size="small" onPress={onLadder}>
               {t.ladderOpen}
+            </Button>
+            <Button id="placements-open" variant="ghost" size="small" onPress={onPlacements}>
+              {t.placementsOpen}
             </Button>
             <Select<SortKey>
               label={t.sortBy}

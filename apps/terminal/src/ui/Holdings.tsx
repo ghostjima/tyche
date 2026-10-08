@@ -1,13 +1,15 @@
 // The holdings of a synthetic portfolio and what happens to them: the
 // issues held, with a way to take one out; the events of every holding by
-// date, a put offer's window with its deadline and a request to redeem at
-// the offer that is recorded in this browser only; and the coupon income
-// by month over the next twelve months.
-import { useState, type ReactNode } from "react";
+// date, as a list or on a calendar, a put offer's window with its deadline
+// and a request to redeem at the offer that is recorded in this browser
+// only; and the coupon income by month over the next twelve months.
+import { useEffect, useState, type ReactNode } from "react";
 import {
   AlertDialog,
   Button,
+  ChoiceGroup,
   Countdown,
+  EventCalendar,
   Ltr,
   Panel,
   Skeleton,
@@ -18,10 +20,12 @@ import {
   VisuallyHidden,
   focusWhenReady,
   keepFocusInPlace,
+  type CalendarEvent,
   type TimelineEntry,
 } from "@ghostjima/stoa-react";
 import type { HoldingEvent } from "../data/events";
 import { dayToMs, VALUATION_DATE } from "../data/market";
+import { calendarEntries, nextEntryDate, readView, writeView, type CalendarEntry, type EventsView } from "../lib/calendar";
 import type { Strings } from "../i18n";
 import type { Holding } from "../lib/holdings";
 import { monthlyIncome, type MonthIncome } from "../lib/income";
@@ -167,8 +171,45 @@ function renderRating(t: Strings, e: HoldingEvent): ReactNode {
   );
 }
 
+/** A calendar entry's line: the issue and what happens on the day. */
+function calendarTitle(t: Strings, f: Formats, c: CalendarEntry): string {
+  const e = c.event;
+  const amount = f.money(e.amount);
+  switch (c.role) {
+    case "window_opens":
+      return t.calWindowOpens(c.id, f.day(e.windowTo ?? e.day));
+    case "deadline":
+      return t.calDeadline(c.id, f.day(e.day));
+    case "notice":
+      return t.calCallNotice(c.id, f.day(e.day));
+    case "offer":
+      return e.kind === "put_offer" ? t.calPutOffer(c.id, amount) : t.calCallOffer(c.id);
+    case "event":
+      break;
+  }
+  switch (e.kind) {
+    case "rating_change":
+      return t.calRating(c.id, e.ratingFrom ?? "", e.ratingTo ?? "");
+    case "technical_default":
+      return t.calTechnical(c.id, amount);
+    case "default_cured":
+      return t.calCured(c.id, amount);
+    case "default":
+      return t.calDefault(c.id);
+    default:
+      return t.calPayment(c.id, amount, f.money(e.perBond));
+  }
+}
+
 export function Holdings({ t, f, held, events, nameOf, onRemove, source }: HoldingsProps) {
   const [requests, setRequests] = useState<RedemptionRequest[]>(loadRequests);
+  // The list or the calendar, in ?ev= so a link opens the same view.
+  const [view, setView] = useState<EventsView>(() => readView(new URLSearchParams(location.search)));
+  useEffect(() => {
+    const url = new URL(location.href);
+    writeView(url.searchParams, view);
+    if (url.href !== location.href) history.replaceState(history.state, "", url);
+  }, [view]);
 
   const entries: TimelineEntry[] =
     events.status === "ready"
@@ -197,6 +238,42 @@ export function Holdings({ t, f, held, events, nameOf, onRemove, source }: Holdi
             }),
         )
       : [];
+
+  // The same events on a calendar: a put offer on the first day of its
+  // window, on its deadline, where the request is made, and on its date.
+  const days: CalendarEntry[] =
+    events.status === "ready"
+      ? calendarEntries(
+          held.map(({ holding }) => holding.id),
+          events.events,
+          INBOX_FROM,
+          INBOX_TO,
+        )
+      : [];
+  const calendar: CalendarEvent[] = days.map((c) => {
+    const e = c.event;
+    const holding = held.find((h) => h.holding.id === c.id)?.holding;
+    return {
+      id: c.key,
+      date: c.date,
+      kind: c.kind,
+      title: calendarTitle(t, f, c),
+      detail:
+        e.source === "scenario" ? (
+          <p className="muted">{t.calSynthetic}</p>
+        ) : c.role === "deadline" && holding ? (
+          <div className="event-text">
+            <RedeemAction t={t} f={f} id={c.id} event={e} bonds={holding.bonds} requests={requests} onRequests={setRequests} />
+            <p className="muted">{t.offerRule(f.integer(WINDOW_DAYS), f.integer(WINDOW_ENDS_BEFORE))}</p>
+          </div>
+        ) : c.role === "event" && e.projected ? (
+          <p className="muted">{t.evProjected}</p>
+        ) : undefined,
+    };
+  });
+  const today = VALUATION_DATE;
+  const first = nextEntryDate(days, 0);
+  const selected = first !== null && first.slice(0, 7) === today.slice(0, 7) ? first : null;
 
   const months: MonthIncome[] = events.status === "ready" ? monthlyIncome(VALUATION_DATE, events.events) : [];
   const total = months.reduce((s, m) => s + m.coupons, 0);
@@ -258,7 +335,31 @@ export function Holdings({ t, f, held, events, nameOf, onRemove, source }: Holdi
         ) : events.status === "failed" ? (
           <p role="alert">{t.inboxFailed}</p>
         ) : (
-          <Timeline label={t.inboxLabel} entries={entries} timeZone="UTC" dayLevel={4} emptyText={t.inboxEmpty} />
+          <>
+            <ChoiceGroup<EventsView>
+              label={t.inboxView}
+              choices={[
+                { id: "list", label: t.inboxViewList },
+                { id: "calendar", label: t.inboxViewCalendar },
+              ]}
+              value={view}
+              onChange={setView}
+            />
+            {view === "list" ? (
+              <Timeline label={t.inboxLabel} entries={entries} timeZone="UTC" dayLevel={4} emptyText={t.inboxEmpty} />
+            ) : (
+              <div data-testid="calendar">
+                <EventCalendar
+                  label={t.calendarLabel}
+                  events={calendar}
+                  today={today}
+                  defaultMonth={today.slice(0, 7)}
+                  defaultSelectedDate={selected}
+                  headingLevel={4}
+                />
+              </div>
+            )}
+          </>
         )}
       </section>
 

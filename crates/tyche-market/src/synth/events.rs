@@ -135,7 +135,7 @@ fn is_working(epoch_day: i64) -> bool {
 /// The working day `n` working days before (`n` < 0) or after a day; a
 /// day that is not a working day counts from the working day before it
 /// when going back and after it when going forward.
-fn working_days_from(epoch_day: i64, n: i64) -> i64 {
+pub(crate) fn working_days_from(epoch_day: i64, n: i64) -> i64 {
     let step = if n < 0 { -1 } else { 1 };
     let mut d = epoch_day;
     while !is_working(d) {

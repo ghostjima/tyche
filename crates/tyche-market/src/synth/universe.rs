@@ -125,7 +125,7 @@ impl Sector {
     }
 
     /// Added to the rating's credit spread, percent (assumptions).
-    fn spread_pct(self) -> f64 {
+    pub(crate) fn spread_pct(self) -> f64 {
         match self {
             Sector::Government => 0.0,
             Sector::Energy => -0.2,
@@ -326,7 +326,7 @@ pub(crate) fn iso(days: i64) -> String {
 /// The credit spread over the curve for a rating, percent (an
 /// assumption, convex in the notch: 0.6 at AAA, about 3.8 at BBB, about
 /// 9.2 at B).
-fn rating_spread_pct(rating: usize) -> f64 {
+pub(crate) fn rating_spread_pct(rating: usize) -> f64 {
     let g = rating as f64;
     0.6 + 0.12 * g + 0.035 * g * g
 }

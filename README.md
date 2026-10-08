@@ -77,8 +77,9 @@ Workflows:
 
 Today the prototype covers the first three workflows, the
 single-issue calculator, the events of a synthetic portfolio with its
-monthly coupon income, a ladder builder, and the order ticket against
-the synthetic order book: see [What is built](#what-is-built).
+monthly coupon income, a ladder builder, placements by book-building,
+and the order ticket against the synthetic order book: see
+[What is built](#what-is-built).
 
 ## Constraints
 
@@ -162,8 +163,9 @@ the synthetic order book: see [What is built](#what-is-built).
   issues compared side by side, with the G-spread of each to the Bank
   of Russia's zero-coupon curve of federal loan bonds; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change; a
-  synthetic portfolio kept in the link, with its events by date
-  (payments, offers with the window and the deadline, and a one-step
+  synthetic portfolio kept in the link, with its events by date, as a
+  list or on a calendar (payments, offers with the window and the
+  deadline, and a one-step
   request to redeem at a put offer, recorded in the browser only and
   never an order; rating changes and defaults from the synthetic
   universe's scenario) and its coupon income by month; a ladder builder
@@ -173,7 +175,11 @@ the synthetic order book: see [What is built](#what-is-built).
   rung is netted against another and the rungs share the threshold of
   the 13 percent rate, with the working shown; the ladder's yield after
   tax and the fee, the payments by year and every assumption, kept in
-  the link); an order ticket on each issue (buy or sell, a limit
+  the link); placements of new synthetic issues by book-building
+  (each book's window with a countdown in working days, the coupon
+  guidance, the final coupon once the book has closed and what an
+  indicative request was allotted, with the rules that set them); an
+  order ticket on each issue (buy or sell, a limit
   price in percent of face linked to its yield through the engine, lots,
   the accrued interest and the total with the fee, the yield at the limit
   price before and after the fee, a depth check against the synthetic
@@ -209,9 +215,13 @@ the synthetic order book: see [What is built](#what-is-built).
   as national-scale ratings (an assumption stated apart from the rule),
   lists a holding's events (payments,
   offers with the window to act in, and a scenario of rating changes and
-  defaults), and checks an order's depth against an issue's book (filled
+  defaults), checks an order's depth against an issue's book (filled
   at or better than the limit, the average price, the slippage, the
-  levels used). The app runs its WebAssembly build in a worker. The IEX decoding stays
+  levels used), and places new issues of its fictional issuers by
+  book-building around the valuation date (the book's window, the coupon
+  guidance from the zero-coupon curve and the issuer's spreads, the final
+  coupon and the allotment from the book's demand, a scenario of its
+  seed). The app runs its WebAssembly build in a worker. The IEX decoding stays
   behind a feature for its tests; the product does not use it.
 - **The Bank of Russia snapshot** ([`data/cbr`](data/cbr)): the key
   rate, RUONIA, the zero-coupon yield curve and inflation, each with the

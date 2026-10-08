@@ -174,7 +174,17 @@ Status: early. Performance record, with stamps:
   emphasised. "Request redemption at the offer" asks for a confirmation
   that says the request stays in this browser and is not an order;
   recorded, it can be cancelled until the window closes (localStorage
-  `tyche.redemptionRequests`; nothing is sent anywhere). Then the coupon
+  `tyche.redemptionRequests`; nothing is sent anywhere). The same events
+  can be shown on a calendar instead (a switch over them, kept in the URL
+  as `?ev=calendar`): Stoa's EventCalendar, a month grid opening on the
+  valuation date's month with the next day that has an event chosen, and
+  a list of the month's days on a phone. Each kind is a symbol and a word
+  (coupon, amortisation, offer, maturity, rating change, default); a put
+  offer is on the first day of its window, on its deadline, where the
+  countdown and the request to redeem are, and on its date; a call offer
+  on the day the issuer gives notice by and on its date; the scenario's
+  rating changes, missed payments and defaults, the future ones
+  included, each say they are a synthetic scenario. Then the coupon
   income by month over the next twelve months, before tax, for the
   "Monthly income" goal: the coupons over the year, a month on average and
   the months without a coupon (Stoa's StatBar), and a table of the
@@ -202,6 +212,23 @@ Status: early. Performance record, with stamps:
   (among them what is not modelled: a loss carried to later years, which
   takes a tax declaration, and individual investment accounts) are
   listed under it.
+- **Placements**: "Размещения" / "Placements" beside "Build a ladder"
+  over the list opens a card per new issue of the synthetic universe's
+  fictional issuers placed by book-building, from tyche-market's
+  `placementsJson` (kept in the URL as `?pl=1`): one book closed a few
+  days ago, two open, one to come, by the book's first day. Each has its
+  book's window and a countdown in working days to its close, or to its
+  opening (Stoa's Countdown, a warning from two working days); the coupon
+  guidance as a range and how often the coupon is paid; the final coupon
+  once the book has closed, with the demand that set it, or the day it
+  will be set; what an indicative request of a million roubles at face
+  value without a coupon limit was allotted, pro rata to the demand; the
+  size, the maturity, the settlement and the issuer's synthetic rating.
+  Under them, the rules of the synthetic universe that set the guidance,
+  the final coupon, the allotment and the settlement. Everything is a
+  scenario of the universe's seed, said so on the card; the guidance is
+  priced from the Bank of Russia's zero-coupon curve, so the card carries
+  both source labels.
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the
@@ -268,14 +295,18 @@ What the tests cover, and nothing wider:
   every risk, three issues compared
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
-  holdings with every kind of event and the income by month, the
+  holdings with every kind of event and the income by month, the same
+  events on a calendar with a put offer's deadline chosen, the
   confirmation of a request to redeem at an offer, the order ticket with
   a price off the step over an order larger than the book, its
-  confirmation and the demo order it records, the ladder,
+  confirmation and the demo order it records, the placements, the
+  ladder,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison, an
-  issue, the holdings and a ten-rung ladder at 375 px.
-- Keyboard paths: `/` to the search, Tab to the issue list (one tab
+  issue, the holdings, the holdings' calendar, a ten-rung ladder and the
+  placements at 375 px.
+- Keyboard paths: `/` to the search (pressed while the engines load, the
+  focus goes to the search once it is drawn), Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the map
   of peers one tab stop whose Home and arrow keys walk its points, the
   broker's fee by the arrow keys a hundredth of a percent at a time, the
@@ -292,9 +323,13 @@ What the tests cover, and nothing wider:
   side by the arrow keys and its lots by the arrow keys, its
   confirmation opening with the focus on the safe action, and recording
   or deleting the demo order putting the focus on the button that
-  replaces the one pressed; "Build a ladder"
+  replaces the one pressed; the events'
+  calendar is one tab stop on its chosen day, whose arrow keys move a
+  day or a week, Home and End to the week's ends, Page Up and Page Down a
+  month (with Shift a year), and Enter chooses a day; "Build a ladder"
   puts the focus on the ladder's first field, and closing it returns the
-  focus to that button; after "Try WebAssembly again" succeeds, the focus moves on to
+  focus to that button; "Placements" puts the focus on the placements'
+  Close button, which returns it to "Placements"; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The

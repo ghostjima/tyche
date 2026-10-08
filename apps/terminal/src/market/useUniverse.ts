@@ -5,11 +5,12 @@ import { useCallback, useEffect, useState } from "react";
 import { MACRO, SEED } from "../data/market";
 import { parseGates, type Gates } from "../data/gates";
 import { parseAccess, parseUniverse, type Access, type Universe } from "../data/issues";
+import { parsePlacements, type Placement } from "../data/placements";
 import type { Request, Response } from "./worker";
 
 export type UniverseState =
   | { status: "loading" }
-  | { status: "ready"; universe: Universe; access: Map<string, Access>; gates: Gates }
+  | { status: "ready"; universe: Universe; access: Map<string, Access>; gates: Gates; placements: Placement[] }
   | { status: "failed"; error: string };
 
 let worker: Worker | null = null;
@@ -39,8 +40,9 @@ function request(): Promise<UniverseState> {
         const universe = parseUniverse(r.json);
         const access = parseAccess(r.access);
         const gates = parseGates(r.access);
+        const placements = parsePlacements(r.placements);
         performance.measure("tyche:universe", "tyche:universe-start");
-        resolve({ status: "ready", universe, access, gates });
+        resolve({ status: "ready", universe, access, gates, placements });
       } catch (e) {
         fail(e instanceof Error ? e.message : String(e));
       }

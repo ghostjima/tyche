@@ -69,3 +69,12 @@ export function depthJson(index: number, side: string, bonds: number, limit: num
   m.free();
   return out;
 }
+
+/** The placements by book-building, as JSON, for a universe of a seed
+ * and inputs. */
+export function placementsJson(seed = SEED, inputs: MacroInputs = MACRO): string {
+  const m = new SynthMarket(seed, inputs.valuationDate, inputs.keyRatePct, inputs.ruoniaPct, inputs.inflationPct, Float64Array.from(inputs.curve.termsYears), Float64Array.from(inputs.curve.yieldsPct));
+  const out = m.placementsJson();
+  m.free();
+  return out;
+}

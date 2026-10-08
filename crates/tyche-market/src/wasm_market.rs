@@ -1,7 +1,8 @@
 //! JavaScript bindings (feature `wasm`) for the synthetic market: the app
 //! builds the universe once, in a worker, and asks it for the issues, for
-//! an issue's day, for who may buy each issue, for a holding's events and
-//! for a depth check against an issue's book. Results cross the boundary as JSON text, parsed on
+//! an issue's day, for who may buy each issue, for a holding's events, for
+//! the placements by book-building and for a depth check against an
+//! issue's book. Results cross the boundary as JSON text, parsed on
 //! the other side; the shapes are those of [`crate::synth::json`].
 
 use crate::depth::depth_check;
@@ -91,6 +92,13 @@ impl SynthMarket {
     #[wasm_bindgen(js_name = accessJson)]
     pub fn access_json(&self) -> String {
         synth::json::access_json(&self.universe)
+    }
+
+    /// The new issues placed by book-building around the valuation date,
+    /// as JSON (`synth::json::placements_json`).
+    #[wasm_bindgen(js_name = placementsJson)]
+    pub fn placements_json(&self) -> String {
+        synth::json::placements_json(&self.universe, &synth::placements(&self.universe))
     }
 
     /// The events of a holding of `bonds` bonds of issue `index`, as JSON
