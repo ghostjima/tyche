@@ -10,6 +10,12 @@
 :root {
   font-family: var(--stoa-font-family-sans);
   font-size: var(--stoa-font-size-md);
+  /* Every line takes a set height instead of the face's own ascent and
+     descent (line-height: normal), so nothing on the page changes height
+     when the web fonts take the fallback's place: the header, the panels'
+     titles, whatever comes next. Stoa's own line heights still apply where
+     it sets them. */
+  line-height: var(--stoa-font-line-height-normal);
   background: var(--stoa-color-bg);
   color: var(--stoa-color-text);
 }
@@ -106,10 +112,6 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 
 /* The demo banner sits in the header on every screen. */
 .demo-banner { font-weight: var(--stoa-font-weight-semibold); color: var(--stoa-color-text); }
-/* The header's lines get a set height instead of the face's own ascent
-   and descent (line-height: normal), so the header, and the page under
-   it, keeps its height when the web fonts take the fallback's place. */
-.stoa-app-header { line-height: var(--stoa-font-line-height-normal); }
 
 /* The same for the benchmarks' figures and notes. */
 .benchmarks { display: grid; gap: var(--stoa-space-3); line-height: var(--stoa-font-line-height-normal); }

@@ -64,6 +64,24 @@ for (const theme of ["light", "dark"] as const) {
   });
 }
 
+// A line at line-height: normal takes the face's own ascent and descent,
+// which differ between the web font and whatever fallback the platform has
+// (a Linux runner's differs from a Mac's): such a line changes height when
+// the fonts arrive, and moves everything under it.
+test("no text on the page takes its line height from the face", async ({ page }) => {
+  for (const query of ["?lang=ru", `?lang=en&issue=${ISSUES.offer}`, "?lang=ru&page=data"]) {
+    await page.goto(`/${query}`);
+    await ready(page);
+    const normal = await page.evaluate(() =>
+      [...document.querySelectorAll("body *")]
+        .filter((el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim() !== ""))
+        .filter((el) => getComputedStyle(el).lineHeight === "normal" && el.getBoundingClientRect().height > 0)
+        .map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].join(".")}`),
+    );
+    expect([...new Set(normal)], query).toEqual([]);
+  }
+});
+
 for (const [width, height] of [
   [1280, 900],
   [375, 812],
