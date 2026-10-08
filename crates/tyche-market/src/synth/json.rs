@@ -180,15 +180,16 @@ pub fn day_json(d: &Day, levels: usize) -> String {
     )
 }
 
-/// Who may buy each issue, by ticker, with the reasons and the rating
-/// threshold of the synthetic rule:
-/// `{"testBelow": "BBB-", "issues": [{"ticker", "access", "reasons"}]}`.
+/// Who may buy each issue, by ticker, with the reasons and the synthetic
+/// rating below which a corporate issue needs a test (the Bank of Russia
+/// board's level as the synthetic scale reads it):
+/// `{"testBelow": "A+", "issues": [{"ticker", "access", "reasons"}]}`.
 pub fn access_json(u: &Universe) -> String {
     format!(
         "{{\"testBelow\":{},\"issues\":{}}}",
         text(RATINGS[TEST_BELOW]),
         list(&u.issues, |s| {
-            let g = gate(s);
+            let g = gate(s, &u.issuers[s.issuer]);
             format!(
                 "{{\"ticker\":{},\"access\":{},\"reasons\":{}}}",
                 text(&s.ticker),

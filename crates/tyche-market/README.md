@@ -63,21 +63,40 @@ on aggregate figures only.
   universe and of a day's tape, and the app's unit tests check that the
   WebAssembly build gives the native digest.
 
-- **Who may buy an issue** (`synth::access::gate`): anyone, a
-  non-qualified investor after a passed test, or qualified investors
-  only, with the reasons. The rule is the synthetic universe's, modelled
-  on the Federal Law of 22 April 1996 No. 39-FZ "On the securities
-  market": article 51.2 with article 27.6 (securities for qualified
-  investors are acquired by qualified investors only) and article 3.1
-  with article 51.2-1 (a non-qualified individual's purchase goes
-  through a test, except for the securities article 3.1(2) lists, among
-  them bonds of Russian issuers that meet its credit rating conditions),
-  as amended up to the Federal Law of 4 August 2026 No. 283-FZ. An issue
-  whose terms restrict it to qualified investors (every subordinated one
-  does) is for them only; a synthetic government bond is open to
-  everyone; a corporate issue rated below BBB- on the synthetic scale
-  needs a test, a threshold the synthetic universe assumes in place of
-  the Bank of Russia's level for real ratings; the rest are open.
+- **Who may buy an issue** (`synth::access::gate(issue, issuer)`):
+  anyone, a non-qualified investor after a passed test, or qualified
+  investors only, with the reasons. The rules are read from the text of
+  the Federal Law of 22 April 1996 No. 39-FZ "On the securities market"
+  as amended up to the Federal Law of 4 August 2026 No. 283-FZ:
+  article 3, paragraph 5 (a broker buys securities intended for
+  qualified investors only for a qualified investor); article 3.1,
+  paragraph 1, subparagraph 4 (a non-qualified individual's purchase
+  needs a positive test, except for the securities of paragraph 2);
+  paragraph 2, subparagraph 2 (no test for bonds of Russian issuers,
+  issued under Russian law, whose bonds, issuer or guarantor are rated
+  at least at the level the Bank of Russia's board sets) and
+  subparagraph 5 (no test for government securities of the Russian
+  Federation); and paragraph 7 (without a test, up to 300,000 roubles a
+  year after the broker's notice of the risks and the investor's
+  statement accepting them, an allowance of the investor, not of an
+  issue). The level: the board's decision of 19 December 2025, applied
+  from 1 July 2026, A+ on the national scale ("ruA+", "A+(RU)", "A+.ru",
+  "A+|ru|") from at least two rating agencies. Subordinated bonds of a
+  credit institution are for qualified investors (the Federal Law
+  No. 395-1 "On banks and banking", article 25.1, fourteenth part). So:
+  a subordinated issue of a bank, or an issue whose terms restrict it to
+  qualified investors (every subordinated one's do), is for them only; a
+  synthetic government bond is open to everyone; a corporate issue rated
+  below A+ needs a test; the rest are open. What the synthetic universe
+  adds, as its assumptions: every issuer is Russian and every issue is
+  under Russian law, none structural, convertible or perpetual; a
+  synthetic rating stands for the national-scale rating two agencies
+  would give, notch for notch; a floater's coupon (an index plus a fixed
+  spread) and a linker's indexed face value are gated as a fixed coupon,
+  a reading the law's text does not settle (it names interest rates and
+  inflation among the circumstances that make payments structured; read
+  the other way, such issues would need a test or be closed to
+  non-qualified investors), and the card says so for each such issue.
 - **A holding's events** (`synth::holding_events(universe, index,
   bonds)`): its coupons, amortisations and maturity from the issue's
   terms through tyche-yield (a floater's and a linker's coupons projected

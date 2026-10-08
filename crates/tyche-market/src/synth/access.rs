@@ -1,41 +1,100 @@
 //! Who may buy an issue of the synthetic universe: anyone, a
 //! non-qualified investor after a passed test, or a qualified investor
-//! only. The gate is data the order ticket reads; the rule is the
-//! synthetic universe's, modelled on the Russian rules below, and is not a
-//! statement about any real security.
+//! only. The gate is data the order ticket reads. The rules are the law's,
+//! read from its text; what the synthetic universe adds is stated apart
+//! from them, below, and no issue here is a real security.
 //!
-//! The rules it is modelled on, in the Federal Law of 22 April 1996
-//! No. 39-FZ "On the securities market", as amended up to the Federal Law
-//! of 4 August 2026 No. 283-FZ (the revision consultant.ru showed on
-//! 7 October 2026):
+//! # The rules
 //!
-//! - article 51.2 (qualified investors), with article 27.6: securities
-//!   intended for qualified investors are acquired only by qualified
-//!   investors, through a broker;
-//! - article 3.1, with article 51.2-1 (testing of individuals): a broker
-//!   carries out a non-qualified individual's purchase of securities only
-//!   after a positive test, except for the securities article 3.1(2)
-//!   lists, among them bonds of Russian issuers (not structured and not
-//!   convertible) that meet its credit rating conditions.
+//! The Federal Law of 22 April 1996 No. 39-FZ "On the securities market",
+//! as amended up to the Federal Law of 4 August 2026 No. 283-FZ (the text
+//! consultant.ru showed on 8 October 2026):
 //!
-//! The synthetic universe follows them as:
+//! - article 3, paragraph 5: a broker buys securities intended for
+//!   qualified investors only for a client who is a qualified investor;
+//! - article 3.1, paragraph 1, subparagraph 4: a broker executes a
+//!   non-qualified individual's order to buy securities only after a
+//!   positive test (article 51.2-1), except for the securities of
+//!   paragraph 2;
+//! - article 3.1, paragraph 2, subparagraph 2: no test for bonds of
+//!   Russian issuers (other than structural bonds, bonds convertible into
+//!   other securities, bonds secured by a pledge of monetary claims, with
+//!   exceptions, and bonds whose payments depend on the circumstances of
+//!   article 2, paragraph 1, subparagraph 23, second paragraph) that are
+//!   issued under Russian law and whose bonds, issuer or guarantor have a
+//!   credit rating not below the level the Bank of Russia's board of
+//!   directors sets;
+//! - article 3.1, paragraph 2, subparagraph 5: no test for government
+//!   securities of the Russian Federation or of its constituent entities,
+//!   other than those whose payments depend on those circumstances;
+//! - article 3.1, paragraph 7: without a positive test a broker may still
+//!   execute such an order after giving the client a notice of the risks
+//!   (within the past year) and receiving the client's statement accepting
+//!   them, while the client's deals that need a test add up to no more
+//!   than 300,000 roubles in the calendar year. This is the investor's
+//!   allowance, not a property of an issue: the gate still says `Test`.
 //!
-//! 1. An issue whose terms restrict it to qualified investors
-//!    (`qualified_only`, which every subordinated issue has) is for
-//!    qualified investors only.
-//! 2. A synthetic government bond is open to everyone.
-//! 3. A corporate issue rated below [`TEST_BELOW`] on the synthetic scale
-//!    needs a passed test from a non-qualified investor. The threshold is
-//!    an assumption of the synthetic universe, standing in for the level
-//!    the Bank of Russia's board sets for real ratings; no issue here has
-//!    a real rating.
-//! 4. Every other issue is open to everyone.
+//! The level for article 3.1, paragraph 2, subparagraph 2: the decision of
+//! the Bank of Russia's board of directors of 19 December 2025, applied
+//! from 1 July 2026 (cbr.ru, page updated 26 December 2025): "ruA+" (Expert
+//! RA), "A+(RU)" (ACRA), "A+.ru" (NKR) or "A+|ru|" (NRA) on the national
+//! scale, assigned by at least two credit rating agencies to the bonds,
+//! their issuer or the person who secured them.
+//!
+//! Subordinated bonds of a credit institution are intended for qualified
+//! investors: the Federal Law of 2 December 1990 No. 395-1 "On banks and
+//! banking", article 25.1, fourteenth part, as amended up to the Federal
+//! Law of 4 August 2026 (consultant.ru, 8 October 2026).
+//!
+//! Not encoded, because no synthetic issue is of these kinds: structural
+//! bonds (39-FZ article 27.1-1, paragraph 6), bonds without a maturity
+//! (article 27.5-7, paragraph 2), bonds of foreign issuers (article 3.1,
+//! paragraph 2, subparagraph 3, and the Federal Law of 11 June 2021
+//! No. 192-FZ, article 11, fifteenth part), bonds with structured income
+//! (192-FZ article 11, twelfth and thirteenth parts) and the securities
+//! the Bank of Russia's Directive of 27 November 2025 No. 7250-U lists as
+//! intended for qualified investors.
+//!
+//! # What the synthetic universe adds
+//!
+//! - Every issuer is a Russian company or the fictional treasury, every
+//!   issue is issued under Russian law and none is structural,
+//!   convertible, secured by monetary claims or perpetual.
+//! - A synthetic government bond stands for a government security of the
+//!   Russian Federation.
+//! - Ratings come from a fictional agency on a scale of its own
+//!   ([`RATINGS`]), read as the national-scale rating two of the four
+//!   agencies above would assign, notch for notch: synthetic A+ is "A+ on
+//!   the national scale from at least two agencies". This is the
+//!   universe's assumption, not part of the rule.
+//! - A floater's coupon (the key rate or RUONIA plus a fixed spread) and a
+//!   linker's indexed face value are read as not making the bond's payments
+//!   depend on the circumstances of article 2, paragraph 1, subparagraph
+//!   23, second paragraph: such issues are gated as fixed-coupon ones. The
+//!   texts read do not settle this reading: that paragraph names interest
+//!   rates and inflation among the circumstances, and read the other way,
+//!   a synthetic government floater or linker would need a test (192-FZ
+//!   article 11, thirteenth part, point 2) and a corporate one would need a
+//!   test under the conditions of that part's point 1 or be closed to
+//!   non-qualified investors (its twelfth part). The brokers' base standard
+//!   that sets the tests (39-FZ article 51.2-1) defines bonds with
+//!   structured income by the same paragraph, without a list of indices.
+//! - An issue's terms may restrict it to qualified investors
+//!   (`qualified_only`): every subordinated issue's do, and some others'.
 
-use super::universe::{Segment, SynthIssue, RATINGS};
+use super::universe::{Issuer, Sector, Segment, SynthIssue, RATINGS};
 
 /// The lowest synthetic rating at which a corporate issue needs no test:
-/// BBB-, as an index into [`RATINGS`]. Issues rated below it need one.
-pub const TEST_BELOW: usize = 9;
+/// A+, as an index into [`RATINGS`], standing for the Bank of Russia
+/// board's level (A+ on the national scale from at least two agencies).
+/// Issues rated below it need one.
+pub const TEST_BELOW: usize = 4;
+
+/// The most a non-qualified investor's deals that need a test may add up
+/// to in a calendar year without a positive test, after the broker's
+/// notice of the risks and the investor's statement accepting them,
+/// roubles (39-FZ article 3.1, paragraph 7).
+pub const WITHOUT_TEST_PER_YEAR: f64 = 300_000.0;
 
 /// Who may buy an issue.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,7 +102,8 @@ pub enum Access {
     /// Anyone.
     Open,
     /// A qualified investor, or a non-qualified one who has passed the
-    /// test for this kind of bond.
+    /// test for this kind of bond (or stays within
+    /// [`WITHOUT_TEST_PER_YEAR`] after the broker's notice of the risks).
     Test,
     /// A qualified investor only.
     Qualified,
@@ -62,26 +122,29 @@ impl Access {
 /// Why an issue has the access it has.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Reason {
+    /// A subordinated bond of a credit institution (the banking law).
+    SubordinatedBank,
     /// The issue's terms restrict it to qualified investors.
     QualifiedOnly,
-    /// A subordinated issue (also restricted to qualified investors).
-    Subordinated,
-    /// A corporate issue rated below [`TEST_BELOW`].
-    RatingBelowThreshold,
-    /// A synthetic government bond.
+    /// A synthetic government bond (39-FZ article 3.1, paragraph 2,
+    /// subparagraph 5).
     Government,
-    /// A corporate issue rated at or above [`TEST_BELOW`].
+    /// A corporate issue rated at or above [`TEST_BELOW`] (article 3.1,
+    /// paragraph 2, subparagraph 2).
     RatingAtThreshold,
+    /// A corporate issue rated below [`TEST_BELOW`] (article 3.1,
+    /// paragraph 1, subparagraph 4).
+    RatingBelowThreshold,
 }
 
 impl Reason {
     pub fn code(self) -> &'static str {
         match self {
+            Reason::SubordinatedBank => "subordinated_bank",
             Reason::QualifiedOnly => "qualified_only",
-            Reason::Subordinated => "subordinated",
-            Reason::RatingBelowThreshold => "rating_below_threshold",
             Reason::Government => "government",
             Reason::RatingAtThreshold => "rating_at_threshold",
+            Reason::RatingBelowThreshold => "rating_below_threshold",
         }
     }
 }
@@ -93,13 +156,16 @@ pub struct Gate {
     pub reasons: Vec<Reason>,
 }
 
-/// The gate of an issue, by the rule above.
-pub fn gate(issue: &SynthIssue) -> Gate {
+/// The gate of an issue of `issuer`, by the rules above.
+pub fn gate(issue: &SynthIssue, issuer: &Issuer) -> Gate {
+    let mut reasons = Vec::new();
+    if issue.subordinated && issuer.sector == Sector::Banking {
+        reasons.push(Reason::SubordinatedBank);
+    }
     if issue.qualified_only {
-        let mut reasons = vec![Reason::QualifiedOnly];
-        if issue.subordinated {
-            reasons.push(Reason::Subordinated);
-        }
+        reasons.push(Reason::QualifiedOnly);
+    }
+    if !reasons.is_empty() {
         return Gate {
             access: Access::Qualified,
             reasons,
