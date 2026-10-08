@@ -102,6 +102,24 @@ on aggregate figures only.
   best price in basis points of it (worse is positive). Only visible size
   counts: no hidden orders, nothing that arrives while the order is
   sent.
+- **Placements** (`synth::placements(universe)`): four new issues of
+  fictional issuers rated BB or better, each the issuer's next series,
+  placed by book-building around the valuation date, from a stream of
+  the seed: one book closed a few working days before, two open (one
+  closing within two working days) and one to open. Each has the book's
+  first and last working day, the settlement three working days after
+  the close, a term of one to five years, a coupon paid monthly,
+  quarterly or twice a year, and a size. The coupon guidance's top is the
+  coupon whose annual yield is the zero-coupon curve at the term plus
+  the issuer's credit and sector spreads and a new-issue premium of 0.3
+  to 0.8 points, on a step of 0.05 points; the range is half a point to a
+  point wide. Once the book has closed, a demand drawn between 0.8 and
+  3.6 times the size sets the final coupon, from the top of the guidance
+  (demand of the size or less) down to its bottom (2.5 times the size or
+  more), linearly between, on the step, and the allotment of a request
+  without a coupon limit, the size over the demand (all of it when the
+  book is not covered). Rules of the synthetic universe, not statements
+  about any real placement; the tests pin the JSON's digest.
 
 `cargo run --release -p tyche-market --example synth_stats` prints the
 calibration statistics of the default universe's first day.
@@ -109,8 +127,9 @@ calibration statistics of the default universe's first day.
 The WebAssembly build (`--no-default-features --features wasm`) holds
 only the synthetic market and the book (`SynthMarket`: the universe and
 an issue's day as JSON, who may buy each issue (`accessJson`), a
-holding's events (`eventsJson`) and a depth check against an issue's
-book at a moment of a day (`depthJson`)); the app runs it in a worker.
+holding's events (`eventsJson`), the placements (`placementsJson`) and a
+depth check against an issue's book at a moment of a day (`depthJson`));
+the app runs it in a worker.
 
 ## IEX decoding (feature `iex`, on by default)
 

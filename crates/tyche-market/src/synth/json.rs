@@ -6,6 +6,7 @@
 use super::access::{gate, TEST_BELOW};
 use super::day::{Day, Print};
 use super::events::HoldingEvent;
+use super::placements::Placement;
 use super::universe::{Universe, RATINGS};
 use crate::depth::DepthCheck;
 use std::fmt::Write;
@@ -221,6 +222,41 @@ pub fn events_json(events: &[HoldingEvent]) -> String {
             opt_day(e.notice_day),
             e.rating.map_or("null".into(), |r| text(RATINGS[r.0])),
             e.rating.map_or("null".into(), |r| text(RATINGS[r.1])),
+        )
+    })
+}
+
+fn opt_num(x: Option<f64>, decimals: usize) -> String {
+    x.map_or("null".into(), |x| num(x, decimals))
+}
+
+/// The placements: days as offsets from the valuation date, coupons in
+/// percent a year, the size in roubles of face value; the issuer by its
+/// code with its place and sector, and the issuer's rating and outlook.
+pub fn placements_json(u: &Universe, placements: &[Placement]) -> String {
+    list(placements, |p| {
+        let s = &u.issuers[p.issuer];
+        format!(
+            "{{\"ticker\":{},\"issuer\":{},\"place\":{},\"sector\":{},\"rating\":{},\"outlook\":{},\"state\":{},\"bookOpen\":{},\"bookClose\":{},\"settlement\":{},\"maturity\":{},\"termYears\":{},\"periodDays\":{},\"size\":{},\"guidanceLowPct\":{},\"guidanceHighPct\":{},\"demand\":{},\"finalCouponPct\":{},\"allottedPct\":{}}}",
+            text(&p.ticker),
+            text(&s.code),
+            text(s.place),
+            text(s.sector.code()),
+            text(RATINGS[p.rating]),
+            text(s.outlook.code()),
+            text(p.state.code()),
+            p.book_open,
+            p.book_close,
+            p.settlement,
+            text(&p.maturity),
+            p.term_years,
+            num(p.period_days, 0),
+            num(p.size, 0),
+            num(p.guidance_low_pct, 2),
+            num(p.guidance_high_pct, 2),
+            opt_num(p.demand, 2),
+            opt_num(p.final_coupon_pct, 2),
+            opt_num(p.allotted_pct, 1),
         )
     })
 }

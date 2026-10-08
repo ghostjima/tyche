@@ -158,6 +158,23 @@ Status: early. Performance record, with stamps:
   and the ladder's yield is the engine's `ytm_effective` of what the
   rungs bring at their exits against what they cost. The payments by
   year, before tax, and every assumption are listed under it.
+- **Placements**: "Размещения" / "Placements" beside "Build a ladder"
+  over the list opens a card per new issue of the synthetic universe's
+  fictional issuers placed by book-building, from tyche-market's
+  `placementsJson` (kept in the URL as `?pl=1`): one book closed a few
+  days ago, two open, one to come, by the book's first day. Each has its
+  book's window and a countdown in working days to its close, or to its
+  opening (Stoa's Countdown, a warning from two working days); the coupon
+  guidance as a range and how often the coupon is paid; the final coupon
+  once the book has closed, with the demand that set it, or the day it
+  will be set; what an indicative request of a million roubles at face
+  value without a coupon limit was allotted, pro rata to the demand; the
+  size, the maturity, the settlement and the issuer's synthetic rating.
+  Under them, the rules of the synthetic universe that set the guidance,
+  the final coupon, the allotment and the settlement. Everything is a
+  scenario of the universe's seed, said so on the card; the guidance is
+  priced from the Bank of Russia's zero-coupon curve, so the card carries
+  both source labels.
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the
@@ -225,10 +242,11 @@ What the tests cover, and nothing wider:
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   holdings with every kind of event and the income by month, the
-  confirmation of a request to redeem at an offer, the ladder,
+  confirmation of a request to redeem at an offer, the placements, the
+  ladder,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison, an
-  issue, the holdings and a ten-rung ladder at 375 px.
+  issue, the holdings, a ten-rung ladder and the placements at 375 px.
 - Keyboard paths: `/` to the search, Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the map
   of peers one tab stop whose Home and arrow keys walk its points, the
@@ -244,7 +262,8 @@ What the tests cover, and nothing wider:
   its safe action, and recording or cancelling the request puts the
   focus on the button that replaces the one pressed; "Build a ladder"
   puts the focus on the ladder's first field, and closing it returns the
-  focus to that button; after "Try WebAssembly again" succeeds, the focus moves on to
+  focus to that button; "Placements" puts the focus on the placements'
+  Close button, which returns it to "Placements"; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source
   label's link opens the data page with focus on its heading, and its
   Back button (or the browser's) returns the focus to that link. The

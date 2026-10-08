@@ -123,6 +123,15 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .redeem { display: grid; gap: var(--stoa-space-2); justify-items: start; }
 .redeem p { margin: 0; }
 
+/* The placements by book-building: a card per placement. */
+.placements__list { display: grid; gap: var(--stoa-space-5); margin: var(--stoa-space-4) 0 0; padding: 0; list-style: none; }
+.placement { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
+.placement > * { max-inline-size: 100%; }
+.placement + .placement { padding-block-start: var(--stoa-space-4); border-block-start: 1px solid var(--stoa-color-border); }
+.placement__stack { display: grid; gap: var(--stoa-space-1); justify-items: start; }
+.placement__title { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1) var(--stoa-space-2); align-items: baseline; margin: 0; font-size: var(--stoa-font-size-md); font-weight: var(--stoa-font-weight-semibold); }
+.placements__rules { margin: 0; padding-inline-start: var(--stoa-space-5); display: grid; gap: var(--stoa-space-1); }
+
 /* The ladder builder. */
 .ladder__inputs {
   display: grid; gap: var(--stoa-space-4); align-items: end;

@@ -103,6 +103,12 @@ const READY_STATES: Record<string, Prepare> = {
     // than it is drawn.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   },
+  // The placements by book-building, a card each.
+  placements: async (page, lang, theme) => {
+    await open(page, lang, theme, "&pl=1");
+    await ready(page);
+    await expect(page.getByTestId("placement")).toHaveCount(4);
+  },
   // The ladder builder with three rungs, its figures and assumptions.
   ladder: async (page, lang, theme) => {
     await open(page, lang, theme, "&lh=3&la=1000000");
@@ -143,6 +149,7 @@ const PHONE_STATES: Record<string, string> = {
   issue: `&issue=${ISSUES.floater}`,
   holdings: `&${PORTFOLIO}`,
   ladder: "&lh=3&la=1000000",
+  placements: "&pl=1",
 };
 
 for (const lang of LANGS) {
