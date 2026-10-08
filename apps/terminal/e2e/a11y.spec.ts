@@ -103,11 +103,14 @@ const READY_STATES: Record<string, Prepare> = {
     // than it is drawn.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   },
-  // The ladder builder with three rungs, its figures and assumptions.
+  // The ladder builder with three rungs, its figures and assumptions, and
+  // the working of its tax open.
   ladder: async (page, lang, theme) => {
     await open(page, lang, theme, "&lh=3&la=1000000");
     await ready(page);
     await expect(page.getByTestId("rung")).toHaveCount(3);
+    await page.getByTestId("ladder-tax").locator("summary").click();
+    await expect(page.getByTestId("ladder-tax").locator(".stoa-table, .stoa-derivation").first()).toBeVisible();
   },
   // A floater with amortisation: scenarios and the coupon chart.
   floater,

@@ -956,3 +956,67 @@ fn a_ticket_refuses_what_it_cannot_price_in_order() {
     );
     assert_eq!(matured, Err(Error::Matured));
 }
+
+// A portfolio of two one-year bonds, annual coupon, bought on 2026-01-01
+// (a coupon day, no accrued interest) and held to maturity on 2027-01-01
+// (day 365), 100 bonds each, no fee, an ordinary account, no other
+// income. All of it falls in 2027.
+//
+// - At par with a 10 percent coupon: coupons 100 x 100 = 10,000, the
+//   redemption returns the 100,000 paid, result 0. Alone: base 10,000,
+//   tax 1,300.
+// - At 105 with a 1 percent coupon: coupons 10 x 100 = 1,000, the
+//   redemption returns 100,000 for 105,000 paid, result -5,000. Alone:
+//   base -4,000, tax 0.
+//
+// Together: income 11,000, result -5,000, base 6,000, tax 780; the loss
+// on the second saves 13 percent of 4,000 = 520 on the first's coupons.
+fn one_year(price_pct: f64, coupon_rate_pct: f64) -> Issue {
+    Issue {
+        nominal: 1000.0,
+        price_pct,
+        accrued: None,
+        coupon_type: CouponType::Fixed,
+        coupon_rate_pct,
+        spread_pct: 0.0,
+        period_days: 365.0,
+        maturity: "2027-01-01".into(),
+        offers: vec![],
+        amortization: vec![],
+    }
+}
+
+#[test]
+fn a_portfolio_nets_one_holdings_loss_against_anothers_coupons() {
+    let m = market("2026-01-01");
+    let held = |issue: &Issue| {
+        let plan = Plan {
+            // Half a bond over, so exactly 100 are bought.
+            amount: 100.5 * 10.0 * issue.price_pct,
+            horizon_day: 365.0,
+            reinvest: false,
+            tax_regime: TaxRegime::Standard,
+            other_income: 0.0,
+            rate_shift_pct: 0.0,
+        };
+        explain(issue, &m, &plan, 0.0, &curve()).unwrap().plan_tax
+    };
+    let par = held(&one_year(100.0, 10.0));
+    let premium = held(&one_year(105.0, 1.0));
+    assert_eq!((par.len(), premium.len()), (1, 1));
+    assert_close!(par[0].income, 10_000.0);
+    assert_close!(par[0].tax, 1_300.0);
+    assert_close!(premium[0].income, 1_000.0);
+    assert_close!(premium[0].result, -5_000.0);
+    assert_close!(premium[0].tax, 0.0);
+
+    let holdings: Vec<HoldingYear> = par.iter().chain(&premium).map(HoldingYear::from).collect();
+    let years = portfolio_tax(&holdings, 0.0).unwrap();
+    assert_eq!(years.len(), 1);
+    let y = years[0];
+    assert_eq!((y.year, y.holdings), (2027, 2));
+    assert_close!(y.income, 11_000.0);
+    assert_close!(y.result, -5_000.0);
+    assert_close!(y.base, 6_000.0);
+    assert_close!(y.tax, 780.0);
+}

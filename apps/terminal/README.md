@@ -52,7 +52,10 @@ Status: early. Performance record, with stamps:
   the schedule of the face value repaid, subordination, a floater's
   latest coupon resets rebuilt from the Bank of Russia's key rate or
   RUONIA, the synthetic rating with its outlook (from a fictional
-  agency), who can buy it and what "qualified investors only" means,
+  agency), who can buy it (anyone, after a test, or qualified investors
+  only, from tyche-market's gate) with the article of the law behind it,
+  the Bank of Russia's rating level a test depends on and the yearly
+  allowance without a test,
   and liquidity from the synthetic order book against the named
   thresholds, as a warning when it is thin. Then the broker's fee, a
   field in percent of each trade (0.05 by default, from 0 to 1 in steps
@@ -153,11 +156,19 @@ Status: early. Performance record, with stamps:
   are proposed (tyche-market's access rule); linkers and issues with a
   call offer are left out. The amount is split equally over the rungs
   with an issue, in whole lots at today's dirty price; each rung is held
-  to its exit with nothing reinvested, after tax in an ordinary brokerage
-  account and the broker's fee, as the engine's `explain` works it out,
-  and the ladder's yield is the engine's `ytm_effective` of what the
-  rungs bring at their exits against what they cost. The payments by
-  year, before tax, and every assumption are listed under it.
+  to its exit with nothing reinvested, after the broker's fee, as the
+  engine's `explain` works it out. The rungs are taxed together, in one
+  ordinary brokerage account: the engine's `portfolio_tax` combines their
+  tax years into one base per calendar year, so a loss on one rung is
+  netted against another's coupons and the rungs share the threshold of
+  the 13 percent rate; its working, year by year, cites the Tax Code's
+  article and paragraph for each step. The ladder's yield is the engine's
+  `ytm_effective` of what the rungs bring at their exits, less each
+  year's tax on the ladder's last payment of that year, against what
+  they cost. The payments by year, before tax, and every assumption
+  (among them what is not modelled: a loss carried to later years, which
+  takes a tax declaration, and individual investment accounts) are
+  listed under it.
 - **Sources**: a source label at the top of every widget: SIM for the
   synthetic universe (the list, the issue card, the calculator), the
   Bank of Russia with the snapshot's date and a link to cbr.ru (the

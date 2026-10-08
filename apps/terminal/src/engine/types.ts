@@ -3,9 +3,9 @@
 // TypeScript twin (used when WebAssembly cannot load, and selectable in the
 // diagnostics). Inputs and outputs are plain objects in the twin's shapes;
 // errors are codes, returned as values.
-import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result } from "@tyche/yield-twin";
+import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Plan, PortfolioYear, Result } from "@tyche/yield-twin";
 
-export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, Issue, Market, Plan, Result };
+export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Plan, PortfolioYear, Result };
 export type { Breakdown, FlowTrace, GSpread, Schedule, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
 
 export type EngineKind = "wasm" | "twin";
@@ -28,6 +28,10 @@ export type Engine = {
   /** The annual effective yield (a fraction) at which flows are worth a
    * price; NaN with no flows or a price that is not positive. */
   ytm_effective(amounts: number[], days: number[], price: number): number;
+  /** The tax of several holdings together, year by year: their tax years
+   * (as explain gives them) in one base per calendar year, with the
+   * holder's other investment income. */
+  portfolio_tax(holdings: readonly HoldingYear[], otherIncome: number): Result<PortfolioYear[]>;
 };
 
 /** Every code the engine can return, in its documented order of checks. */
@@ -50,4 +54,5 @@ export const ERROR_CODES: readonly ErrorCode[] = [
   "invalid_limit",
   "invalid_tick",
   "price_off_tick",
+  "invalid_tax_year",
 ];
