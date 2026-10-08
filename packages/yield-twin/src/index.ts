@@ -21,5 +21,6 @@ export {
 export { explain } from "./explain.js";
 export { g_spread } from "./spread.js";
 export { order_ticket } from "./ticket.js";
+export { portfolio_tax } from "./portfolio.js";
 export { addYears, civilFromDays, dayOffset, fullYears, parseIsoDate } from "./dates.js";
 export type * from "./types.js";

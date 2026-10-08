@@ -126,4 +126,23 @@ describe("WebAssembly and twin through the app's adapters", () => {
     }
     expect(Number.isNaN(twinEngine.ytm_effective([], [], 100))).toBe(true);
   });
+
+  it("tax the same portfolios, five issues held to maturity at a time, and refuse the same tax years", () => {
+    const years = BONDS.flatMap((b) => {
+      const d = twinEngine.derive_bond(b.issue, MARKET);
+      if (!("ok" in d)) return [];
+      const plan: Plan = { amount: 500_000, horizonDay: d.ok.maturityDay, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
+      const e = twinEngine.explain(b.issue, MARKET, plan, COMMISSION_PCT, CURVE);
+      return "ok" in e ? [e.ok.planTax] : [];
+    });
+    expect(years.length).toBeGreaterThan(150);
+    for (let k = 0; k + 5 <= years.length; k += 5) {
+      const holdings = years.slice(k, k + 5).flat();
+      for (const other of [0, 2_000_000]) close(wasm.portfolio_tax(holdings, other), twinEngine.portfolio_tax(holdings, other), `portfolio ${k / 5} other ${other}`);
+    }
+    const bad = { year: 2027.5, income: 1, result: 0, relieved: 0, relievedProceeds: 0, relievedYears: 0 };
+    for (const [holdings, other] of [[[bad], 0], [[], -1], [[{ ...bad, year: 2027, income: Number.NaN }], 0]] as const) {
+      close(wasm.portfolio_tax(holdings, other), twinEngine.portfolio_tax(holdings, other), `refused ${JSON.stringify(holdings)} ${other}`);
+    }
+  });
 });
