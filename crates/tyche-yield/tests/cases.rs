@@ -243,6 +243,35 @@ fn tax_year(t: &TaxYear) -> Value {
     })
 }
 
+fn holding_year(v: &Value) -> HoldingYear {
+    HoldingYear {
+        year: v["year"].as_i64().expect("year"),
+        income: num(&v["income"]),
+        result: num(&v["result"]),
+        relieved: num(&v["relieved"]),
+        relieved_proceeds: num(&v["relievedProceeds"]),
+        relieved_years: num(&v["relievedYears"]),
+    }
+}
+
+fn portfolio_year(y: &PortfolioYear) -> Value {
+    json!({
+        "year": y.year,
+        "holdings": y.holdings,
+        "income": f(y.income),
+        "result": f(y.result),
+        "relieved": f(y.relieved),
+        "relievedProceeds": f(y.relieved_proceeds),
+        "relievedYears": f(y.relieved_years),
+        "reliefCap": f(y.relief_cap),
+        "exempt": f(y.exempt),
+        "base": f(y.base),
+        "taxedLow": f(y.taxed_low),
+        "taxedHigh": f(y.taxed_high),
+        "tax": f(y.tax),
+    })
+}
+
 fn g_spread_of(g: &GSpread) -> Value {
     json!({
         "durationYears": f(g.duration_years),
@@ -394,6 +423,18 @@ fn run(name: &str, a: &[Value]) -> Value {
                 .and_then(|(i, o)| order_ticket(&i, &market(&a[1]), &o)),
             ticket,
         ),
+        "portfolio_tax" => outcome(
+            portfolio_tax(
+                &a[0]
+                    .as_array()
+                    .expect("holdings")
+                    .iter()
+                    .map(holding_year)
+                    .collect::<Vec<_>>(),
+                num(&a[1]),
+            ),
+            |years| Value::Array(years.iter().map(portfolio_year).collect()),
+        ),
         other => panic!("unknown function {other}"),
     }
 }
@@ -483,7 +524,7 @@ fn every_case_matches() {
     );
     // Every function has cases; the table keeps the 30 original primitive
     // cases at its head.
-    assert_eq!(seen.len(), 20, "{seen:?}");
+    assert_eq!(seen.len(), 21, "{seen:?}");
     assert!(
         cases.len()
             >= 30 + seen["derive_bond"] + seen["calculate"] + seen["explain"] + seen["g_spread"]
@@ -527,6 +568,41 @@ fn explain_traces_what_calculate_computes() {
         let g = g_spread(&i, &m, &curve(&a[4])).expect("spreads");
         assert_eq!(e.to_maturity.g_spread, g.to_maturity, "{}", case["name"]);
         assert_eq!(e.to_offer.map(|y| y.g_spread), g.to_offer);
+        checked += 1;
+    }
+    assert!(checked >= 8, "{checked}");
+}
+
+#[test]
+fn a_portfolio_of_one_holding_is_taxed_as_the_holding() {
+    // Every explained plan's tax years, as the portfolio's only holding,
+    // give the same base and tax year by year: the portfolio adds nothing
+    // to one holding.
+    let cases: Vec<Value> = serde_json::from_str(CASES).expect("valid cases.json");
+    let mut checked = 0;
+    for case in cases.iter().filter(|c| c["fn"] == "explain") {
+        let a = case["args"].as_array().expect("args");
+        let (Ok(i), Ok(p)) = (issue(&a[0]), plan(&a[2])) else {
+            continue;
+        };
+        let Ok(e) = explain(&i, &market(&a[1]), &p, num(&a[3]), &curve(&a[4])) else {
+            continue;
+        };
+        let holdings: Vec<HoldingYear> = e.plan_tax.iter().map(HoldingYear::from).collect();
+        let years = portfolio_tax(&holdings, p.other_income).expect("valid tax years");
+        assert_eq!(years.len(), e.plan_tax.len(), "{}", case["name"]);
+        for (y, t) in years.iter().zip(&e.plan_tax) {
+            assert_eq!(y.year, t.year);
+            for (got, want) in [
+                (y.exempt, t.exempt),
+                (y.base, t.base),
+                (y.taxed_low, t.taxed_low),
+                (y.taxed_high, t.taxed_high),
+                (y.tax, t.tax),
+            ] {
+                assert!(close(got, want), "{}: {got} against {want}", case["name"]);
+            }
+        }
         checked += 1;
     }
     assert!(checked >= 8, "{checked}");

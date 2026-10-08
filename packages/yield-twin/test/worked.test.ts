@@ -2,7 +2,7 @@
 // the arithmetic in the comments. The same examples run against the Rust
 // crate in tests/worked.rs.
 import { describe, expect, it } from "vitest";
-import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, g_spread, hold_value, income_tax, order_ticket } from "../src/index.js";
+import { COMMISSION_PCT, MIN_ANNUALISED_DAYS, TAX_THRESHOLD, calculate, dayOffset, effective_annual_pct, explain, g_spread, hold_value, income_tax, order_ticket, portfolio_tax } from "../src/index.js";
 import type { Calculation, Curve, Explanation, GSpreads, Issue, Market, Order, Plan, Ticket } from "../src/index.js";
 
 const close = (got: number, want: number) => expect(Math.abs(got - want)).toBeLessThanOrEqual(1e-9 * Math.max(Math.abs(want), 1));
@@ -556,5 +556,53 @@ describe("order_ticket", () => {
     expect(order_ticket(bullet, market("2027-06-01"), order("buy", "price", 0))).toEqual({ error: "matured" });
     // Codes are read before anything else, as at the engine's JavaScript boundary.
     expect(order_ticket(bullet, market("2027-06-01"), { ...order("buy", "price", 0), side: "hold" as Order["side"] })).toEqual({ error: "invalid_code" });
+  });
+});
+
+// A portfolio of two one-year bonds, annual coupon, bought on 2026-01-01
+// (a coupon day, no accrued interest) and held to maturity on 2027-01-01
+// (day 365), 100 bonds each, no fee, an ordinary account, no other income.
+// At par with a 10 percent coupon: coupons 10,000, result 0, alone a tax of
+// 1,300. At 105 with a 1 percent coupon: coupons 1,000, result -5,000,
+// alone a base of -4,000 and no tax. Together: income 11,000, result
+// -5,000, base 6,000, tax 780.
+describe("portfolio_tax", () => {
+  const oneYear = (pricePct: number, couponRatePct: number): Issue => ({
+    nominal: 1000,
+    pricePct,
+    accrued: null,
+    couponType: "fixed",
+    couponRatePct,
+    spreadPct: 0,
+    periodDays: 365,
+    maturity: "2027-01-01",
+    offers: [],
+    amortization: [],
+  });
+  const held = (issue: Issue) => {
+    // Half a bond over, so exactly 100 are bought.
+    const plan: Plan = { amount: 100.5 * 10 * issue.pricePct, horizonDay: 365, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
+    const r = explain(issue, market("2026-01-01"), plan, 0, curve);
+    if (!("ok" in r)) throw new Error(r.error);
+    return r.ok.planTax;
+  };
+
+  it("nets one holding's loss against another's coupons", () => {
+    const par = held(oneYear(100, 10));
+    const premium = held(oneYear(105, 1));
+    close(par[0]!.income, 10_000);
+    close(par[0]!.tax, 1_300);
+    close(premium[0]!.income, 1_000);
+    close(premium[0]!.result, -5_000);
+    close(premium[0]!.tax, 0);
+    const r = portfolio_tax([...par, ...premium], 0);
+    if (!("ok" in r)) throw new Error(r.error);
+    expect(r.ok).toHaveLength(1);
+    const y = r.ok[0]!;
+    expect([y.year, y.holdings]).toEqual([2027, 2]);
+    close(y.income, 11_000);
+    close(y.result, -5_000);
+    close(y.base, 6_000);
+    close(y.tax, 780);
   });
 });

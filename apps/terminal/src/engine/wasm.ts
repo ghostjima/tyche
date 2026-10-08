@@ -4,7 +4,7 @@
 // back as Float64Array and are turned into plain arrays, so both engines
 // hand the screen the same shapes.
 import init, * as glue from "tyche-yield";
-import type { Breakdown, Calculation, Curve, Derived, Engine, ErrorCode, Explanation, GSpread, GSpreads, Issue, Market, Plan, Result, TaxYear, YieldTrace } from "./types";
+import type { Breakdown, Calculation, Curve, Derived, Engine, ErrorCode, Explanation, GSpread, GSpreads, Issue, Market, Plan, PortfolioYear, Result, TaxYear, YieldTrace } from "./types";
 
 type Schedule = Derived["flows"];
 
@@ -235,6 +235,32 @@ function explanation(e: glue.Explanation): Explanation {
   return out;
 }
 
+function portfolioYear(y: glue.PortfolioYear): PortfolioYear {
+  const out: PortfolioYear = {
+    year: y.year,
+    holdings: y.holdings,
+    income: y.income,
+    result: y.result,
+    relieved: y.relieved,
+    relievedProceeds: y.relievedProceeds,
+    relievedYears: y.relievedYears,
+    reliefCap: y.reliefCap,
+    exempt: y.exempt,
+    base: y.base,
+    taxedLow: y.taxedLow,
+    taxedHigh: y.taxedHigh,
+    tax: y.tax,
+  };
+  y.free();
+  return out;
+}
+
+function portfolio(p: glue.Portfolio): PortfolioYear[] {
+  const out = p.years.map(portfolioYear);
+  p.free();
+  return out;
+}
+
 function result<R extends { ok: unknown; error: string | undefined; free(): void }, T>(
   r: R,
   convert: (ok: NonNullable<R["ok"]>) => T,
@@ -288,6 +314,15 @@ export const wasmEngine: Engine = {
   },
   ytm_effective(amounts, days, price) {
     return glue.ytm_effective(Float64Array.from(amounts), Float64Array.from(days), price);
+  },
+  portfolio_tax(holdings, otherIncome) {
+    // The holdings' tax years cross as six lists, one holding's year at
+    // each index.
+    const field = (k: "year" | "income" | "result" | "relieved" | "relievedProceeds" | "relievedYears") => Float64Array.from(holdings, (h) => h[k]);
+    return result(
+      glue.portfolio_tax(field("year"), field("income"), field("result"), field("relieved"), field("relievedProceeds"), field("relievedYears"), otherIncome),
+      portfolio,
+    );
   },
 };
 

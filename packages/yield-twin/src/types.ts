@@ -23,7 +23,8 @@ export type ErrorCode =
   | "invalid_quantity"
   | "invalid_limit"
   | "invalid_tick"
-  | "price_off_tick";
+  | "price_off_tick"
+  | "invalid_tax_year";
 
 /* Errors are values: either `ok` or `error` is present */
 export type Result<T> = { ok: T } | { error: ErrorCode };
@@ -244,6 +245,34 @@ export type YieldTrace = {
   /* Held to the event: nothing reinvested, the fee on the purchase, the plan's tax */
   held: Breakdown;
   tax: TaxYear[];
+};
+
+/* One holding's tax year, the parts portfolio_tax combines: a TaxYear is one */
+export type HoldingYear = Pick<TaxYear, "year" | "income" | "result" | "relieved" | "relievedProceeds" | "relievedYears">;
+
+/* One calendar year of a portfolio's tax; amounts for the whole portfolio */
+export type PortfolioYear = {
+  year: number;
+  /* The holdings' tax years in this year */
+  holdings: number;
+  /* Coupons less the accrued interest deducted, plus reinvestment income */
+  income: number;
+  /* Results outside the long-term holding relief, summed: a loss is netted */
+  result: number;
+  /* Results under the relief, summed */
+  relieved: number;
+  /* Vi: relieved proceeds of the holdings whose relieved result is positive */
+  relievedProceeds: number;
+  /* The same proceeds weighted by the full years held */
+  relievedYears: number;
+  /* 3 million times Kцб (relievedYears / relievedProceeds); 0 with no relieved gain */
+  reliefCap: number;
+  exempt: number;
+  /* income + result + relieved - exempt; taxed at zero when negative */
+  base: number;
+  taxedLow: number;
+  taxedHigh: number;
+  tax: number;
 };
 
 export type Explanation = {
