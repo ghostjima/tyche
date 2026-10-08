@@ -5,9 +5,8 @@
 // before a confirmation.
 import { RATINGS, type Access, type Rating } from "./issues";
 
-/** Every reason tyche-market's rule gives: a subordinated issue is named
- * as such, or as a bank's subordinated issue, by the rule's revision. */
-export const GATE_REASONS = ["qualified_only", "subordinated", "subordinated_bank", "rating_below_threshold", "government", "rating_at_threshold"] as const;
+/** Every reason tyche-market's rule gives. */
+export const GATE_REASONS = ["qualified_only", "subordinated_bank", "rating_below_threshold", "government", "rating_at_threshold"] as const;
 export type GateReason = (typeof GATE_REASONS)[number];
 
 export type Gate = { access: Access; reasons: GateReason[] };

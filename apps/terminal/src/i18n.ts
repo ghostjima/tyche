@@ -410,7 +410,6 @@ const en = {
   gateAccess: { open: "Every investor", test: "A non-qualified investor after a passed test", qualified: "Qualified investors only" } satisfies Record<Access, string>,
   gateReason: {
     qualified_only: "the issue's terms restrict it to qualified investors",
-    subordinated: "it is subordinated",
     subordinated_bank: "it is a bank's subordinated bond",
     rating_below_threshold: (rating: string) => `a corporate issue rated below ${rating} on the synthetic scale`,
     government: "a synthetic government bond",
@@ -1162,7 +1161,6 @@ const ru: Strings = {
   gateAccess: { open: "Любой инвестор", test: "Неквалифицированный инвестор после тестирования", qualified: "Только квалифицированные инвесторы" },
   gateReason: {
     qualified_only: "условия выпуска ограничивают его квалифицированными инвесторами",
-    subordinated: "выпуск субординированный",
     subordinated_bank: "это субординированная облигация банка",
     rating_below_threshold: (rating) => `корпоративный выпуск с рейтингом ниже ${rating} по синтетической шкале`,
     government: "синтетическая государственная облигация",
