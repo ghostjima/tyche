@@ -5,7 +5,7 @@
 // tax with nothing reinvested, and how each figure is worked out, citing
 // its rule. In English and in Russian.
 import { expect, test, type Page } from "@playwright/test";
-import { ISSUES, expectNoHorizontalScroll, ready } from "./helpers";
+import { ISSUES, PORTFOLIO_PUT, expectNoHorizontalScroll, ready } from "./helpers";
 
 /** Subordinated, qualified only, a put offer, a negative outlook and a
  * thin market. */
@@ -28,7 +28,7 @@ test("the risks sit in the card: offer and countdown, amortisation, subordinatio
   await expect(risk(page, "Synthetic rating")).toContainText("BB+, outlook negative; assigned by a fictional agency.");
   await expect(risk(page, "Synthetic rating")).toContainText("Negative outlook");
   await expect(risk(page, "Who can buy")).toContainText("Qualified investors only");
-  await expect(risk(page, "Who can buy")).toContainText("Federal Law No. 39-FZ on the securities market, article 51.2");
+  await expect(risk(page, "Who can buy")).toContainText("Federal Law No. 39-FZ on the securities market, article 3, paragraph 5");
   // The warning names the book's figures and both thresholds.
   const warning = page.getByTestId("liquidity-warning");
   await expect(warning).toContainText("Thin market");
@@ -41,7 +41,10 @@ test("a liquid issue says so with its figures, an issuer's call warns of the cou
   await ready(page);
   await expect(page.getByTestId("liquidity-warning")).toHaveCount(0);
   await expect(risk(page, "Liquidity")).toContainText("Liquid: the synthetic order book quotes a spread of 0.08% (up to 0.50% counts as liquid)");
-  await expect(risk(page, "Who can buy")).toContainText("Every investor: no qualified status is needed.");
+  await expect(risk(page, "Who can buy")).toContainText(
+    "Every investor: rated A+ or higher, the Bank of Russia's level, it needs neither qualified status nor a test (Federal Law No. 39-FZ on the securities market, article 3.1, paragraph 2, subparagraph 2).",
+  );
+  await expect(risk(page, "Who can buy")).toContainText("a synthetic rating is read as such a rating, an assumption of the synthetic universe");
   await page.goto(`/?lang=en&issue=${CALL}`);
   await ready(page);
   await expect(risk(page, "Offer")).toContainText("Issuer's call on");
@@ -49,6 +52,24 @@ test("a liquid issue says so with its figures, an issuer's call warns of the cou
   await page.goto(`/?lang=en&issue=${ISSUES.gov}`);
   await ready(page);
   await expect(risk(page, "Offer")).toContainText("No offer: the bond runs to maturity.");
+  await expect(risk(page, "Who can buy")).toContainText(
+    "Every investor: a government bond needs neither qualified status nor a test (Federal Law No. 39-FZ on the securities market, article 3.1, paragraph 2, subparagraph 5).",
+  );
+});
+
+test("an issue rated below the Bank of Russia's level asks a non-qualified investor for a test, or the yearly allowance without one", async ({ page }) => {
+  // Rated BBB- on the synthetic scale: open under a BBB- threshold, a
+  // test at the board's A+.
+  await page.goto(`/?lang=en&issue=${PORTFOLIO_PUT}`);
+  await ready(page);
+  await expect(risk(page, "Who can buy")).toContainText("Test required");
+  await expect(risk(page, "Who can buy")).toContainText("Rated below A+, the Bank of Russia's level, a non-qualified investor buys it after passing the broker's test");
+  await expect(risk(page, "Who can buy")).toContainText("₽300,000 a year");
+  await expect(risk(page, "Who can buy")).toContainText("Federal Law No. 39-FZ on the securities market, article 3.1");
+  await page.goto(`/?lang=ru&issue=${PORTFOLIO_PUT}`);
+  await ready(page);
+  await expect(risk(page, "Кто может купить")).toContainText("Нужен тест");
+  await expect(risk(page, "Кто может купить")).toContainText("Рейтинг ниже A+, уровня Банка России");
 });
 
 test("a floater shows its coupon resets from the Bank of Russia's figures, and an amortising issue its schedule", async ({ page }) => {
@@ -58,6 +79,7 @@ test("a floater shows its coupon resets from the Bank of Russia's figures, and a
   await expect(resets.locator("tbody tr")).toHaveCount(6);
   await expect(resets.locator("tbody tr").first()).toContainText("+2.10%");
   await expect(risk(page, "Coupon resets")).toContainText("The coupon is RUONIA on the first day of each period plus the issue's spread.");
+  await expect(risk(page, "Who can buy")).toContainText("The coupon follows an index. The synthetic universe gates it as a fixed coupon");
   // The card names the Bank of Russia beside the synthetic data.
   await expect(page.locator(".issue-card > .stoa-source-note, .issue-card .stoa-source-note").filter({ hasText: "Bank of Russia" })).toHaveCount(1);
   const schedule = page.getByRole("table", { name: "Face value repaid per bond" });
@@ -146,7 +168,7 @@ test("в карточке по-русски: риски, доходность б
   await ready(page);
   await expect(page.getByTestId("risks").getByRole("heading", { level: 3 })).toHaveText("Риски");
   await expect(risk(page, "Оферта")).toContainText("Пут-оферта");
-  await expect(risk(page, "Кто может купить")).toContainText("Федеральный закон № 39-ФЗ «О рынке ценных бумаг», статья 51.2");
+  await expect(risk(page, "Кто может купить")).toContainText("Федеральный закон № 39-ФЗ «О рынке ценных бумаг», статья 3, пункт 5");
   await expect(page.getByTestId("liquidity-warning")).toContainText("Низкая ликвидность");
   await expect(page.getByTestId("liquidity-warning")).toContainText("со спредом до 0,50 %");
   await expect(page.getByTestId("honest-yield").getByRole("heading", { level: 3 })).toHaveText("Доходность после налога и комиссии");
