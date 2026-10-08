@@ -12,6 +12,9 @@
 //!   the price and the accrued interest, the yields solved from the
 //!   discounted flows, the yields after a broker's fee and after tax
 //!   without reinvestment, the G-spreads, and the tax year by year.
+//! - [`portfolio_tax`]: the tax of several holdings together, their tax
+//!   years combined into one base per calendar year, so they share the
+//!   rate's threshold and a loss on one is netted against the others.
 //! - [`order_ticket`]: an order's figures: the yield at a limit price or
 //!   the price at a limit yield, for a number of lots, with the accrued
 //!   interest and the broker's fee.
@@ -67,6 +70,7 @@ mod calculate;
 pub mod date;
 mod explain;
 mod issue;
+mod portfolio;
 pub mod primitives;
 mod spread;
 mod ticket;
@@ -84,6 +88,7 @@ pub use issue::{
     coupon_schedule, derive_bond, Amortization, CouponType, Derived, Error, Event, Issue, Market,
     Schedule,
 };
+pub use portfolio::{portfolio_tax, HoldingYear, PortfolioYear};
 pub use primitives::*;
 pub use spread::{g_spread, Curve, GSpread, GSpreads};
 pub use ticket::{order_ticket, Limit, Order, Side, Ticket};

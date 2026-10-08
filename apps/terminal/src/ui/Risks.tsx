@@ -1,10 +1,11 @@
 // The risks of an issue, in the card where the decision is made: the
 // offer with its date and the time left, the amortisation schedule,
 // subordination, a floater's coupon resets, the synthetic rating with its
-// outlook, who can buy it and what that means, and a liquidity warning
+// outlook, who can buy it (tyche-market's gate: anyone, after a test, or
+// qualified investors only) and the law behind it, and a liquidity warning
 // from the synthetic order book, with the thresholds it checks.
 import { Callout, Countdown, DescriptionList, Table, Tag, useBreakpoint, type DescriptionItem } from "@ghostjima/stoa-react";
-import type { Bond } from "../data/issues";
+import { TEST_LEVEL, WITHOUT_TEST_PER_YEAR, type Access, type Bond } from "../data/issues";
 import type { Derived } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
@@ -14,16 +15,21 @@ import { couponResets, type Reset } from "../lib/resets";
 /** At this many days before the offer or fewer, the countdown warns. */
 export const OFFER_WARN_DAYS = 30;
 
-/** The law on qualified investors, as the risk text cites it. */
-const QUALIFIED_LAW = { number: "39", article: "51.2" } as const;
+/** The law on the securities market, No. 39-FZ, as the risk text cites
+ * it: who may buy what (tyche-market's gate follows it). */
+const SECURITIES_LAW = "39";
+
 
 type AmortRow = { day: number; fraction: number };
 
-export function Risks({ t, f, bond, derived: d }: { t: Strings; f: Formats; bond: Bond; derived: Derived }) {
+export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Formats; bond: Bond; derived: Derived; access: Access | undefined }) {
   const narrow = useBreakpoint() === "narrow";
   const { issue, liquidity } = bond;
   const spread = (bp: number) => f.percent(bp / 10_000, 2);
   const resets = couponResets(bond, d.couponDays[0] ?? d.maturityDay);
+  // A coupon or a face value that follows an index: the gate's reading of it
+  // is the synthetic universe's, and the card says so.
+  const indexed = bond.coupon.kind !== "fixed";
   // Every repayment of the face value, the final one included.
   const amort: AmortRow[] =
     d.amortDays.length === 0
@@ -114,18 +120,41 @@ export function Risks({ t, f, bond, derived: d }: { t: Strings; f: Formats; bond
     {
       id: "access",
       term: t.riskAccess,
-      description: bond.qualifiedOnly ? (
-        <div className="risk">
-          <span>
-            <Tag tone="warning" size="small">
-              {t.tagQualified}
-            </Tag>
-          </span>
-          <span>{t.riskQualifiedOnly(t.lawSecurities(QUALIFIED_LAW.number, QUALIFIED_LAW.article))}</span>
-        </div>
-      ) : (
-        t.riskOpenToAll
-      ),
+      // The gate comes with the market; until then, what the issue's terms
+      // say about qualified investors.
+      description:
+        access === "qualified" || (access === undefined && bond.qualifiedOnly) ? (
+          <div className="risk">
+            <span>
+              <Tag tone="warning" size="small">
+                {t.tagQualified}
+              </Tag>
+            </span>
+            <span>{t.riskQualifiedOnly(t.lawSecurities(SECURITIES_LAW, "3", "5"))}</span>
+          </div>
+        ) : access === "test" ? (
+          <div className="risk">
+            <span>
+              <Tag tone="warning" size="small">
+                {t.tagTest}
+              </Tag>
+            </span>
+            <span>{t.riskTest(TEST_LEVEL, f.money(WITHOUT_TEST_PER_YEAR, { fractionDigits: 0 }), t.lawSecurities(SECURITIES_LAW, "3.1"))}</span>
+            <span className="muted">{t.riskLevelNote(TEST_LEVEL)}</span>
+            {indexed && <span className="muted">{t.riskIndexNote}</span>}
+          </div>
+        ) : access === "open" && bond.issuer.kind === "government" ? (
+          <div className="risk">
+            <span>{t.riskOpenGov(t.lawSecurities(SECURITIES_LAW, "3.1", "2", "5"))}</span>
+            {indexed && <span className="muted">{t.riskIndexNote}</span>}
+          </div>
+        ) : access === "open" ? (
+          <div className="risk">
+            <span>{t.riskOpenRated(TEST_LEVEL, t.lawSecurities(SECURITIES_LAW, "3.1", "2", "2"))}</span>
+            <span className="muted">{t.riskLevelNote(TEST_LEVEL)}</span>
+            {indexed && <span className="muted">{t.riskIndexNote}</span>}
+          </div>
+        ) : null,
     },
     {
       id: "liquidity",

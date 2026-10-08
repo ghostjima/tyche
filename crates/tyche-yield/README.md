@@ -10,7 +10,7 @@ WebAssembly, with a TypeScript twin in
 of the same functions, written separately and checked against the Rust
 one on every case.
 
-Status: early. Both implementations pass the 180 cases in `cases.json`
+Status: early. Both implementations pass the 190 cases in `cases.json`
 and the hand-computed worked examples,
 and the WebAssembly build agrees with the twin on those cases and on
 1,000 generated issues within 1e-6 relative. Sizes, timings and how the
@@ -92,6 +92,21 @@ For an issue:
   relief, the base, the parts of it taxed at 13 and at 15 percent with
   the holder's other income, and the tax. The plan is `calculate`'s with
   the same fee, and the years' tax adds up to its tax.
+- `portfolio_tax(holdings, other_income)`: the tax of several holdings
+  together, from their tax years as `explain` traces them (any number of
+  holdings and years, in any order): each calendar year's income and
+  results of every holding form one base, so a loss on one holding is
+  netted against the others' coupons and gains and the holdings share
+  the 2.4 million rouble threshold; the long-term holding relief is
+  capped once for the year, at 3 million roubles times the full years
+  held averaged over the gaining disposals by what each returned. A
+  portfolio of one holding is taxed as the holding. A year's net loss is
+  not carried forward (that takes a tax declaration), and individual
+  investment accounts are not modelled. Tax Code of the Russian
+  Federation, part two, as amended up to the Federal Law of 4 August
+  2026: article 214.1, paragraphs 7, 12, 14 and 16; article 219.1,
+  paragraphs 1 and 2; article 220.1; article 210, paragraph 6; article
+  224, paragraph 1.1.
 
 How `calculate` models the holding:
 
@@ -180,6 +195,7 @@ the price step):
 | `invalid_limit` | an order's limit price is not a positive finite number, or its limit yield is not a finite number above -99 percent or gives no positive clean price |
 | `invalid_tick` | an order's price step is not a finite number of at least zero |
 | `price_off_tick` | an order's limit price is not on the price step (within a billionth of a step) |
+| `invalid_tax_year` | a holding's tax year given to `portfolio_tax` has an amount that is not finite, or relieved proceeds or years below zero (in JavaScript, also a year that is not a whole number, or lists of different lengths) |
 
 The primitives return NaN for invalid inputs (no flows, a price that is
 not positive, a NaN argument), and `derive_bond` keeps that: a price that
@@ -240,7 +256,11 @@ The primitives (`price_from_yield`, `ytm_effective`, `ytm_simple`,
 JavaScript, from the WebAssembly package: the primitives under the same
 names on `Float64Array`s; `derive_bond`, `calculate`, `explain`,
 `g_spread` and `order_ticket` (an `Order` with `side` "buy" or "sell"
-and `limit` "price" or "yield") on wasm-bindgen structs with camelCase fields. Results have
+and `limit` "price" or "yield") on wasm-bindgen structs with camelCase fields;
+`portfolio_tax` on six `Float64Array`s, one holding's tax year at each
+index (`year`, `income`, `result`, `relieved`, `relievedProceeds`,
+`relievedYears`), and the other income, its `ok` a `Portfolio` with the
+`years`. Results have
 `ok` or `error` set; arrays come back as `Float64Array`; each struct read
 from a result is a copy to `free()` when done. A `Curve` is passed by
 value: the call consumes it, so it is made for each call and not used or
@@ -306,10 +326,10 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
 
 ## Parity
 
-- `cases.json` holds 180 cases: 50 for the primitives (six of them
+- `cases.json` holds 190 cases: 50 for the primitives (six of them
   edge cases, and three of `curve_yield_pct`'s), 25 for `derive_bond`,
-  48 for `calculate`, 18 for `explain`, 19 for `g_spread` and 20 for
-  `order_ticket`
+  48 for `calculate`, 18 for `explain`, 19 for `g_spread`, 20 for
+  `order_ticket` and 10 for `portfolio_tax`
   (amortisation, offers, floaters, both accounts, the 15 percent rate,
   the long-term holding relief on either side of the third anniversary
   and at its cap, moved valuation dates and every error code). NaN is
@@ -335,7 +355,12 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
   cases (a quoted accrued interest, an offer, amortisation, a floater)
   with limit prices and yields, lots, price steps and fees, and every
   error it returns; their values were computed by the Rust crate, and
-  the twin agrees with them.
+  the twin agrees with them. The `portfolio_tax` cases (a loss netted
+  across holdings, the threshold shared, other income, a loss year not
+  carried, the relief across holdings with its coefficient from the
+  gaining holdings only, and its errors) were worked out by hand; both
+  runners also check that each `explain` case's tax years, as a
+  portfolio of one holding, are taxed as the holding.
 - `tests/worked.rs` and `packages/yield-twin/test/worked.test.ts` run the
   same worked examples, each a small issue whose results are computed by
   hand with the arithmetic in comments: a floater under a key-rate change, an
@@ -349,14 +374,17 @@ pnpm --filter @tyche/yield-twin test        # vitest against cases.json
   refuses; and the order ticket: the yield at a limit price with lots and
   the fee, for a buy and a sell, the price at a limit yield with the
   accrued interest, put on the price step either way, the yield to the
-  offer, and the order of its errors.
+  offer, and the order of its errors; and a portfolio of two one-year
+  bonds, one at a loss, whose loss is netted against the other's coupons.
 - `tests/cases.rs` checks the Rust crate against the table;
   `packages/yield-twin/test/cases.test.ts` checks the twin.
 - `node/parity.test.mjs` loads the built package and the built twin and
   checks, on every case, the WebAssembly build against the table, the
   twin against the table and the two against each other; then the two
   against each other on 1,000 issues, plans, fees, zero-coupon curves
-  and orders from a seeded generator, including invalid inputs. Build `pkg/` and the twin first, then, from
+  and orders from a seeded generator, including invalid inputs, the
+  explained plans' tax years also taxed four at a time as one
+  portfolio. Build `pkg/` and the twin first, then, from
   the repository root:
 
   ```bash

@@ -1,6 +1,6 @@
 // Loads the wasm-pack build in pkg/ under Node and wraps derive_bond,
-// calculate, explain, g_spread and order_ticket so they take and return the same plain
-// objects as the twin.
+// calculate, explain, g_spread, order_ticket and portfolio_tax so they take
+// and return the same plain objects as the twin.
 // Also the reference for using the structs from JavaScript.
 
 import { readFileSync } from "node:fs";
@@ -263,6 +263,30 @@ export function wrap(w) {
     e.free();
     return out;
   };
+  const portfolioYear = (y) => {
+    const out = {
+      year: y.year,
+      holdings: y.holdings,
+      income: y.income,
+      result: y.result,
+      relieved: y.relieved,
+      relievedProceeds: y.relievedProceeds,
+      relievedYears: y.relievedYears,
+      reliefCap: y.reliefCap,
+      exempt: y.exempt,
+      base: y.base,
+      taxedLow: y.taxedLow,
+      taxedHigh: y.taxedHigh,
+      tax: y.tax,
+    };
+    y.free();
+    return out;
+  };
+  const portfolio = (p) => {
+    const out = p.years.map(portfolioYear);
+    p.free();
+    return out;
+  };
   const result = (r, convert) => {
     const ok = r.ok;
     const out = ok === undefined ? { error: r.error } : { ok: convert(ok) };
@@ -305,6 +329,15 @@ export function wrap(w) {
       m.free();
       o.free();
       return out;
+    },
+    // The holdings' tax years cross as six lists, one holding's year at
+    // each index.
+    portfolio_tax: (holdings, otherIncome) => {
+      const field = (k) => Float64Array.from(holdings, (h) => h[k]);
+      return result(
+        w.portfolio_tax(field("year"), field("income"), field("result"), field("relieved"), field("relievedProceeds"), field("relievedYears"), otherIncome),
+        portfolio,
+      );
     },
     calculate: (issue, market, plan, feePct) => {
       const i = issueOf(issue);

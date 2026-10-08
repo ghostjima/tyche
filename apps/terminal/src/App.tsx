@@ -447,6 +447,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           held={holdings.find((h) => h.id === selected.bond.id)?.bonds ?? null}
           holdingsFull={holdings.length >= HOLDINGS_MAX}
           onHold={hold}
+          access={market.status === "ready" ? market.access.get(selected.bond.id) : undefined}
         />
         <Calculator
           t={t}
