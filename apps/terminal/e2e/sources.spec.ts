@@ -41,9 +41,10 @@ test("every widget names its source: SIM for the universe, the Bank of Russia wi
   await page.goto(`/?lang=en&issue=${ISSUES.floater}`);
   await ready(page);
   const all = await widgets(page);
-  expect(all.map((w) => w.title)).toEqual(["Issues", "Ladoga Generation", "Calculator", "Bank of Russia benchmarks"]);
+  expect(all.map((w) => w.title)).toEqual(["Issues", "Ladoga Generation", "Order ticket", "Calculator", "Bank of Russia benchmarks"]);
   for (const w of all) expect(w.sources.length, w.title).toBeGreaterThan(0);
   expect(all.find((w) => w.title === "Issues")!.sources).toEqual(["sim"]);
+  expect(all.find((w) => w.title === "Order ticket")!.sources).toEqual(["sim"]);
   expect(all.find((w) => w.title === "Calculator")!.sources).toEqual(["sim", "official"]);
   expect(all.find((w) => w.title === "Bank of Russia benchmarks")!.sources).toEqual(["official"]);
 
@@ -76,7 +77,9 @@ test("on a phone the list and the issue carry their labels too", async ({ page }
   await page.goto(`/?lang=ru&issue=${ISSUES.gov}`);
   await ready(page);
   const all = await widgets(page);
-  expect(all.length).toBe(3);
+  // The list gives way to the issue: its card, its order ticket, the
+  // calculator and the benchmarks.
+  expect(all.length).toBe(4);
   for (const w of all) expect(w.sources.length, w.title).toBeGreaterThan(0);
 });
 

@@ -77,8 +77,9 @@ Workflows:
 
 Today the prototype covers the first three workflows, the
 single-issue calculator, the events of a synthetic portfolio with its
-monthly coupon income, a ladder builder, and placements by
-book-building: see [What is built](#what-is-built).
+monthly coupon income, a ladder builder, placements by book-building,
+and the order ticket against the synthetic order book: see
+[What is built](#what-is-built).
 
 ## Constraints
 
@@ -177,7 +178,13 @@ book-building: see [What is built](#what-is-built).
   the link); placements of new synthetic issues by book-building
   (each book's window with a countdown in working days, the coupon
   guidance, the final coupon once the book has closed and what an
-  indicative request was allotted, with the rules that set them); the
+  indicative request was allotted, with the rules that set them); an
+  order ticket on each issue (buy or sell, a limit
+  price in percent of face linked to its yield through the engine, lots,
+  the accrued interest and the total with the fee, the yield at the limit
+  price before and after the fee, a depth check against the synthetic
+  order book, who may buy the issue and why, and a confirmation that
+  records a demo order in the browser only and never places one); the
   Bank of Russia's benchmarks with the yield curve. Every widget names its
   source (SIM, or the Bank of Russia with the date and a link to
   cbr.ru), a banner in the header says the terminal is a demonstration
@@ -227,7 +234,6 @@ design system of this product and of Ariadne Desk.
 
 ## What comes next
 
-- The order ticket's screen against the synthetic order book.
 - In the engine: inflation-linked bonds with forecast indexation. In the
   app: the
   order book and the tape of the synthetic market.

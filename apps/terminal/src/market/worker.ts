@@ -3,15 +3,20 @@
 // sent, and answers with its JSON, so the page's thread never waits on
 // the generator, with who may buy each issue and the placements by
 // book-building. It keeps the universe, and answers for the events of
-// holdings of it.
+// holdings of it and for depth checks of orders against its books.
 import init, { SynthMarket } from "tyche-market";
+import { DEPTH_AT_MS, DEPTH_DAY, type DepthQuery } from "../data/depth";
 import type { MacroInputs } from "../data/issues";
 
 /** A holding: an issue by its place in the universe, and the bonds held. */
 export type HeldIssue = { index: number; bonds: number };
 
-export type Request = { id: number; seed: number; inputs: MacroInputs } | { id: number; events: HeldIssue[] };
-export type Response = { id: number; json: string; digest: string; access: string; placements: string } | { id: number; events: string[] } | { id: number; error: string };
+export type Request = { id: number; seed: number; inputs: MacroInputs } | { id: number; events: HeldIssue[] } | { id: number; depth: DepthQuery[] };
+export type Response =
+  | { id: number; json: string; digest: string; access: string; placements: string }
+  | { id: number; events: string[] }
+  | { id: number; depth: string[] }
+  | { id: number; error: string };
 
 let market: Promise<typeof SynthMarket> | null = null;
 /** The universe built last. */
@@ -25,6 +30,12 @@ self.onmessage = async (event: MessageEvent<Request>) => {
       if (!built) throw new Error("no_universe");
       const m = built;
       self.postMessage({ id, events: request.events.map((h) => m.eventsJson(h.index, h.bonds)) } satisfies Response);
+      return;
+    }
+    if ("depth" in request) {
+      if (!built) throw new Error("no_universe");
+      const m = built;
+      self.postMessage({ id, depth: request.depth.map((q) => m.depthJson(q.index, DEPTH_DAY, DEPTH_AT_MS, q.side, q.bonds, q.limit)) } satisfies Response);
       return;
     }
     market ??= init().then(() => SynthMarket);

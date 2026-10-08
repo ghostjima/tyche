@@ -48,6 +48,7 @@ import { IssueList } from "./ui/IssueList";
 import { COMPARE_MAX, Compare } from "./ui/Compare";
 import { Holdings, type HeldItem } from "./ui/Holdings";
 import { Ladder } from "./ui/Ladder";
+import { OrderTicket } from "./ui/OrderTicket";
 import { Placements } from "./ui/Placements";
 
 /** The issue asked for in ?issue=; whether the universe has it is known
@@ -308,7 +309,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
     e.preventDefault();
     // The widget's label link, by the widget, since the widget is drawn
     // anew when the terminal comes back.
-    const widget = ["pane-list", "issue-card", "calculator"].find((c) => e.currentTarget.closest(`.${c}`));
+    const widget = ["pane-list", "issue-card", "ticket", "calculator"].find((c) => e.currentTarget.closest(`.${c}`));
     dataOpener.current = widget ? `.${widget} .stoa-source-note a` : null;
     history.pushState({ ...history.state, [PUSHED_PAGE]: "data" }, "", dataHref());
     setDataOpen(true);
@@ -443,6 +444,22 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           onHold={hold}
           access={market.status === "ready" ? market.access.get(selected.bond.id) : undefined}
         />
+        {market.status === "ready" && bonds && (
+          <OrderTicket
+            // Keyed apart from the card beside it, so each issue starts a
+            // ticket of its own.
+            key={`ticket-${selected.bond.id}`}
+            t={t}
+            f={f}
+            bond={selected.bond}
+            derived={selected.derived}
+            engine={engine}
+            index={bonds.findIndex((b) => b.id === selected.bond.id)}
+            gates={market.gates}
+            feePct={feePct}
+            source={<SimSource t={t} onData={openData} />}
+          />
+        )}
         <Calculator
           t={t}
           f={f}

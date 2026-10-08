@@ -4,7 +4,7 @@
 // back as Float64Array and are turned into plain arrays, so both engines
 // hand the screen the same shapes.
 import init, * as glue from "tyche-yield";
-import type { Breakdown, Calculation, Curve, Derived, Engine, ErrorCode, Explanation, GSpread, GSpreads, Issue, Market, Plan, PortfolioYear, Result, TaxYear, YieldTrace } from "./types";
+import type { Breakdown, Calculation, Curve, Derived, Engine, ErrorCode, Explanation, GSpread, GSpreads, Issue, Market, Order, Plan, PortfolioYear, Result, TaxYear, Ticket, YieldTrace } from "./types";
 
 type Schedule = Derived["flows"];
 
@@ -40,6 +40,18 @@ function planOf(x: Plan): glue.Plan {
   p.otherIncome = x.otherIncome;
   p.rateShiftPct = x.rateShiftPct;
   return p;
+}
+
+function orderOf(x: Order): glue.Order {
+  const o = new glue.Order();
+  o.side = x.side;
+  o.limit = x.limit;
+  o.limitValue = x.limitValue;
+  o.lots = x.lots;
+  o.lotSize = x.lotSize;
+  o.tickPct = x.tickPct;
+  o.feePct = x.feePct;
+  return o;
 }
 
 /** A curve crosses by value: the call consumes it, so it is made for
@@ -235,6 +247,29 @@ function explanation(e: glue.Explanation): Explanation {
   return out;
 }
 
+function ticket(t: glue.Ticket): Ticket {
+  const out: Ticket = {
+    bonds: t.bonds,
+    cleanPct: t.cleanPct,
+    clean: t.clean,
+    accrued: t.accrued,
+    dirty: t.dirty,
+    cleanAmount: t.cleanAmount,
+    accruedAmount: t.accruedAmount,
+    amount: t.amount,
+    fee: t.fee,
+    total: t.total,
+    ytmMaturity: t.ytmMaturity,
+    ytmOffer: t.ytmOffer ?? null,
+    event: t.event === "offer" ? "offer" : "maturity",
+    eventDay: t.eventDay,
+    yieldEvent: t.yieldEvent,
+    yieldEventAfterFee: t.yieldEventAfterFee,
+  };
+  t.free();
+  return out;
+}
+
 function portfolioYear(y: glue.PortfolioYear): PortfolioYear {
   const out: PortfolioYear = {
     year: y.year,
@@ -307,6 +342,16 @@ export const wasmEngine: Engine = {
     const out = result(glue.g_spread(i, m, curveOf(curve)), gSpreads);
     i.free();
     m.free();
+    return out;
+  },
+  order_ticket(issue, market, order) {
+    const i = issueOf(issue);
+    const m = marketOf(market);
+    const o = orderOf(order);
+    const out = result(glue.order_ticket(i, m, o), ticket);
+    i.free();
+    m.free();
+    o.free();
     return out;
   },
   price_from_yield(amounts, days, y) {

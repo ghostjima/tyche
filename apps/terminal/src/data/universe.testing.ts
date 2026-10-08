@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { SynthMarket, initSync } from "tyche-market";
+import { DEPTH_AT_MS, DEPTH_DAY } from "./depth";
 import { MACRO, SEED } from "./market";
 import { parseUniverse, type MacroInputs, type Universe } from "./issues";
 
@@ -56,6 +57,15 @@ export function eventsJson(index: number, bonds: number, seed = SEED, inputs: Ma
 export function accessJson(): string {
   const m = new SynthMarket(SEED, MACRO.valuationDate, MACRO.keyRatePct, MACRO.ruoniaPct, MACRO.inflationPct, Float64Array.from(MACRO.curve.termsYears), Float64Array.from(MACRO.curve.yieldsPct));
   const out = m.accessJson();
+  m.free();
+  return out;
+}
+
+/** A depth check against an issue's book at the moment the order ticket
+ * reads it, as JSON. */
+export function depthJson(index: number, side: string, bonds: number, limit: number): string {
+  const m = new SynthMarket(SEED, MACRO.valuationDate, MACRO.keyRatePct, MACRO.ruoniaPct, MACRO.inflationPct, Float64Array.from(MACRO.curve.termsYears), Float64Array.from(MACRO.curve.yieldsPct));
+  const out = m.depthJson(index, DEPTH_DAY, DEPTH_AT_MS, side, bonds, limit);
   m.free();
   return out;
 }

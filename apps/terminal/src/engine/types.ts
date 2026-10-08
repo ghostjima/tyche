@@ -3,10 +3,10 @@
 // TypeScript twin (used when WebAssembly cannot load, and selectable in the
 // diagnostics). Inputs and outputs are plain objects in the twin's shapes;
 // errors are codes, returned as values.
-import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Plan, PortfolioYear, Result } from "@tyche/yield-twin";
+import type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Order, Plan, PortfolioYear, Result, Ticket } from "@tyche/yield-twin";
 
-export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Plan, PortfolioYear, Result };
-export type { Breakdown, FlowTrace, GSpread, Schedule, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
+export type { Calculation, Curve, Derived, ErrorCode, Explanation, GSpreads, HoldingYear, Issue, Market, Order, Plan, PortfolioYear, Result, Ticket };
+export type { Breakdown, FlowTrace, GSpread, LimitKind, Schedule, Side, TaxRegime, TaxYear, YieldTrace } from "@tyche/yield-twin";
 
 export type EngineKind = "wasm" | "twin";
 
@@ -22,6 +22,10 @@ export type Engine = {
   /** The G-spreads of the yields to maturity and to the offer to the
    * zero-coupon curve, at their Macaulay durations. */
   g_spread(issue: Issue, market: Market, curve: Curve): Result<GSpreads>;
+  /** An order ticket's figures: the yield at a limit price, or the price
+   * at a limit yield on the price step, with the accrued interest, the
+   * amount, the broker's fee and the total. */
+  order_ticket(issue: Issue, market: Market, order: Order): Result<Ticket>;
   /** Dirty price of a bond from its flows at an annual effective yield
    * (a fraction). */
   price_from_yield(amounts: number[], days: number[], y: number): number;

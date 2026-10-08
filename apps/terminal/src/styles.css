@@ -129,6 +129,19 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .redeem { display: grid; gap: var(--stoa-space-2); justify-items: start; }
 .redeem p { margin: 0; }
 
+/* The order ticket: the side, the limit and the lots, then its figures,
+   the depth check, the gate and the confirmation. */
+.ticket__inputs { display: grid; gap: var(--stoa-space-4); justify-items: start; min-inline-size: 0; }
+.ticket__inputs > * { max-inline-size: 100%; }
+.ticket p { margin: 0; }
+/* A number field's empty error region is taken out of the flow; held in
+   its own field, it cannot reach past the page's edge on a phone. */
+.ticket .stoa-number { position: relative; }
+.ticket__error { font-weight: var(--stoa-font-weight-semibold); }
+.ticket__verdict { padding-inline-start: var(--stoa-space-3); border-inline-start: 3px solid var(--stoa-color-up); }
+.ticket__verdict--held { border-inline-start-color: var(--stoa-color-warning); font-weight: var(--stoa-font-weight-semibold); }
+.ticket__actions, .ticket__recorded { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; margin-block-start: var(--stoa-space-4); }
+
 /* The placements by book-building: a card per placement. */
 .placements__list { display: grid; gap: var(--stoa-space-5); margin: var(--stoa-space-4) 0 0; padding: 0; list-style: none; }
 .placement { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
