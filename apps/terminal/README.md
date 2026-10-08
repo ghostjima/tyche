@@ -119,6 +119,39 @@ Status: early. Performance record, with stamps:
   input recalculates at once. An error the engine returns (an amount of
   zero, one that does not buy a bond, one over the limit) is a sentence
   with a way back to valid inputs.
+- **The order ticket**: on each issue, under its card. Buy or sell (a
+  segmented control, one tab stop whose arrow keys choose); the limit
+  price in percent of face to the book's unit (0.0001 percent) and its
+  yield to the offer or to maturity, linked through the engine's
+  `order_ticket` (Stoa's PriceYieldField): type one and the engine works
+  out the other, a yield giving the price on the issue's step, down for a
+  buy and up for a sale; a typed price is kept as typed (the arrow keys
+  move it by the book's unit) and the engine says when it is off the
+  step. Until a price is typed, the limit is the best
+  opposite price in the synthetic book. The lots (Stoa's QuantityStepper,
+  the lot's size and the bonds in words under it). The engine's errors
+  are said in words under the field typed in: a price not above zero, a
+  yield that gives no price, a price off the step with the nearest prices
+  on it, a quantity that is not whole lots. Then the order's figures from
+  the engine: the clean price, the accrued interest and the price with it
+  per bond, the amount, the broker's fee of the session and the total to
+  pay or to receive; the yield at the limit price to the offer or
+  maturity (and to maturity when there is an offer), and after the fee,
+  for a sale the yield given up by selling. A depth check against the
+  issue's synthetic book at noon on the valuation date (tyche-market's
+  `depthJson`, in the worker): how much fills at once at the limit or
+  better, the best opposite price, the average price, the slippage from
+  the best price in basis points, the price levels used and what would
+  rest in the book, with the fills by level. Who may buy the issue, from
+  tyche-market's `accessJson` with its reasons and the law the synthetic
+  rule is modelled on, against the status the investor says the broker
+  has on record (not qualified, not qualified with the test passed, or
+  qualified): a purchase the status does not allow cannot go on, and
+  says why; a sale is never held. "Review the order" opens a
+  confirmation that says the terminal sends nothing to a broker or the
+  exchange and places no order; confirmed, the demo order is recorded in
+  this browser only (localStorage `tyche.demoOrders`, the last one per
+  issue) and can be deleted.
 - **Holdings and events**: a synthetic portfolio, kept in the URL
   (`?hold=TICKER*BONDS` once per issue, up to twenty issues) or added from
   the issue card with a number of bonds (and changed there), with each
@@ -225,7 +258,9 @@ What the tests cover, and nothing wider:
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
   holdings with every kind of event and the income by month, the
-  confirmation of a request to redeem at an offer, the ladder,
+  confirmation of a request to redeem at an offer, the order ticket with
+  a price off the step over an order larger than the book, its
+  confirmation and the demo order it records, the ladder,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison, an
   issue, the holdings and a ten-rung ladder at 375 px.
@@ -242,7 +277,11 @@ What the tests cover, and nothing wider:
   button; a holding's Remove moves the focus on to the next stop; the
   request to redeem at an offer opens a confirmation with the focus on
   its safe action, and recording or cancelling the request puts the
-  focus on the button that replaces the one pressed; "Build a ladder"
+  focus on the button that replaces the one pressed; the order ticket's
+  side by the arrow keys and its lots by the arrow keys, its
+  confirmation opening with the focus on the safe action, and recording
+  or deleting the demo order putting the focus on the button that
+  replaces the one pressed; "Build a ladder"
   puts the focus on the ladder's first field, and closing it returns the
   focus to that button; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source

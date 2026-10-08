@@ -11,7 +11,7 @@ import { BONDS } from "../data/universe.testing";
 import { CURVE, MARKET } from "../data/market";
 import { twinEngine } from "./twin";
 import { loadWasm } from "./wasm";
-import type { Plan, TaxRegime } from "./types";
+import type { Order, Plan, TaxRegime } from "./types";
 
 const require = createRequire(import.meta.url);
 const pkg = dirname(require.resolve("tyche-yield/package.json"));
@@ -88,6 +88,25 @@ describe("WebAssembly and twin through the app's adapters", () => {
     const curves = [CURVE, { termsYears: [], yieldsPct: [] }, { termsYears: [1, 2], yieldsPct: [10] }, { termsYears: [1, 2], yieldsPct: [10, Number.NaN] }];
     for (const b of BONDS) {
       for (const [n, curve] of curves.entries()) close(wasm.g_spread(b.issue, MARKET, curve), twinEngine.g_spread(b.issue, MARKET, curve), `${b.id} g_spread ${n}`);
+    }
+  });
+
+  it("work out the same order tickets, and refuse the same orders, for every issue", () => {
+    for (const b of BONDS) {
+      const base: Order = { side: "buy", limit: "price", limitValue: b.issue.pricePct, lots: 3, lotSize: b.lot, tickPct: b.tickPct, feePct: COMMISSION_PCT };
+      const orders: Order[] = [
+        base,
+        { ...base, side: "sell", feePct: 0.3 },
+        { ...base, limit: "yield", limitValue: b.targetYield * 100 },
+        { ...base, side: "sell", limit: "yield", limitValue: b.targetYield * 100 + 1 },
+        { ...base, limitValue: b.issue.pricePct + b.tickPct / 2 },
+        { ...base, limitValue: 0 },
+        { ...base, limit: "yield", limitValue: -100 },
+        { ...base, lots: 1.5 },
+        { ...base, tickPct: -1 },
+        { ...base, feePct: -0.1 },
+      ];
+      for (const [n, order] of orders.entries()) close(wasm.order_ticket(b.issue, MARKET, order), twinEngine.order_ticket(b.issue, MARKET, order), `${b.id} order ${n}`);
     }
   });
 

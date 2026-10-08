@@ -17,6 +17,10 @@ async function figures(page: Page): Promise<string[]> {
     page.getByRole("table", { name: "Payments per bond" }),
     page.getByTestId("result"),
   ];
+  // The order ticket's figures and its depth check, once the book has
+  // answered.
+  await expect(page.getByTestId("ticket-depth").getByRole("definition").first()).toBeVisible();
+  parts.push(page.getByTestId("ticket-figures"), page.getByTestId("ticket-depth"));
   const out: string[] = [];
   for (const part of parts) out.push(await part.innerText());
   // The charts' data tables: the price curve's values, and the map of

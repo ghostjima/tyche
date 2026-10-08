@@ -103,6 +103,40 @@ const READY_STATES: Record<string, Prepare> = {
     // than it is drawn.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
   },
+  // The order ticket: a limit off the price step, said under the price,
+  // over a large order that takes several levels of the book.
+  "order ticket with an error": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=${ISSUES.offer}`);
+    await ready(page);
+    const ticket = page.locator(".ticket");
+    const lots = ticket.getByTestId("ticket-lots").locator("input");
+    await lots.fill("100000");
+    await lots.press("Enter");
+    await expect(ticket.getByTestId("ticket-depth").locator("tbody tr")).toHaveCount(1);
+    const price = ticket.getByTestId("ticket-limit").locator("input").first();
+    await price.fill(lang === "ru" ? "102,125" : "102.125");
+    await price.press("Enter");
+    await expect(price).toHaveAttribute("aria-invalid", "true");
+  },
+  // Its confirmation, and the demo order it records.
+  "order ticket confirmation": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=${ISSUES.offer}`);
+    await ready(page);
+    await expect(page.getByTestId("ticket-depth").locator("tbody tr")).toHaveCount(1);
+    await page.getByTestId("ticket-gate").locator("label").filter({ has: page.locator('input[value="qualified"]') }).click();
+    await page.locator(".ticket__actions").getByRole("button").click();
+    await expect(page.getByRole("alertdialog")).toBeVisible();
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
+  },
+  "order ticket recorded": async (page, lang, theme) => {
+    await open(page, lang, theme, `&issue=${ISSUES.offer}`);
+    await ready(page);
+    await expect(page.getByTestId("ticket-depth").locator("tbody tr")).toHaveCount(1);
+    await page.getByTestId("ticket-gate").locator("label").filter({ has: page.locator('input[value="qualified"]') }).click();
+    await page.locator(".ticket__actions").getByRole("button").click();
+    await page.getByRole("alertdialog").getByRole("button").last().click();
+    await expect(page.locator(".ticket__recorded")).toBeVisible();
+  },
   // The ladder builder with three rungs, its figures and assumptions.
   ladder: async (page, lang, theme) => {
     await open(page, lang, theme, "&lh=3&la=1000000");
