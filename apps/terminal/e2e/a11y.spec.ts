@@ -93,6 +93,17 @@ const READY_STATES: Record<string, Prepare> = {
     await ready(page);
     await expect(page.getByTestId("income").locator("tbody tr")).toHaveCount(12);
   },
+  // The same events on a calendar, a put offer's deadline chosen, with
+  // its request.
+  "holdings calendar": async (page, lang, theme) => {
+    await open(page, lang, theme, `&${PORTFOLIO}&ev=calendar`);
+    await ready(page);
+    const inbox = page.getByTestId("inbox");
+    await inbox.locator(".stoa-calendar__nav").last().click();
+    await inbox.locator(".stoa-calendar__nav").last().click();
+    await inbox.locator('[data-date="2026-12-08"]').click();
+    await expect(inbox.locator(".stoa-calendar__chosen .redeem")).toBeVisible();
+  },
   // The confirmation of a request to redeem at a put offer.
   "redemption request": async (page, lang, theme) => {
     await open(page, lang, theme, `&hold=${PORTFOLIO_PUT}*10`);
@@ -145,6 +156,7 @@ const PHONE_STATES: Record<string, string> = {
   comparison: `&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`,
   issue: `&issue=${ISSUES.floater}`,
   holdings: `&${PORTFOLIO}`,
+  "holdings calendar": `&${PORTFOLIO}&ev=calendar`,
   ladder: "&lh=3&la=1000000",
 };
 

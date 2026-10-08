@@ -162,8 +162,9 @@ monthly coupon income, and a ladder builder: see
   issues compared side by side, with the G-spread of each to the Bank
   of Russia's zero-coupon curve of federal loan bonds; a holding calculator with reinvestment, the
   account type, tax per calendar year and a key-rate change; a
-  synthetic portfolio kept in the link, with its events by date
-  (payments, offers with the window and the deadline, and a one-step
+  synthetic portfolio kept in the link, with its events by date, as a
+  list or on a calendar (payments, offers with the window and the
+  deadline, and a one-step
   request to redeem at a put offer, recorded in the browser only and
   never an order; rating changes and defaults from the synthetic
   universe's scenario) and its coupon income by month; a ladder builder

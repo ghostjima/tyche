@@ -141,7 +141,17 @@ Status: early. Performance record, with stamps:
   emphasised. "Request redemption at the offer" asks for a confirmation
   that says the request stays in this browser and is not an order;
   recorded, it can be cancelled until the window closes (localStorage
-  `tyche.redemptionRequests`; nothing is sent anywhere). Then the coupon
+  `tyche.redemptionRequests`; nothing is sent anywhere). The same events
+  can be shown on a calendar instead (a switch over them, kept in the URL
+  as `?ev=calendar`): Stoa's EventCalendar, a month grid opening on the
+  valuation date's month with the next day that has an event chosen, and
+  a list of the month's days on a phone. Each kind is a symbol and a word
+  (coupon, amortisation, offer, maturity, rating change, default); a put
+  offer is on the first day of its window, on its deadline, where the
+  countdown and the request to redeem are, and on its date; a call offer
+  on the day the issuer gives notice by and on its date; the scenario's
+  rating changes, missed payments and defaults, the future ones
+  included, each say they are a synthetic scenario. Then the coupon
   income by month over the next twelve months, before tax, for the
   "Monthly income" goal: the coupons over the year, a month on average and
   the months without a coupon (Stoa's StatBar), and a table of the
@@ -235,11 +245,13 @@ What the tests cover, and nothing wider:
   every risk, three issues compared
   with the map's table open, a floater, the
   empty list, a calculation error, the diagnostics sheet with timings,
-  holdings with every kind of event and the income by month, the
+  holdings with every kind of event and the income by month, the same
+  events on a calendar with a put offer's deadline chosen, the
   confirmation of a request to redeem at an offer, the ladder,
   the loading state, the WebAssembly fallback and the market's failure,
   at 1440 px; and the list, "Money by a date", the comparison, an
-  issue, the holdings and a ten-rung ladder at 375 px.
+  issue, the holdings, the holdings' calendar and a ten-rung ladder at
+  375 px.
 - Keyboard paths: `/` to the search (pressed while the engines load, the
   focus goes to the search once it is drawn), Tab to the issue list (one tab
   stop), the arrow keys through it and Enter to open an issue, the map
@@ -254,7 +266,10 @@ What the tests cover, and nothing wider:
   button; a holding's Remove moves the focus on to the next stop; the
   request to redeem at an offer opens a confirmation with the focus on
   its safe action, and recording or cancelling the request puts the
-  focus on the button that replaces the one pressed; "Build a ladder"
+  focus on the button that replaces the one pressed; the events'
+  calendar is one tab stop on its chosen day, whose arrow keys move a
+  day or a week, Home and End to the week's ends, Page Up and Page Down a
+  month (with Shift a year), and Enter chooses a day; "Build a ladder"
   puts the focus on the ladder's first field, and closing it returns the
   focus to that button; after "Try WebAssembly again" succeeds, the focus moves on to
   the next stop where the notice was; a source
