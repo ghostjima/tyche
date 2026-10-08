@@ -8,19 +8,22 @@ import { derive_bond } from "@tyche/yield-twin";
 import { strings } from "../i18n";
 import { issuerName } from "../lib/names";
 import { MACRO, MARKET, SEED, SNAPSHOT } from "./market";
-import { parseAccess, parseUniverse, type Bond } from "./issues";
+import { TEST_LEVEL, parseAccess, parseUniverse, ratingIndex, type Bond } from "./issues";
 import { BONDS, accessJson, dayJson, fallbackInputs, generate } from "./universe.testing";
 
 /** The digest tests/synth.rs pins for the native build. */
 const DIGEST = "f5adfa55cefab800";
 
 describe("the synthetic universe", () => {
-  it("says who may buy every issue: qualified-only issues for qualified investors, synthetic government bonds for everyone", () => {
+  it("says who may buy every issue: qualified-only issues for qualified investors, synthetic government bonds for everyone, a test below the Bank of Russia's level", () => {
     const access = parseAccess(accessJson());
     expect(access.size).toBe(BONDS.length);
+    // The card names the level tyche-market gates at.
+    expect((JSON.parse(accessJson()) as { testBelow: string }).testBelow).toBe(TEST_LEVEL);
     for (const b of BONDS) {
       if (b.qualifiedOnly) expect(access.get(b.id), b.id).toBe("qualified");
       else if (b.issuer.kind === "government") expect(access.get(b.id), b.id).toBe("open");
+      else expect(access.get(b.id), `${b.id} ${b.rating}`).toBe(ratingIndex(b.rating) > ratingIndex(TEST_LEVEL) ? "test" : "open");
     }
     expect(new Set(access.values())).toEqual(new Set(["open", "test", "qualified"]));
     expect(() => parseAccess('{"issues":[{"ticker":"A-01","access":"maybe"}]}')).toThrow();

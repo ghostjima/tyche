@@ -16,7 +16,7 @@ test("Instead of a deposit sets visible filters, says what it sets, and can be c
   await deposit.click();
   await expect(deposit).toHaveAttribute("aria-pressed", "true");
   // The goal's chips are the bar's own, pressed where anyone can see them.
-  for (const chip of ["AAA to AA-", "Up to a year", "Fixed", "On the key rate", "Every investor", "Liquid"]) {
+  for (const chip of ["AAA to AA-", "Up to a year", "Fixed", "On the key rate", "Without qualified status", "Liquid"]) {
     await expect(page.getByRole("search").getByRole("button", { name: new RegExp(`^${chip} \\d+$`) }).first()).toHaveAttribute("aria-pressed", "true");
   }
   const note = page.locator(".goals__note");

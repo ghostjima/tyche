@@ -4,7 +4,7 @@
 // yield.
 import type { ReactNode } from "react";
 import { Button, EventStrip, LineChart, Ltr, Metric, Panel, StatBar, Table, Tag, useBreakpoint, type StripEvent, type TableColumn, type TagTone } from "@ghostjima/stoa-react";
-import { ratingIndex, type Bond } from "../data/issues";
+import { ratingIndex, type Access, type Bond } from "../data/issues";
 import { dayToMs } from "../data/market";
 import type { Derived, Engine, Explanation, Plan, Result } from "../engine/types";
 import type { Strings } from "../i18n";
@@ -43,6 +43,9 @@ export type IssueCardProps = {
   held: number | null;
   holdingsFull: boolean;
   onHold: (id: string, bonds: number) => void;
+  /** Who may buy the issue, from the market's gate; undefined until the
+   * market is ready. */
+  access?: Access;
 };
 
 type Row = { day: number; coupon: number; principal: number; last: boolean };
@@ -70,7 +73,7 @@ function couponTag(bond: Bond, t: Strings, f: Formats): string {
   }
 }
 
-export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, feePct, onFee, items, compared, onCompare, onOpen, held, holdingsFull, onHold }: IssueCardProps) {
+export function IssueCard({ t, f, bond, derived: d, engine, name, source, explanation, plan, feePct, onFee, items, compared, onCompare, onOpen, held, holdingsFull, onHold, access }: IssueCardProps) {
   const inComparison = compared.includes(bond.id);
   const { issue } = bond;
   const floater = issue.couponType === "floater";
@@ -161,7 +164,7 @@ export function IssueCard({ t, f, bond, derived: d, engine, name, source, explan
         )}
       </div>
       <HoldControl t={t} f={f} bond={bond} held={held} full={holdingsFull} onHold={onHold} />
-      <Risks t={t} f={f} bond={bond} derived={d} />
+      <Risks t={t} f={f} bond={bond} derived={d} access={access} />
       <HonestYield t={t} f={f} explanation={explanation} plan={plan} realYield={bond.coupon.kind === "linker"} feePct={feePct} onFee={onFee} />
       <Analogues t={t} f={f} engine={engine} item={{ bond, derived: d }} items={items} compared={compared} onOpen={onOpen} />
 

@@ -52,7 +52,10 @@ Status: early. Performance record, with stamps:
   the schedule of the face value repaid, subordination, a floater's
   latest coupon resets rebuilt from the Bank of Russia's key rate or
   RUONIA, the synthetic rating with its outlook (from a fictional
-  agency), who can buy it and what "qualified investors only" means,
+  agency), who can buy it (anyone, after a test, or qualified investors
+  only, from tyche-market's gate) with the article of the law behind it,
+  the Bank of Russia's rating level a test depends on and the yearly
+  allowance without a test,
   and liquidity from the synthetic order book against the named
   thresholds, as a warning when it is thin. Then the broker's fee, a
   field in percent of each trade (0.05 by default, from 0 to 1 in steps

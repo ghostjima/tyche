@@ -102,7 +102,7 @@ const en = {
   goalIncome: "Monthly income",
   goalDate: "Money by a date",
   goalDepositNote: (spread: string, depth: string) =>
-    `Sets the filters: synthetic government bonds and issues rated AA- or higher, a duration up to a year, a fixed coupon or one on the key rate, open to every investor, and liquid (a quoted spread up to ${spread}, a book at least ${depth} bonds deep on each side).`,
+    `Sets the filters: synthetic government bonds and issues rated AA- or higher, a duration up to a year, a fixed coupon or one on the key rate, not restricted to qualified investors, and liquid (a quoted spread up to ${spread}, a book at least ${depth} bonds deep on each side).`,
   goalIncomeNote:
     "Sets the filters: a coupon every month, no offer and no amortisation, so each issue's maturity date is known in advance and the issues can be lined up into a ladder.",
   goalDateNote: "Keeps the issues that mature by the end of the chosen month, or that the holder can sell back to the issuer at a put offer by then.",
@@ -143,7 +143,7 @@ const en = {
   chipCall: "Issuer's call",
   chipNoAmortisation: "None",
   chipAmortising: "Amortising",
-  chipOpen: "Every investor",
+  chipOpen: "Without qualified status",
   chipQualified: "Qualified only",
   chipLiquid: "Liquid",
   chipIlliquid: "Thin market",
@@ -229,9 +229,18 @@ const en = {
   outlook: { stable: "stable", positive: "positive", negative: "negative" } satisfies Record<Outlook, string>,
   riskAccess: "Who can buy",
   riskQualifiedOnly: (law: string) => `A broker buys the issue only for an investor with the status of a qualified investor (${law}).`,
+  tagTest: "Test required",
+  riskTest: (level: string, limit: string, law: string) =>
+    `Rated below ${level}, the Bank of Russia's level, a non-qualified investor buys it after passing the broker's test for this kind of bond, or without the test while such purchases stay within ${limit} a year, after the broker's notice of the risks and the investor's statement accepting them (${law}).`,
+  riskOpenGov: (law: string) => `Every investor: a government bond needs neither qualified status nor a test (${law}).`,
+  riskOpenRated: (level: string, law: string) => `Every investor: rated ${level} or higher, the Bank of Russia's level, it needs neither qualified status nor a test (${law}).`,
+  riskIndexNote:
+    "The coupon follows an index. The synthetic universe gates it as a fixed coupon: the law lists interest rates and inflation among the circumstances that make a bond's payments structured, and its text does not settle whether an index plus a fixed spread is one; read the other way, this issue would need a test or be closed to non-qualified investors.",
+  riskLevelNote: (level: string) =>
+    `The Bank of Russia's level is ${level} on the national scale from at least two rating agencies; a synthetic rating is read as such a rating, an assumption of the synthetic universe.`,
   outlookNegativeTag: "Negative outlook",
-  riskOpenToAll: "Every investor: no qualified status is needed.",
-  lawSecurities: (number: string, article: string) => `Federal Law No. ${number}-FZ on the securities market, article ${article}`,
+  lawSecurities: (number: string, article: string, paragraph?: string, sub?: string) =>
+    `Federal Law No. ${number}-FZ on the securities market, article ${article}${paragraph === undefined ? "" : `, paragraph ${paragraph}`}${sub === undefined ? "" : `, subparagraph ${sub}`}`,
   riskLiquidity: "Liquidity",
   liquidityLowTitle: "Thin market",
   liquidityLow: (spread: string, depth: string, maxSpread: string, minDepth: string) =>
@@ -508,7 +517,7 @@ const en = {
   ladderPick: "Issue",
   ladderNone: "No issue",
   ladderOption: (id: string, yieldText: string, rating: string) => `${id} · ${yieldText} · ${rating}`,
-  ladderNoCandidate: "The filters leave no issue open to every investor with an exit in this year.",
+  ladderNoCandidate: "The filters leave no issue that every investor can buy, without qualified status or a test, with an exit in this year.",
   ladderBelowLot: "This rung's share of the amount does not buy one lot.",
   ladderExitOffer: (date: string) => `put offer, ${date}`,
   ladderExitMaturity: (date: string) => `maturity, ${date}`,
@@ -531,7 +540,7 @@ const en = {
   ladderA3: "Nothing is reinvested: coupons and principal paid before an exit are counted as received.",
   ladderA4: (threshold: string, rate: string, fee: string) =>
     `Tax is worked out for each rung on its own, in an ordinary brokerage account with no other investment income: the ${threshold} threshold of the ${rate} rate is not shared between rungs, and a loss in one rung is not set against another. The broker's fee, ${fee} of each purchase, is the one set in the issue card.`,
-  ladderA5: "Only issues open to every investor are proposed; inflation-linked issues are left out, as their yield is real. A floater's coupons are at today's key rate or RUONIA.",
+  ladderA5: "Only issues every investor can buy, without qualified status or a test, are proposed; inflation-linked issues are left out, as their yield is real. A floater's coupons are at today's key rate or RUONIA.",
   ladderA6: "The ladder's yield is the annual rate at which what the rungs bring at their exits, after tax and the fee, is worth what they cost: the engine's yield, solved from those amounts.",
   ladderA7: "The issues and their prices are synthetic. Not investment advice.",
   compare: "Comparison",
@@ -847,7 +856,7 @@ const ru: Strings = {
   goalIncome: "Ежемесячный доход",
   goalDate: "Деньги к дате",
   goalDepositNote: (spread, depth) =>
-    `Ставит фильтры: синтетические государственные облигации и выпуски с рейтингом от AA- и выше, дюрация до года, фиксированный купон или купон по ключевой ставке, доступны всем инвесторам и ликвидны (спред котировок до ${spread}, в стакане не меньше ${depth} облигаций с каждой стороны).`,
+    `Ставит фильтры: синтетические государственные облигации и выпуски с рейтингом от AA- и выше, дюрация до года, фиксированный купон или купон по ключевой ставке, не только для квалифицированных инвесторов и ликвидны (спред котировок до ${spread}, в стакане не меньше ${depth} облигаций с каждой стороны).`,
   goalIncomeNote:
     "Ставит фильтры: купон каждый месяц, без оферты и без амортизации, поэтому дата погашения каждого выпуска известна заранее и из выпусков можно собрать лесенку.",
   goalDateNote: "Оставляет выпуски, которые погашаются к концу выбранного месяца, или те, что до тех пор можно предъявить эмитенту к выкупу по пут-оферте.",
@@ -888,7 +897,7 @@ const ru: Strings = {
   chipCall: "Колл-оферта",
   chipNoAmortisation: "Без амортизации",
   chipAmortising: "С амортизацией",
-  chipOpen: "Все инвесторы",
+  chipOpen: "Без статуса квалифицированного",
   chipQualified: "Только квалифицированные",
   chipLiquid: "Ликвидные",
   chipIlliquid: "Низкая ликвидность",
@@ -972,9 +981,18 @@ const ru: Strings = {
   outlook: { stable: "стабильный", positive: "позитивный", negative: "негативный" },
   riskAccess: "Кто может купить",
   riskQualifiedOnly: (law) => `Брокер купит выпуск только инвестору со статусом квалифицированного инвестора (${law}).`,
+  tagTest: "Нужен тест",
+  riskTest: (level, limit, law) =>
+    `Рейтинг ниже ${level}, уровня Банка России: неквалифицированный инвестор купит выпуск, пройдя у брокера тест по этому виду облигаций, или без теста, пока такие покупки за год не превышают ${limit}, получив от брокера уведомление о рисках и подав заявление об их принятии (${law}).`,
+  riskOpenGov: (law) => `Все инвесторы: для государственной облигации не нужны ни статус квалифицированного инвестора, ни тест (${law}).`,
+  riskOpenRated: (level, law) => `Все инвесторы: с рейтингом ${level} и выше, на уровне Банка России, не нужны ни статус квалифицированного инвестора, ни тест (${law}).`,
+  riskIndexNote:
+    "Купон следует за индексом. Синтетическая вселенная считает его фиксированным: закон называет процентные ставки и инфляцию среди обстоятельств, от которых зависят выплаты структурных облигаций, и из его текста не следует, относится ли к ним индекс плюс фиксированная надбавка; при обратном прочтении этот выпуск требовал бы теста или был бы закрыт для неквалифицированных инвесторов.",
+  riskLevelNote: (level) =>
+    `Уровень Банка России — ${level} по национальной шкале как минимум от двух рейтинговых агентств; синтетический рейтинг читается как такой рейтинг — это допущение синтетической вселенной.`,
   outlookNegativeTag: "Негативный прогноз",
-  riskOpenToAll: "Все инвесторы: статус квалифицированного инвестора не нужен.",
-  lawSecurities: (number, article) => `Федеральный закон № ${number}-ФЗ «О рынке ценных бумаг», статья ${article}`,
+  lawSecurities: (number, article, paragraph, sub) =>
+    `Федеральный закон № ${number}-ФЗ «О рынке ценных бумаг», статья ${article}${paragraph === undefined ? "" : `, пункт ${paragraph}`}${sub === undefined ? "" : `, подпункт ${sub}`}`,
   riskLiquidity: "Ликвидность",
   liquidityLowTitle: "Низкая ликвидность",
   liquidityLow: (spread, depth, maxSpread, minDepth) =>
@@ -1251,7 +1269,7 @@ const ru: Strings = {
   ladderPick: "Выпуск",
   ladderNone: "Без выпуска",
   ladderOption: (id, yieldText, rating) => `${id} · ${yieldText} · ${rating}`,
-  ladderNoCandidate: "Фильтры не оставили выпусков, доступных всем инвесторам, с выходом в этом году.",
+  ladderNoCandidate: "Фильтры не оставили выпусков, которые любой инвестор купит без статуса квалифицированного и без теста, с выходом в этом году.",
   ladderBelowLot: "Доли суммы на эту ступень не хватает на один лот.",
   ladderExitOffer: (date) => `оферта пут, ${date}`,
   ladderExitMaturity: (date) => `погашение, ${date}`,
@@ -1274,7 +1292,7 @@ const ru: Strings = {
   ladderA3: "Ничего не реинвестируется: купоны и номинал, выплаченные до выхода, считаются полученными.",
   ladderA4: (threshold, rate, fee) =>
     `Налог считается для каждой ступени отдельно, на обычном брокерском счёте без другого инвестиционного дохода: порог ${threshold} для ставки ${rate} не делится между ступенями, а убыток одной ступени не уменьшает налог другой. Комиссия брокера, ${fee} от каждой покупки, — та, что задана в карточке выпуска.`,
-  ladderA5: "Предлагаются только выпуски, доступные всем инвесторам; линкеры не предлагаются, потому что их доходность реальная. Купоны флоатера — по сегодняшней ключевой ставке или RUONIA.",
+  ladderA5: "Предлагаются только выпуски, которые любой инвестор купит без статуса квалифицированного и без теста; линкеры не предлагаются, потому что их доходность реальная. Купоны флоатера — по сегодняшней ключевой ставке или RUONIA.",
   ladderA6: "Доходность лесенки — годовая ставка, при которой то, что ступени вернут при выходе после налога и комиссии, стоит столько же, сколько они стоили: доходность движка, решённая по этим суммам.",
   ladderA7: "Выпуски и их цены синтетические. Не является инвестиционной рекомендацией.",
   compare: "Сравнение",

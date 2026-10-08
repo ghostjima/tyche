@@ -199,8 +199,11 @@ the synthetic order book: see [What is built](#what-is-built).
   seeded and the same on every platform, calibrated on aggregate figures
   only; priced by the bond engine from the zero-coupon yield curve. It
   also says who may buy each issue (anyone, after a test, or qualified
-  investors only, by a stated rule of the synthetic universe modelled on
-  the law on the securities market), lists a holding's events (payments,
+  investors only) by the law on the securities market and the banking
+  law as amended up to 4 August 2026, at the rating level the Bank of
+  Russia's board set from 1 July 2026, with the synthetic ratings read
+  as national-scale ratings (an assumption stated apart from the rule),
+  lists a holding's events (payments,
   offers with the window to act in, and a scenario of rating changes and
   defaults), and checks an order's depth against an issue's book (filled
   at or better than the limit, the average price, the slippage, the
