@@ -125,6 +125,14 @@ test("on a phone the comparison and the map fit the screen without sideways scro
   await ready(page);
   await expect(page.getByTestId("analogues").getByRole("figure")).toBeVisible();
   await expectNoHorizontalScroll(page, "issue with the comparison at 375");
+  // The map's table, open, wraps its headers rather than scroll sideways
+  // in its own box.
+  const map = page.getByTestId("analogues").getByRole("figure");
+  await map.getByText("Таблица данных").click();
+  const region = map.locator(".stoa-chart__data .stoa-table-region");
+  await expect(region.locator("tbody tr").first()).toBeVisible();
+  expect(await region.evaluate((r) => r.scrollWidth - r.clientWidth)).toBe(0);
+  await expectNoHorizontalScroll(page, "issue with the map's table at 375");
   await page.goto(`/?lang=en&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`);
   await ready(page);
   await expect(compare(page)).toBeVisible();
