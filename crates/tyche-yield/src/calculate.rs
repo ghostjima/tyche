@@ -321,9 +321,13 @@ impl Hold<'_> {
     ///   [`LDV_YEARS`] after the purchase, counted by calendar anniversary
     ///   (the purchase settles on the valuation date, a sale on the
     ///   horizon), is relieved: the year's positive relieved result is
-    ///   exempt up to [`LDV_CAP_PER_YEAR`] times the full years held,
-    ///   averaged over the year's relieved disposals weighted by what each
-    ///   returned. Coupons stay taxed.
+    ///   exempt up to [`LDV_CAP_PER_YEAR`] times Kцб, the full years held
+    ///   averaged over the year's relieved disposals at a gain, weighted by
+    ///   what each returned (Vi of article 219.1, paragraph 2, subparagraph
+    ///   2, counts a security only when its proceeds exceed its cost; here a
+    ///   disposal gains when its result, with the commissions, is above
+    ///   zero). A relieved loss reduces the relieved result but not Kцб.
+    ///   Coupons stay taxed.
     fn tax_years(
         &self,
         flows: &Schedule,
@@ -448,10 +452,13 @@ pub struct TaxYear {
     /// holding relief: a loss (negative) is netted against the year's
     /// coupons.
     pub result: f64,
-    /// The result of disposals under the long-term holding relief, what
-    /// they returned, and that weighted by the full years each was held.
+    /// The result of disposals under the long-term holding relief.
     pub relieved: f64,
+    /// Vi summed: what the relieved disposals at a gain returned (Tax
+    /// Code article 219.1, paragraph 2, subparagraph 2).
     pub relieved_proceeds: f64,
+    /// `relieved_proceeds` weighted by the full years each disposal was
+    /// held.
     pub relieved_years: f64,
     /// The part of `relieved` the relief exempts.
     pub exempt: f64,
@@ -469,13 +476,16 @@ pub struct TaxYear {
 
 impl TaxYear {
     /// Books a disposal's result; `held` is the full years held when the
-    /// disposal is under the long-term holding relief.
+    /// disposal is under the long-term holding relief. Only a relieved
+    /// disposal at a gain counts in Kцб.
     fn book(&mut self, result: f64, proceeds: f64, held: Option<f64>) {
         match held {
             Some(years) => {
                 self.relieved += result;
-                self.relieved_proceeds += proceeds;
-                self.relieved_years += years * proceeds;
+                if result > 0.0 {
+                    self.relieved_proceeds += proceeds;
+                    self.relieved_years += years * proceeds;
+                }
             }
             None => self.result += result,
         }

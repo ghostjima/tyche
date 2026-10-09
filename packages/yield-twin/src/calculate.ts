@@ -156,9 +156,11 @@ export function breakdownOf(
   sale bears its own commission; reinvestment income falls in the
   horizon's year. A redemption or sale more than three years after the
   purchase by calendar anniversary is relieved: the year's positive
-  relieved result is exempt up to 3 million times the full years held,
-  averaged over the relieved disposals weighted by what each returned;
-  coupons stay taxed. Tax Code of the Russian Federation, part two,
+  relieved result is exempt up to 3 million times Kцб, the full years
+  held averaged over the relieved disposals at a gain (result above zero,
+  with the commissions) weighted by what each returned, Vi of article
+  219.1, paragraph 2, subparagraph 2; a relieved loss reduces the relieved
+  result but not Kцб. Coupons stay taxed. Tax Code of the Russian Federation, part two,
   articles 214.1, 219.1 and 224, as in force from 2026-10-01.
 */
 function taxYears(h: Holding, flows: Schedule, horizonDay: number, reinvest: number, invested: number, sold: number): TaxYear[] {
@@ -201,8 +203,11 @@ function taxYears(h: Holding, flows: Schedule, horizonDay: number, reinvest: num
       t.result += result;
     } else {
       t.relieved += result;
-      t.relievedProceeds += proceeds;
-      t.relievedYears += years * proceeds;
+      // Only a relieved disposal at a gain counts in Kцб.
+      if (result > 0) {
+        t.relievedProceeds += proceeds;
+        t.relievedYears += years * proceeds;
+      }
     }
   };
   const firstDay = flows.days[0];

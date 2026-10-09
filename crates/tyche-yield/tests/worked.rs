@@ -1020,3 +1020,114 @@ fn a_portfolio_nets_one_holdings_loss_against_anothers_coupons() {
     assert_close!(y.base, 6_000.0);
     assert_close!(y.tax, 780.0);
 }
+
+// One issue with a gaining and a losing relieved disposal in one year,
+// where the relief's cap binds. A zero-coupon bond valued on 2026-07-01,
+// half its nominal repaid on 2030-03-01 (day 1,339, a coupon day of the
+// 1,279-day period counted back from maturity) and the rest on 2040-09-01
+// (day 5,176). 100,000 bonds at 600, no fee, sold on 2030-09-01 (day
+// 1,523), an ordinary account, no other income.
+//
+// - The cost, 60,000,000, is spread by nominal: 300 a bond against each
+//   half.
+// - The redemption on day 1,339, held three full years (the third
+//   anniversary was 2029-07-01): 500 - 300 = 200 a bond, a gain of
+//   20,000,000 on proceeds of 50,000,000.
+// - The sale on day 1,523, held four full years: the remaining 500 on day
+//   5,176 discounted at the purchase yield y over 3,653 days. y = 0.0653836
+//   (500 / (1 + y)^(1339/365) + 500 / (1 + y)^(5176/365) = 600), so the
+//   sale brings 500 / (1 + y)^(3653/365) = 265.2675 a bond, 26,526,748 in
+//   all, and loses 3,473,252.
+//
+// Both are relieved, so the year's relieved result is 16,526,748. Tax
+// Code article 219.1, paragraph 2, subparagraph 2: Vi counts only the
+// disposals that gain, so Kцб = 3 x 50,000,000 / 50,000,000 = 3 and the
+// cap is 9,000,000. The base is 7,526,748: 13 percent of 2,400,000 =
+// 312,000 and 15 of the remaining 5,126,748 = 769,012, 1,081,012 in all.
+// Counting the losing sale's proceeds as well would give Kцб = (3 x
+// 50,000,000 + 4 x 26,526,748) / 76,526,748 = 3.3466 and a cap of
+// 10,039,901.
+fn gain_and_loss_relieved() -> (Issue, Plan, Market) {
+    let issue = Issue {
+        nominal: 1000.0,
+        price_pct: 60.0,
+        accrued: None,
+        coupon_type: CouponType::Fixed,
+        coupon_rate_pct: 0.0,
+        spread_pct: 0.0,
+        period_days: 1279.0,
+        maturity: "2040-09-01".into(),
+        offers: vec![],
+        amortization: vec![Amortization {
+            date: "2030-03-01".into(),
+            fraction_pct: 50.0,
+        }],
+    };
+    let plan = Plan {
+        // Half a bond over, so exactly 100,000 are bought.
+        amount: 100_000.5 * 600.0,
+        horizon_day: 1523.0,
+        reinvest: false,
+        tax_regime: TaxRegime::Standard,
+        other_income: 0.0,
+        rate_shift_pct: 0.0,
+    };
+    (issue, plan, market("2026-07-01"))
+}
+
+#[test]
+fn the_relief_cap_counts_only_the_disposals_that_gain() {
+    let (issue, plan, m) = gain_and_loss_relieved();
+    let years = explain(&issue, &m, &plan, 0.0, &curve()).unwrap().plan_tax;
+    let t = years
+        .iter()
+        .find(|t| t.year == 2030)
+        .expect("a 2030 tax year");
+    assert_close!(t.redemptions, 50_000_000.0);
+    assert!((t.sale - 26_526_748.085_864).abs() < 1e-3, "{}", t.sale);
+    assert!(
+        (t.relieved - 16_526_748.085_864).abs() < 1e-3,
+        "{}",
+        t.relieved
+    );
+    assert_close!(t.result, 0.0);
+    // Vi and the years weighted by it: the redemption only.
+    assert_close!(t.relieved_proceeds, 50_000_000.0);
+    assert_close!(t.relieved_years, 150_000_000.0);
+    assert_close!(t.exempt, 9_000_000.0);
+    assert_close!(t.base, t.relieved - 9_000_000.0);
+    assert_close!(t.tax, 312_000.0 + 0.15 * (t.base - 2_400_000.0));
+    let b = calculate(&issue, &m, &plan, 0.0).unwrap().plan;
+    assert_close!(b.tax, -t.tax);
+    assert!((b.tax + 1_081_012.212_880).abs() < 1e-3, "{}", b.tax);
+}
+
+#[test]
+fn a_holding_whose_relieved_result_is_a_loss_still_counts_its_gains_in_kcb() {
+    // 2031: one holding's relieved disposals lose 1,000,000 net, though one
+    // of them gained on proceeds of 10,000,000 held three years; another's
+    // gain 20,000,000 on proceeds of 10,000,000 held five years. Vi counts
+    // both gaining disposals: Kцб = (3 x 10,000,000 + 5 x 10,000,000) /
+    // 20,000,000 = 4, a cap of 12,000,000 against 19,000,000 relieved. The
+    // base is 7,000,000: 312,000 + 15 percent of 4,600,000 = 1,002,000.
+    let relieved = |relieved: f64, proceeds: f64, years: f64| HoldingYear {
+        year: 2031,
+        income: 0.0,
+        result: 0.0,
+        relieved,
+        relieved_proceeds: proceeds,
+        relieved_years: years * proceeds,
+    };
+    let holdings = [
+        relieved(-1_000_000.0, 10_000_000.0, 3.0),
+        relieved(20_000_000.0, 10_000_000.0, 5.0),
+    ];
+    let y = portfolio_tax(&holdings, 0.0).unwrap()[0];
+    assert_close!(y.relieved, 19_000_000.0);
+    assert_close!(y.relieved_proceeds, 20_000_000.0);
+    assert_close!(y.relieved_years, 80_000_000.0);
+    assert_close!(y.relief_cap, 12_000_000.0);
+    assert_close!(y.exempt, 12_000_000.0);
+    assert_close!(y.base, 7_000_000.0);
+    assert_close!(y.tax, 1_002_000.0);
+}

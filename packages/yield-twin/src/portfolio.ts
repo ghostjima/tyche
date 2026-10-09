@@ -25,8 +25,9 @@ const finite = (x: number) => typeof x === "number" && Number.isFinite(x);
 
 /*
   The portfolio's tax year by year, in ascending years, from every
-  holding's tax years in any order. A holding's relieved proceeds count in
-  the relief's coefficient in a year when its relieved result is positive.
+  holding's tax years in any order. Every holding's Vi, the proceeds of its
+  relieved disposals at a gain, counts in the relief's coefficient, also
+  when the holding's relieved result is a loss.
   Errors: invalid_other_income first, then invalid_tax_year (an amount not
   finite, relieved proceeds or years below zero, a year not a whole number).
 */
@@ -63,10 +64,8 @@ export function portfolio_tax(holdings: readonly HoldingYear[], otherIncome: num
     y.income += h.income;
     y.result += h.result;
     y.relieved += h.relieved;
-    if (h.relieved > 0) {
-      y.relievedProceeds += h.relievedProceeds;
-      y.relievedYears += h.relievedYears;
-    }
+    y.relievedProceeds += h.relievedProceeds;
+    y.relievedYears += h.relievedYears;
   }
   const years = [...byYear.values()].sort((a, b) => a.year - b.year);
   for (const y of years) {
