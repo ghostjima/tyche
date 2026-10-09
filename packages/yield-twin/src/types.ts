@@ -197,7 +197,9 @@ export type TaxYear = {
   /* Result of disposals outside the long-term holding relief; a loss is netted */
   result: number;
   relieved: number;
+  /* Vi: what the relieved disposals at a gain returned */
   relievedProceeds: number;
+  /* relievedProceeds weighted by the full years each disposal was held */
   relievedYears: number;
   exempt: number;
   base: number;
@@ -261,7 +263,7 @@ export type PortfolioYear = {
   result: number;
   /* Results under the relief, summed */
   relieved: number;
-  /* Vi: relieved proceeds of the holdings whose relieved result is positive */
+  /* Vi: the proceeds of the holdings' relieved disposals at a gain */
   relievedProceeds: number;
   /* The same proceeds weighted by the full years held */
   relievedYears: number;

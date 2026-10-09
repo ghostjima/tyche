@@ -125,9 +125,12 @@ How `calculate` models the holding:
   stays in the cost when no coupon is received; commissions are costs.
   A redemption or sale more than three years after the purchase,
   counted by calendar anniversary, has its positive result exempt (the
-  long-term holding relief), up to 3 million roubles for each full year
-  held; coupons stay taxed. Rates as above. Reinvestment income is taxed
-  in the horizon's year.
+  long-term holding relief), up to 3 million roubles times the full
+  years held averaged over the year's relieved disposals at a gain by
+  what each returned (a relieved loss reduces the result but not that
+  average: Tax Code article 219.1, paragraph 2, subparagraph 2); coupons
+  stay taxed. Rates as above. Reinvestment income is taxed in the
+  horizon's year.
 - IIS type B (only accounts opened by the end of 2023) is taken as no
   tax: income in it is free of tax when it is closed after at least
   three years.

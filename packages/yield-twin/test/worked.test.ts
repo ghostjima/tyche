@@ -606,3 +606,81 @@ describe("portfolio_tax", () => {
     close(y.tax, 780);
   });
 });
+
+// One issue with a gaining and a losing relieved disposal in one year,
+// where the relief's cap binds. A zero-coupon bond valued on 2026-07-01,
+// half its nominal repaid on 2030-03-01 (day 1,339, a coupon day of the
+// 1,279-day period counted back from maturity) and the rest on 2040-09-01
+// (day 5,176). 100,000 bonds at 600, no fee, sold on 2030-09-01 (day
+// 1,523), an ordinary account, no other income.
+//
+// - The cost, 60,000,000, is spread by nominal: 300 a bond against each half.
+// - The redemption, held three full years (the third anniversary was
+//   2029-07-01): 500 - 300 = 200 a bond, a gain of 20,000,000 on proceeds
+//   of 50,000,000.
+// - The sale, held four full years: the remaining 500 on day 5,176
+//   discounted at the purchase yield y over 3,653 days. y = 0.0653836 (500 /
+//   (1 + y)^(1339/365) + 500 / (1 + y)^(5176/365) = 600), so the sale brings
+//   500 / (1 + y)^(3653/365) = 265.2675 a bond, 26,526,748 in all, and loses
+//   3,473,252.
+//
+// The year's relieved result is 16,526,748. Tax Code article 219.1,
+// paragraph 2, subparagraph 2: Vi counts only the disposals that gain, so
+// Kцб = 3 and the cap is 9,000,000. The base is 7,526,748: 312,000 + 15
+// percent of 5,126,748 = 1,081,012. Counting the losing sale's proceeds as
+// well would give Kцб = 3.3466 and a cap of 10,039,901.
+describe("the long-term holding relief's coefficient", () => {
+  const issue: Issue = {
+    nominal: 1000,
+    pricePct: 60,
+    accrued: null,
+    couponType: "fixed",
+    couponRatePct: 0,
+    spreadPct: 0,
+    periodDays: 1279,
+    maturity: "2040-09-01",
+    offers: [],
+    amortization: [{ date: "2030-03-01", fractionPct: 50 }],
+  };
+  // Half a bond over, so exactly 100,000 are bought.
+  const plan: Plan = { amount: 100_000.5 * 600, horizonDay: 1523, reinvest: false, taxRegime: "standard", otherIncome: 0, rateShiftPct: 0 };
+
+  it("counts only the disposals that gain", () => {
+    const r = explain(issue, market("2026-07-01"), plan, 0, curve);
+    if (!("ok" in r)) throw new Error(r.error);
+    const t = r.ok.planTax.find((x) => x.year === 2030)!;
+    close(t.redemptions, 50_000_000);
+    expect(Math.abs(t.sale - 26_526_748.085_864)).toBeLessThan(1e-3);
+    expect(Math.abs(t.relieved - 16_526_748.085_864)).toBeLessThan(1e-3);
+    close(t.result, 0);
+    // Vi and the years weighted by it: the redemption only.
+    close(t.relievedProceeds, 50_000_000);
+    close(t.relievedYears, 150_000_000);
+    close(t.exempt, 9_000_000);
+    close(t.base, t.relieved - 9_000_000);
+    close(t.tax, 312_000 + 0.15 * (t.base - 2_400_000));
+    const b = ok(calculate(issue, market("2026-07-01"), plan, 0)).plan;
+    close(b.tax, -t.tax);
+    expect(Math.abs(b.tax + 1_081_012.212_88)).toBeLessThan(1e-3);
+  });
+
+  it("counts a gaining disposal of a holding whose relieved result is a loss", () => {
+    // 2031: one holding's relieved disposals lose 1,000,000 net, though one
+    // of them gained on proceeds of 10,000,000 held three years; another's
+    // gain 20,000,000 on proceeds of 10,000,000 held five years. Kцб = (3 x
+    // 10,000,000 + 5 x 10,000,000) / 20,000,000 = 4, a cap of 12,000,000
+    // against 19,000,000 relieved; base 7,000,000; tax 312,000 + 15 percent
+    // of 4,600,000 = 1,002,000.
+    const relieved = (r: number, proceeds: number, years: number) => ({ year: 2031, income: 0, result: 0, relieved: r, relievedProceeds: proceeds, relievedYears: years * proceeds });
+    const res = portfolio_tax([relieved(-1_000_000, 10_000_000, 3), relieved(20_000_000, 10_000_000, 5)], 0);
+    if (!("ok" in res)) throw new Error(res.error);
+    const y = res.ok[0]!;
+    close(y.relieved, 19_000_000);
+    close(y.relievedProceeds, 20_000_000);
+    close(y.relievedYears, 80_000_000);
+    close(y.reliefCap, 12_000_000);
+    close(y.exempt, 12_000_000);
+    close(y.base, 7_000_000);
+    close(y.tax, 1_002_000);
+  });
+});

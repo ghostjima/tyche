@@ -51,7 +51,7 @@ pub struct HoldingYear {
     pub result: f64,
     /// Result of the disposals under the long-term holding relief.
     pub relieved: f64,
-    /// What those disposals returned.
+    /// Vi: what the relieved disposals at a gain returned.
     pub relieved_proceeds: f64,
     /// `relieved_proceeds` weighted by the full years each disposal was
     /// held.
@@ -86,8 +86,8 @@ pub struct PortfolioYear {
     pub result: f64,
     /// The holdings' results under the relief, summed.
     pub relieved: f64,
-    /// Vi summed: the proceeds of the relieved disposals of the holdings
-    /// whose relieved result this year is positive.
+    /// Vi summed: the proceeds of the holdings' relieved disposals at a
+    /// gain, whatever each holding's relieved result.
     pub relieved_proceeds: f64,
     /// The same proceeds weighted by the full years held.
     pub relieved_years: f64,
@@ -115,11 +115,9 @@ pub struct PortfolioYear {
 /// combined into one base per calendar year, with the holder's other
 /// investment income in each year. No holdings give no years.
 ///
-/// The relief's coefficient counts a holding's relieved proceeds in a year
-/// when its relieved result that year is positive: exact when a holding's
-/// relieved disposals in a year all gain or all lose, as the redemptions of
-/// one issue held to them do (each returns its nominal against its share
-/// of one cost).
+/// The relief's coefficient counts every holding's Vi, the proceeds of its
+/// relieved disposals at a gain, so a holding whose relieved result is a
+/// loss still adds the disposals of it that gained.
 ///
 /// [`Error::InvalidOtherIncome`] for other income that is not a finite
 /// number of at least zero, then [`Error::InvalidTaxYear`] for a holding's
@@ -164,10 +162,8 @@ pub fn portfolio_tax(
         y.income += h.income;
         y.result += h.result;
         y.relieved += h.relieved;
-        if h.relieved > 0.0 {
-            y.relieved_proceeds += h.relieved_proceeds;
-            y.relieved_years += h.relieved_years;
-        }
+        y.relieved_proceeds += h.relieved_proceeds;
+        y.relieved_years += h.relieved_years;
     }
     years.sort_by_key(|y| y.year);
     for y in &mut years {
