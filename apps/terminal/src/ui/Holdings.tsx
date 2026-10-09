@@ -5,8 +5,8 @@
 // only; and the coupon income by month over the next twelve months.
 import { useEffect, useState, type ReactNode } from "react";
 import {
-  AlertDialog,
   Button,
+  CancellableRequest,
   ChoiceGroup,
   Countdown,
   EventCalendar,
@@ -18,7 +18,6 @@ import {
   Table,
   Timeline,
   VisuallyHidden,
-  focusWhenReady,
   keepFocusInPlace,
   type CalendarEvent,
   type TimelineEntry,
@@ -60,56 +59,39 @@ export type HoldingsProps = {
   source: ReactNode;
 };
 
-/** A put offer's request: record it after a confirmation, or cancel it
- * while the window is open. The focus moves to the control that replaces
- * the one pressed. */
+/** A put offer's request, on Stoa's CancellableRequest: recorded after a
+ * confirmation, in this browser only, and cancellable until the window's
+ * deadline; the focus moves to the button that replaces the one pressed.
+ * Whether the window is closed is counted from the snapshot's valuation
+ * date, which stays the same while the page is open, so it never changes
+ * under a focused button. */
 function RedeemAction({ t, f, id, event, bonds, requests, onRequests }: { t: Strings; f: Formats; id: string; event: HoldingEvent; bonds: number; requests: RedemptionRequest[]; onRequests: (all: RedemptionRequest[]) => void }) {
-  const [confirming, setConfirming] = useState(false);
   const deadline = event.windowTo ?? event.day;
   const left = workingDaysUntil(deadline);
   const request = findRequest(requests, id, event.date);
-  const requestId = `redeem-${id}`;
-  const cancelId = `redeem-cancel-${id}`;
-  if (left < 0) return <p className="muted">{t.requestClosed}</p>;
+  const closed = left < 0;
   return (
-    <div className="redeem">
-      <p className="redeem__deadline">
-        {t.evDeadline} {f.day(deadline)}{" "}
-        <Countdown left={left} unit="workingDays" warnAt={DEADLINE_WARN} />
-      </p>
-      {request ? (
-        <>
-          <p className="redeem__recorded" role="status">
-            {t.requestRecorded(f.integer(request.bonds), f.day(deadline))}
-          </p>
-          <Button
-            id={cancelId}
-            onPress={() => {
-              focusWhenReady(requestId);
-              onRequests(cancelRequest({ id, offerDate: event.date }));
-            }}
-          >
-            {t.requestCancel}
-          </Button>
-        </>
-      ) : (
-        <Button id={requestId} variant="primary" onPress={() => setConfirming(true)}>
-          {t.requestRedeem}
-        </Button>
-      )}
-      <AlertDialog
-        isOpen={confirming}
-        onOpenChange={setConfirming}
-        title={t.requestConfirmTitle(id)}
-        confirmLabel={t.requestConfirm}
-        onConfirm={() => {
-          focusWhenReady(cancelId);
-          onRequests(recordRequest({ id, offerDate: event.date, bonds }));
-        }}
-      >
-        <p>{t.requestConfirmBody(f.integer(bonds), f.day(event.day))}</p>
-      </AlertDialog>
-    </div>
+    <CancellableRequest
+      isRequested={request !== undefined}
+      isClosed={closed}
+      closedText={t.requestClosed}
+      deadline={
+        closed ? undefined : (
+          <>
+            {t.evDeadline} {f.day(deadline)} <Countdown left={left} unit="workingDays" warnAt={DEADLINE_WARN} />
+          </>
+        )
+      }
+      requestLabel={t.requestRedeem}
+      confirmTitle={t.requestConfirmTitle(id)}
+      confirmLabel={t.requestConfirm}
+      onRequest={() => onRequests(recordRequest({ id, offerDate: event.date, bonds }))}
+      recordedText={request ? t.requestRecorded(f.integer(request.bonds), f.day(deadline)) : null}
+      cancelLabel={t.requestCancel}
+      onCancel={() => onRequests(cancelRequest({ id, offerDate: event.date }))}
+    >
+      <p>{t.requestConfirmBody(f.integer(bonds), f.day(event.day))}</p>
+    </CancellableRequest>
   );
 }
 
@@ -301,7 +283,7 @@ export function Holdings({ t, f, held, events, nameOf, onRemove, source }: Holdi
           { id: "face", header: t.colFace, numeric: true, cell: ({ holding, item }) => f.money(holding.bonds * item.bond.issue.nominal, { fractionDigits: 0 }) },
           {
             id: "remove",
-            header: "",
+            header: <VisuallyHidden>{t.colRemove}</VisuallyHidden>,
             cell: ({ holding }) => (
               <Button
                 variant="ghost"

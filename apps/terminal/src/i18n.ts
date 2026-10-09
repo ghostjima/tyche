@@ -103,7 +103,7 @@ const en = {
   goalIncome: "Monthly income",
   goalDate: "Money by a date",
   goalDepositNote: (spread: string, depth: string) =>
-    `Sets the filters: synthetic government bonds and issues rated AA- or higher, a duration up to a year, a fixed coupon or one on the key rate, not restricted to qualified investors, and liquid (a quoted spread up to ${spread}, a book at least ${depth} bonds deep on each side).`,
+    `Sets the filters: synthetic government bonds and issues rated AA- or higher, a duration up to a year, a fixed coupon or one on the key rate, open to every investor without a test, and liquid (a quoted spread up to ${spread}, a book at least ${depth} bonds deep on each side).`,
   goalIncomeNote:
     "Sets the filters: a coupon every month, no offer and no amortisation, so each issue's maturity date is known in advance and the issues can be lined up into a ladder.",
   goalDateNote: "Keeps the issues that mature by the end of the chosen month, or that the holder can sell back to the issuer at a put offer by then.",
@@ -144,8 +144,7 @@ const en = {
   chipCall: "Issuer's call",
   chipNoAmortisation: "None",
   chipAmortising: "Amortising",
-  chipOpen: "Without qualified status",
-  chipQualified: "Qualified only",
+  chipOpen: "Every investor",
   chipLiquid: "Liquid",
   chipIlliquid: "Thin market",
   chipShort: "Up to a year",
@@ -338,6 +337,7 @@ const en = {
   holdingsCaption: "Issues held",
   colBonds: "Bonds",
   colFace: "Face value",
+  colRemove: "Remove from the holdings",
   removeShort: "Remove",
   holdingsBonds: "Bonds to hold",
   holdingsBondsHelp: (lot: string) => `Whole bonds, from one; the issue trades in lots of ${lot}.`,
@@ -913,7 +913,7 @@ const ru: Strings = {
   goalIncome: "Ежемесячный доход",
   goalDate: "Деньги к дате",
   goalDepositNote: (spread, depth) =>
-    `Ставит фильтры: синтетические государственные облигации и выпуски с рейтингом от AA- и выше, дюрация до года, фиксированный купон или купон по ключевой ставке, не только для квалифицированных инвесторов и ликвидны (спред котировок до ${spread}, в стакане не меньше ${depth} облигаций с каждой стороны).`,
+    `Ставит фильтры: синтетические государственные облигации и выпуски с рейтингом от AA- и выше, дюрация до года, фиксированный купон или купон по ключевой ставке, доступны всем инвесторам без теста и ликвидны (спред котировок до ${spread}, в стакане не меньше ${depth} облигаций с каждой стороны).`,
   goalIncomeNote:
     "Ставит фильтры: купон каждый месяц, без оферты и без амортизации, поэтому дата погашения каждого выпуска известна заранее и из выпусков можно собрать лесенку.",
   goalDateNote: "Оставляет выпуски, которые погашаются к концу выбранного месяца, или те, что до тех пор можно предъявить эмитенту к выкупу по пут-оферте.",
@@ -954,8 +954,7 @@ const ru: Strings = {
   chipCall: "Колл-оферта",
   chipNoAmortisation: "Без амортизации",
   chipAmortising: "С амортизацией",
-  chipOpen: "Без статуса квалифицированного",
-  chipQualified: "Только квалифицированные",
+  chipOpen: "Все инвесторы",
   chipLiquid: "Ликвидные",
   chipIlliquid: "Низкая ликвидность",
   chipShort: "До года",
@@ -1146,6 +1145,7 @@ const ru: Strings = {
   holdingsCaption: "Выпуски в портфеле",
   colBonds: "Облигаций",
   colFace: "Номинал",
+  colRemove: "Убрать из портфеля",
   removeShort: "Убрать",
   holdingsBonds: "Облигаций в портфель",
   holdingsBondsHelp: (lot) => `Целое число облигаций, от одной; выпуск торгуется лотами по ${lot}.`,

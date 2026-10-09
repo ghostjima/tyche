@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { parseAccess } from "../data/issues";
 import { MARKET, VALUATION_DATE } from "../data/market";
-import { BONDS } from "../data/universe.testing";
+import { BONDS, accessJson } from "../data/universe.testing";
 import { twinEngine } from "../engine/twin";
 import { strings } from "../i18n";
 import {
@@ -25,10 +26,14 @@ import {
 import { LIQUID_MAX_SPREAD_BP, LIQUID_MIN_DEPTH, isLiquid } from "./liquidity";
 import { searchTexts } from "./names";
 
+/** Who may buy each issue, as tyche-market's WebAssembly build says. */
+const ACCESS = parseAccess(accessJson());
 const items: Item[] = BONDS.map((bond) => {
   const r = twinEngine.derive_bond(bond.issue, MARKET);
   if (!("ok" in r)) throw new Error(bond.id);
-  return { bond, derived: r.ok };
+  const access = ACCESS.get(bond.id);
+  if (access === undefined) throw new Error(`${bond.id}: no access`);
+  return { bond, derived: r.ok, access };
 });
 const name = (b: Item["bond"]) => [b.issuer.kind === "government" ? "Synthetic Treasury" : `${b.issuer.place} ${b.issuer.sector}`];
 const N = items.length;
@@ -67,8 +72,20 @@ describe("filters", () => {
     for (const i of run(q(["monthly"]))) expect(i.bond.issue.periodDays).toBe(30);
     for (const i of run(q(["put"]))) expect(i.bond.offer?.kind).toBe("put");
     for (const i of run(q(["noAmortisation"]))) expect(i.bond.issue.amortization).toHaveLength(0);
-    expect(run(q(["qualified"])).every((i) => i.bond.qualifiedOnly)).toBe(true);
-    expect(run(q(["open"])).some((i) => i.bond.qualifiedOnly)).toBe(false);
+  });
+
+  it("who can buy has three chips, read from tyche-market's gate: every investor, after a test, qualified investors only", () => {
+    expect(GROUPS.find((g) => g.id === "access")?.chips).toEqual(["open", "test", "qualified"]);
+    // Each chip keeps exactly the issues the gate gives its state (the
+    // chip's id is the state's), and none is empty.
+    for (const state of ["open", "test", "qualified"] as const) {
+      const kept = run(q([state]));
+      expect(kept.map((i) => i.bond.id).sort(), state).toEqual(BONDS.filter((b) => ACCESS.get(b.id) === state).map((b) => b.id).sort());
+      expect(kept.length, state).toBeGreaterThan(0);
+    }
+    // An issue whose terms restrict it to qualified investors is never
+    // open or behind a test alone.
+    expect(run(q(["open", "test"])).some((i) => i.bond.qualifiedOnly)).toBe(false);
   });
 
   it("an issue is liquid within both named thresholds of its synthetic book", () => {
@@ -160,6 +177,8 @@ describe("goals", () => {
       expect(bond.qualifiedOnly).toBe(false);
       expect(isLiquid(bond)).toBe(true);
     }
+    // Open to every investor: neither qualified status nor a test.
+    expect(kept.every((i) => i.access === "open")).toBe(true);
     expect(kept.some((i) => i.bond.issuer.kind === "government")).toBe(true);
   });
 

@@ -25,6 +25,9 @@ test("holdings from the link: the issues held, the events by date with their sou
   await expect(p).toContainText("rating changes and defaults are the synthetic universe's scenario");
   const held = p.getByRole("table", { name: "Issues held" });
   await expect(held.locator("tbody tr")).toHaveCount(6);
+  // The remove column has a header for assistive technology only.
+  await expect(held.getByRole("columnheader")).toHaveText(["Issue", "Bonds", "Face value", "Remove from the holdings"]);
+  await expect(held.getByRole("columnheader").last().locator(".stoa-visually-hidden")).toHaveText("Remove from the holdings");
   await expect(held.locator("tbody tr").first()).toContainText(PUT);
   await expect(held.locator("tbody tr").first()).toContainText("₽10,000");
 
@@ -60,6 +63,8 @@ test("a request to redeem at a put offer is confirmed, recorded in this browser 
   await page.goto(`/?lang=en&hold=${PUT}*10`);
   await ready(page);
   const offer = entry(page, "Put offer", PUT);
+  // The deadline line describes the request button.
+  await expect(offer.getByRole("button", { name: "Request redemption at the offer" })).toHaveAccessibleDescription(/^Deadline: Dec\s8,\s2026\s\d+\sworking days left$/);
   await offer.getByRole("button", { name: "Request redemption at the offer" }).click();
   const dialog = page.getByRole("alertdialog", { name: `Request redemption of ${PUT} at the offer?` });
   await expect(dialog).toContainText("sends nothing to a broker or the issuer and places no order");
@@ -70,18 +75,23 @@ test("a request to redeem at a put offer is confirmed, recorded in this browser 
   await expect(offer.getByRole("button", { name: "Request redemption at the offer" })).toBeFocused();
   await offer.getByRole("button", { name: "Request redemption at the offer" }).click();
   await dialog.getByRole("button", { name: "Record the request" }).click();
-  await expect(offer.locator(".redeem__recorded")).toContainText("Request recorded in this browser, bonds: 10; it can be cancelled until Dec 8, 2026. Not an order: nothing was sent.");
-  await expect(offer.getByRole("button", { name: "Cancel the request" })).toBeFocused();
+  // What was recorded stands beside Cancel, which takes the focus and is
+  // described by it and by the deadline.
+  const cancel = offer.getByRole("button", { name: "Cancel the request" });
+  await expect(cancel).toBeFocused();
+  await expect(cancel).toHaveAccessibleDescription(
+    /^Request recorded in this browser, bonds: 10; it can be cancelled until Dec\s8,\s2026\. Not an order: nothing was sent\. Deadline: Dec\s8,\s2026\s\d+\sworking days left$/,
+  );
   // Recorded, the entry no longer asks to act.
   await expect(offer).not.toHaveClass(/stoa-timeline__entry--emphasis/);
   // It is kept in this browser, not in the link.
   expect(new URL(page.url()).search).toBe(`?lang=en&hold=${PUT}*10`);
   await page.reload();
   await ready(page);
-  await expect(offer.locator(".redeem__recorded")).toContainText("Request recorded in this browser");
+  await expect(offer.getByRole("button", { name: "Cancel the request" })).toHaveAccessibleDescription(/^Request recorded in this browser, bonds: 10/);
   await offer.getByRole("button", { name: "Cancel the request" }).click();
   await expect(offer.getByRole("button", { name: "Request redemption at the offer" })).toBeFocused();
-  await expect(offer.locator(".redeem__recorded")).toHaveCount(0);
+  await expect(offer).not.toContainText("Request recorded in this browser");
 });
 
 test("an issue joins the holdings from its card, its bonds can be changed, and it leaves from the holdings", async ({ page }) => {
@@ -129,6 +139,7 @@ test("по-русски: портфель, события и купонный д
   await expect(offer).toContainText("Заявки принимаются с 2 дек. 2026 г. по 8 дек. 2026 г.");
   await expect(offer.locator(".stoa-countdown")).toHaveText(/^Осталось \d+ рабочи/);
   await expect(offer.getByRole("button", { name: "Подать заявку на выкуп по оферте" })).toBeVisible();
+  await expect(p.getByRole("table", { name: "Выпуски в портфеле" }).getByRole("columnheader")).toHaveText(["Выпуск", "Облигаций", "Номинал", "Убрать из портфеля"]);
   await expect(p.getByTestId("income")).toContainText("Ежемесячный доход");
   await expect(p.getByTestId("income").locator("tbody tr").first()).toContainText("октябрь 2026");
 });

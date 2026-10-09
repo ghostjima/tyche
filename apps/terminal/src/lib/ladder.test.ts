@@ -9,12 +9,12 @@ import { twinEngine } from "../engine/twin";
 import type { Item } from "./filters";
 import { LADDER_DEFAULT, candidates, chooseRungs, excluded, exitDay, flowsByYear, lastPaymentByYear, readLadder, workLadder, writeLadder, type Rung } from "./ladder";
 
-const ITEMS: Item[] = BONDS.flatMap((bond) => {
-  const r = derive_bond(bond.issue, MARKET);
-  return "ok" in r ? [{ bond, derived: r.ok }] : [];
-});
 /** Who may buy each issue, as tyche-market's WebAssembly build says. */
 const ACCESS = parseAccess(accessJson());
+const ITEMS: Item[] = BONDS.flatMap((bond) => {
+  const r = derive_bond(bond.issue, MARKET);
+  return "ok" in r ? [{ bond, derived: r.ok, access: ACCESS.get(bond.id)! }] : [];
+});
 
 describe("the ladder in the URL", () => {
   it("is read from ?lh=, ?la= and ?lr=, a value out of range falling back to the default, and written back", () => {

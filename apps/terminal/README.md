@@ -39,7 +39,9 @@ Status: early. Performance record, with stamps:
   shown as on while they are exactly what it set. Below them, filter
   chips in groups, each with the count it would leave: issuer, yield to
   the offer or maturity, duration, synthetic rating, coupon type,
-  coupon frequency, offer, amortisation, who can buy, liquidity (a
+  coupon frequency, offer, amortisation, who can buy (every investor,
+  test required, or qualified investors only: tyche-market's gate, in
+  the issue card's words), liquidity (a
   quoted spread up to 0.5 percent and at least 10,000 bonds on each side
   of the synthetic book, `src/lib/liquidity.ts`), maturity, and the
   date; folded into a sheet on a phone; how many issues are shown, and
@@ -93,7 +95,8 @@ Status: early. Performance record, with stamps:
   cards and kept in the URL (`?cmp=`): yields to maturity and to the
   offer, after tax and the fee to the nearest exit with nothing
   reinvested, duration, rating and outlook, coupon, offer, amortisation,
-  liquidity, who can buy, and the G-spread: the issue's yield to the
+  liquidity, who can buy (the gate's three states, in the card's
+  words), and the G-spread: the issue's yield to the
   nearest exit less the Bank of Russia's zero-coupon yield of federal
   loan bonds at the same Macaulay duration, read linearly between the
   curve's terms, as the engine's `g_spread` works it out from the
@@ -158,7 +161,9 @@ Status: early. Performance record, with stamps:
 - **Holdings and events**: a synthetic portfolio, kept in the URL
   (`?hold=TICKER*BONDS` once per issue, up to twenty issues) or added from
   the issue card with a number of bonds (and changed there), with each
-  issue's bonds and face value and a button that takes it out. The
+  issue's bonds and face value and a button that takes it out (its
+  column's header, "Remove from the holdings", is for assistive
+  technology only). The
   events of the holdings come from tyche-market's events model in the
   worker: from six months back to a year ahead, by date (Stoa's
   Timeline, a day per heading), each with its issue: coupons,
@@ -171,10 +176,15 @@ Status: early. Performance record, with stamps:
   synthetic universe's scenario, each entry saying so: rating changes,
   payments missed and made late, and defaults. An entry that asks for
   action (a put offer not yet requested, a missed payment, a default) is
-  emphasised. "Request redemption at the offer" asks for a confirmation
-  that says the request stays in this browser and is not an order;
-  recorded, it can be cancelled until the window closes (localStorage
-  `tyche.redemptionRequests`; nothing is sent anywhere). The same events
+  emphasised. "Request redemption at the offer" (Stoa's
+  CancellableRequest) asks for a confirmation that says the request
+  stays in this browser and is not an order; recorded, it can be
+  cancelled until the window closes (localStorage
+  `tyche.redemptionRequests`; nothing is sent anywhere), and a request
+  recorded from the list shows on the calendar and the other way round.
+  The window is counted from the snapshot's valuation date, which does
+  not change while the page is open, so a request never closes under a
+  focused button. The same events
   can be shown on a calendar instead (a switch over them, kept in the URL
   as `?ev=calendar`): Stoa's EventCalendar, a month grid opening on the
   valuation date's month with the next day that has an event chosen, and
@@ -289,7 +299,8 @@ What the tests cover, and nothing wider:
 
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
   Russian and English, each in the light and the dark theme, on:
-  the list, a goal with its filters, "Money by a date" with its month,
+  the list, a goal with its filters, the issues that need a test with
+  one of them open, "Money by a date" with its month,
   the data and licensing page, an issue with an offer (with the Terms
   and the working open), a broker's fee out of range, an issue with
   every risk, three issues compared
@@ -297,7 +308,8 @@ What the tests cover, and nothing wider:
   empty list, a calculation error, the diagnostics sheet with timings,
   holdings with every kind of event and the income by month, the same
   events on a calendar with a put offer's deadline chosen, the
-  confirmation of a request to redeem at an offer, the order ticket with
+  confirmation of a request to redeem at an offer and the request
+  recorded, the order ticket with
   a price off the step over an order larger than the book, its
   confirmation and the demo order it records, the placements, the
   ladder,
@@ -335,7 +347,8 @@ What the tests cover, and nothing wider:
   Back button (or the browser's) returns the focus to that link. The
   scroll keys scroll the page with nothing focused.
 - No sideways page scroll at 1280 px and at 375 px, in each language.
-  At 375 px every table on an issue fits its box, and the working's
+  At 375 px every table on an issue fits its box, the map's data table
+  opened included (its headers wrap), and the working's
   derivations are stacked as lists (Stoa's DerivationTable on a narrow
   screen), so nothing in them scrolls sideways.
 - The header stays in place while the page scrolls under it, and the
