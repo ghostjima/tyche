@@ -171,10 +171,15 @@ Status: early. Performance record, with stamps:
   synthetic universe's scenario, each entry saying so: rating changes,
   payments missed and made late, and defaults. An entry that asks for
   action (a put offer not yet requested, a missed payment, a default) is
-  emphasised. "Request redemption at the offer" asks for a confirmation
-  that says the request stays in this browser and is not an order;
-  recorded, it can be cancelled until the window closes (localStorage
-  `tyche.redemptionRequests`; nothing is sent anywhere). The same events
+  emphasised. "Request redemption at the offer" (Stoa's
+  CancellableRequest) asks for a confirmation that says the request
+  stays in this browser and is not an order; recorded, it can be
+  cancelled until the window closes (localStorage
+  `tyche.redemptionRequests`; nothing is sent anywhere), and a request
+  recorded from the list shows on the calendar and the other way round.
+  The window is counted from the snapshot's valuation date, which does
+  not change while the page is open, so a request never closes under a
+  focused button. The same events
   can be shown on a calendar instead (a switch over them, kept in the URL
   as `?ev=calendar`): Stoa's EventCalendar, a month grid opening on the
   valuation date's month with the next day that has an event chosen, and
@@ -297,7 +302,8 @@ What the tests cover, and nothing wider:
   empty list, a calculation error, the diagnostics sheet with timings,
   holdings with every kind of event and the income by month, the same
   events on a calendar with a put offer's deadline chosen, the
-  confirmation of a request to redeem at an offer, the order ticket with
+  confirmation of a request to redeem at an offer and the request
+  recorded, the order ticket with
   a price off the step over an order larger than the book, its
   confirmation and the demo order it records, the placements, the
   ladder,
