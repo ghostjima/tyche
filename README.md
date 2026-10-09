@@ -59,7 +59,7 @@ Workflows:
 1. **Goal first.** "Instead of a deposit", "monthly income" or "money by
    a date" set the filters; the professional filters (yield to maturity
    or to the offer, duration, rating, coupon type and frequency, offer
-   and amortisation, qualified only, liquidity) sit below.
+   and amortisation, who can buy, liquidity) sit below.
 2. **The issue card, with the risk where the decision is made.** The
    offer and its date with a countdown, the amortisation schedule, call
    or put, subordination, the rating and its outlook (from a fictional

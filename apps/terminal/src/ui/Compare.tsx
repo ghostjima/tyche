@@ -13,6 +13,7 @@ import { feeInRange } from "../lib/fee";
 import type { Formats } from "../lib/format";
 import { isLiquid } from "../lib/liquidity";
 import { gSpreadText } from "./Analogues";
+import { accessLabel } from "./Risks";
 
 /** How many issues can be compared at once. */
 export const COMPARE_MAX = 3;
@@ -70,7 +71,7 @@ export function Compare({ t, f, engine, items, planOf, feePct, onRemove, nameOf,
       label: t.riskLiquidity,
       value: (i) => t.cmpLiquidityValue(isLiquid(i.bond) ? t.chipLiquid : t.chipIlliquid, f.percent(i.bond.liquidity.spreadBp / 10_000)),
     },
-    { id: "access", label: t.riskAccess, value: (i) => (i.bond.qualifiedOnly ? t.chipQualified : t.chipOpen) },
+    { id: "access", label: t.riskAccess, value: (i) => accessLabel(t, i.access) },
     { id: "g", label: t.cmpGSpread, value: (i) => gSpreadText(t, f, engine, i) },
   ];
 

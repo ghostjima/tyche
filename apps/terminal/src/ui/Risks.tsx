@@ -21,6 +21,12 @@ export const OFFER_WARN_DAYS = 30;
  * it: who may buy what (tyche-market's gate follows it). */
 const SECURITIES_LAW = "39";
 
+/** Who may buy, in the card's own words: the opening words of an open
+ * issue's sentence, and the tags of the other two. The filters and the
+ * comparison name the three states with them. */
+export function accessLabel(t: Strings, access: Access): string {
+  return access === "open" ? t.chipOpen : access === "test" ? t.tagTest : t.tagQualified;
+}
 
 type AmortRow = { day: number; fraction: number };
 

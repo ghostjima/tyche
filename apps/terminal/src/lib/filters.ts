@@ -8,11 +8,13 @@
 //
 // A goal is a preset of these filters, applied as visible, changeable
 // chips: it is on while the filters are exactly what it set.
-import { ratingIndex, type Bond } from "../data/issues";
+import { ratingIndex, type Access, type Bond } from "../data/issues";
 import type { Derived } from "../engine/types";
 import { isLiquid } from "./liquidity";
 
-export type Item = { bond: Bond; derived: Derived };
+/** An issue, what the engine derives for it, and who may buy it by
+ * tyche-market's rule (accessJson). */
+export type Item = { bond: Bond; derived: Derived; access: Access };
 
 export type ChipId =
   | "gov"
@@ -41,6 +43,7 @@ export type ChipId =
   | "noAmortisation"
   | "amortising"
   | "open"
+  | "test"
   | "qualified"
   | "liquid"
   | "illiquid"
@@ -61,7 +64,7 @@ export const GROUPS: readonly { id: GroupId; chips: readonly ChipId[] }[] = [
   { id: "frequency", chips: ["monthly", "quarterly", "semiannual"] },
   { id: "offer", chips: ["noOffer", "put", "call"] },
   { id: "amortisation", chips: ["noAmortisation", "amortising"] },
-  { id: "access", chips: ["open", "qualified"] },
+  { id: "access", chips: ["open", "test", "qualified"] },
   { id: "liquidity", chips: ["liquid", "illiquid"] },
   { id: "term", chips: ["short", "medium", "long"] },
 ];
@@ -111,8 +114,11 @@ const MATCH: Record<ChipId, (item: Item) => boolean> = {
   call: ({ bond, derived }) => derived.offerDay !== null && bond.offer?.kind === "call",
   noAmortisation: ({ bond }) => bond.issue.amortization.length === 0,
   amortising: ({ bond }) => bond.issue.amortization.length > 0,
-  open: ({ bond }) => !bond.qualifiedOnly,
-  qualified: ({ bond }) => bond.qualifiedOnly,
+  // Who may buy, as the issue card says it: every investor, a
+  // non-qualified investor after a passed test, qualified investors only.
+  open: ({ access }) => access === "open",
+  test: ({ access }) => access === "test",
+  qualified: ({ access }) => access === "qualified",
   liquid: ({ bond }) => isLiquid(bond),
   illiquid: ({ bond }) => !isLiquid(bond),
   short: ({ derived }) => derived.maturityDay <= YEAR,
