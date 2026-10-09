@@ -65,7 +65,12 @@ on aggregate figures only.
 
 - **Who may buy an issue** (`synth::access::gate(issue, issuer)`):
   anyone, a non-qualified investor after a passed test, or qualified
-  investors only, with the reasons. The rules are read from the text of
+  investors only, with the reasons and, after a test, which one: the
+  brokers' base standard approved by the Bank of Russia on 30 April 2025
+  and applied from 7 November 2025 tests each kind of deal on its own,
+  and the universe has two kinds, bonds rated below the level of
+  article 3.1 (its point 6.1, subparagraph 6) and bonds with structured
+  income (subparagraph 8). The rules are read from the text of
   the Federal Law of 22 April 1996 No. 39-FZ "On the securities market"
   as amended up to the Federal Law of 4 August 2026 No. 283-FZ:
   article 3, paragraph 5 (a broker buys securities intended for

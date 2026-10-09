@@ -186,7 +186,8 @@ pub fn day_json(d: &Day, levels: usize) -> String {
 /// which a corporate floater is for qualified investors only (the Bank of
 /// Russia board's levels as the synthetic scale reads them):
 /// `{"testBelow": "A+", "indexBelow": "AA-", "issues": [{"ticker",
-/// "access", "reasons"}]}`.
+/// "access", "reasons", "test"}]}`, `test` the kind of the broker's test
+/// an issue needs, or null.
 pub fn access_json(u: &Universe) -> String {
     format!(
         "{{\"testBelow\":{},\"indexBelow\":{},\"issues\":{}}}",
@@ -195,10 +196,11 @@ pub fn access_json(u: &Universe) -> String {
         list(&u.issues, |s| {
             let g = gate(s, &u.issuers[s.issuer]);
             format!(
-                "{{\"ticker\":{},\"access\":{},\"reasons\":{}}}",
+                "{{\"ticker\":{},\"access\":{},\"reasons\":{},\"test\":{}}}",
                 text(&s.ticker),
                 text(g.access.code()),
-                list(&g.reasons, |r| text(r.code()))
+                list(&g.reasons, |r| text(r.code())),
+                g.test.map_or("null".into(), |k| text(k.code()))
             )
         })
     )

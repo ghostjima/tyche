@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::sync::OnceLock;
 use tyche_market::synth::{
     self, events, gate, inputs, json, Access, CouponKind, EventKind, Reason, Sector, Segment,
-    Source, Universe, RATINGS,
+    Source, TestKind, Universe, RATINGS,
 };
 use tyche_market::{depth_check, Levels, Side};
 use tyche_yield::{derive_bond, Market};
@@ -250,6 +250,42 @@ fn floaters_and_linkers_are_gated_as_bonds_whose_payments_follow_an_index() {
         .iter()
         .filter(|s| s.kind != CouponKind::Fixed)
         .all(|s| gate(s, &u.issuers[s.issuer]).access != Access::Open));
+}
+
+#[test]
+fn a_gated_issue_names_the_brokers_test_of_its_kind() {
+    // The brokers' base standard of 30 April 2025 tests each kind of deal
+    // on its own: bonds rated below the level of 39-FZ article 3.1 (point
+    // 6.1, subparagraph 6) and bonds with structured income (subparagraph
+    // 8) are two tests.
+    let u = universe();
+    let mut kinds: BTreeMap<&str, usize> = BTreeMap::new();
+    for s in &u.issues {
+        let g = gate(s, &u.issuers[s.issuer]);
+        let want = match g.access {
+            Access::Test if s.kind == CouponKind::Fixed => Some(TestKind::RatingBelowLevel),
+            Access::Test => Some(TestKind::StructuredIncome),
+            _ => None,
+        };
+        assert_eq!(g.test, want, "{}", s.ticker);
+        if let Some(k) = g.test {
+            *kinds.entry(k.code()).or_default() += 1;
+        }
+    }
+    assert_eq!(kinds.len(), 2, "{kinds:?}");
+    let text = json::access_json(u);
+    assert_eq!(
+        text.matches("\"test\":\"structured_income\"").count(),
+        kinds["structured_income"]
+    );
+    assert_eq!(
+        text.matches("\"test\":\"rating_below_level\"").count(),
+        kinds["rating_below_level"]
+    );
+    assert_eq!(
+        text.matches("\"test\":null").count(),
+        u.issues.len() - kinds.values().sum::<usize>()
+    );
 }
 
 fn market(u: &Universe) -> Market {

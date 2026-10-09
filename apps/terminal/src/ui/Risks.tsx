@@ -5,7 +5,7 @@
 // qualified investors only) and the law behind it, and a liquidity warning
 // from the synthetic order book, with the thresholds it checks.
 import { Callout, Countdown, DescriptionList, Table, Tag, useBreakpoint, type DescriptionItem } from "@ghostjima/stoa-react";
-import { INDEX_LAW } from "../data/gates";
+import { BASE_STANDARD, INDEX_LAW, type TestKind } from "../data/gates";
 import { INDEX_LEVEL, TEST_LEVEL, WITHOUT_TEST_PER_YEAR, type Access, type Bond } from "../data/issues";
 import { dayOf } from "../data/market";
 import type { Derived } from "../engine/types";
@@ -24,7 +24,7 @@ const SECURITIES_LAW = "39";
 
 type AmortRow = { day: number; fraction: number };
 
-export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Formats; bond: Bond; derived: Derived; access: Access | undefined }) {
+export function Risks({ t, f, bond, derived: d, access, test }: { t: Strings; f: Formats; bond: Bond; derived: Derived; access: Access | undefined; test?: TestKind | null }) {
   const narrow = useBreakpoint() === "narrow";
   const { issue, liquidity } = bond;
   const spread = (bp: number) => f.percent(bp / 10_000, 2);
@@ -33,6 +33,18 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
   // bond with structured income, and the card says which way.
   const kind = bond.coupon.kind;
   const limit = f.money(WITHOUT_TEST_PER_YEAR, { fractionDigits: 0 });
+  // The test's rules, from the brokers' base standard and the law on the
+  // securities market, under either kind of test.
+  const testRules =
+    test != null ? (
+      <span className="muted" data-testid="test-rules">
+        {t.gateTest(t.testKind[test])}{" "}
+        {t.riskTestRules(
+          t.baseStandard(f.day(dayOf(BASE_STANDARD.approved)), f.day(dayOf(BASE_STANDARD.applied))),
+          `${t.lawSecurities(SECURITIES_LAW, "51.2-1", "3")}; ${t.lawSecurities(SECURITIES_LAW, "3.1", "7")}`,
+        )}
+      </span>
+    ) : null;
   const indexLaw = (part: string) => t.lawRestrictions(INDEX_LAW.number, f.day(dayOf(INDEX_LAW.date)), INDEX_LAW.article, part);
   // Every repayment of the face value, the final one included.
   const amort: AmortRow[] =
@@ -154,6 +166,7 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
                 `${t.lawSecurities(SECURITIES_LAW, "3.1", "2", bond.issuer.kind === "government" ? "5" : "2")}; ${indexLaw("13")}`,
               )}
             </span>
+            {testRules}
             <span className="muted">{t.riskIndexAssumption}</span>
           </div>
         ) : access === "test" ? (
@@ -164,6 +177,7 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
               </Tag>
             </span>
             <span>{t.riskTest(TEST_LEVEL, limit, t.lawSecurities(SECURITIES_LAW, "3.1"))}</span>
+            {testRules}
             <span className="muted">{t.riskLevelNote(TEST_LEVEL)}</span>
           </div>
         ) : access === "open" && bond.issuer.kind === "government" ? (

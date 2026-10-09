@@ -66,10 +66,18 @@ test("an issue rated below the Bank of Russia's level asks a non-qualified inves
   await expect(risk(page, "Who can buy")).toContainText("Rated below A+, the Bank of Russia's level, a non-qualified investor buys it after passing the broker's test");
   await expect(risk(page, "Who can buy")).toContainText("₽300,000 a year");
   await expect(risk(page, "Who can buy")).toContainText("Federal Law No. 39-FZ on the securities market, article 3.1");
+  // Which test, and its rules from the brokers' base standard and the law.
+  const rules = risk(page, "Who can buy").getByTestId("test-rules");
+  await expect(rules).toContainText("The test this issue needs: the test for bonds of Russian issuers rated below the Bank of Russia's level.");
+  await expect(rules).toContainText("approved by the Bank of Russia on Apr 30, 2025, applied from Nov 7, 2025");
+  await expect(rules).toContainText("four knowledge questions drawn at random, every one of which must be answered right");
+  await expect(rules).toContainText("a passed test holds for five years from the latest of the test, the last purchase of this kind and the last order for one");
+  await expect(rules).toContainText("article 51.2-1, paragraph 3");
   await page.goto(`/?lang=ru&issue=${PORTFOLIO_PUT}`);
   await ready(page);
   await expect(risk(page, "Кто может купить")).toContainText("Нужен тест");
   await expect(risk(page, "Кто может купить")).toContainText("Рейтинг ниже A+, уровня Банка России");
+  await expect(risk(page, "Кто может купить").getByTestId("test-rules")).toContainText("Этому выпуску нужен тест по облигациям российских эмитентов с рейтингом ниже уровня Банка России.");
 });
 
 test("a floater shows its coupon resets from the Bank of Russia's figures, and an amortising issue its schedule", async ({ page }) => {
@@ -174,6 +182,7 @@ test("an issue whose payments follow an index is gated as a bond with structured
   await expect(who).toContainText("The face value follows inflation: the law counts the issue among bonds whose payments depend on the level of interest rates or inflation");
   await expect(who).toContainText("after passing the broker's test for bonds with structured income, or without the test while such purchases stay within ₽300,000 a year");
   await expect(who).toContainText("article 3.1, paragraph 2, subparagraph 5; Federal Law No. 192-FZ of Jun 11, 2021, article 11, part 13");
+  await expect(who.getByTestId("test-rules")).toContainText("The test this issue needs: the test for bonds with structured income.");
 });
 
 test("в карточке по-русски: риски, доходность без скрытого реинвестирования и расчёт со ссылкой на Налоговый кодекс", async ({ page }) => {

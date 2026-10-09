@@ -55,8 +55,10 @@ Status: early. Performance record, with stamps:
   agency), who can buy it (anyone, after a test, or qualified investors
   only, from tyche-market's gate) with the article of the law behind it
   (for a floater or a linker, the rules for bonds whose payments follow
-  an index), the Bank of Russia's rating level a test depends on and the
-  yearly allowance without a test,
+  an index), the Bank of Russia's rating level a test depends on, which
+  of the broker's tests the issue needs and the test's rules (the
+  questions, a pass only with every knowledge answer right, retakes,
+  five years of validity) and the yearly allowance without a test,
   and liquidity from the synthetic order book against the named
   thresholds, as a warning when it is thin. Then the broker's fee, a
   field in percent of each trade (0.05 by default, from 0 to 1 in steps
@@ -147,8 +149,9 @@ Status: early. Performance record, with stamps:
   better, the best opposite price, the average price, the slippage from
   the best price in basis points, the price levels used and what would
   rest in the book, with the fills by level. Who may buy the issue, from
-  tyche-market's `accessJson` with its reasons and the law the synthetic
-  rule is modelled on, against the status the investor says the broker
+  tyche-market's `accessJson` with its reasons, the test it needs and the
+  law the synthetic rule is modelled on, against the status the investor
+  says the broker
   has on record (not qualified, not qualified with the test passed, or
   qualified): a purchase the status does not allow cannot go on, and
   says why; a sale is never held. "Review the order" opens a
