@@ -79,7 +79,10 @@ test("a floater shows its coupon resets from the Bank of Russia's figures, and a
   await expect(resets.locator("tbody tr")).toHaveCount(6);
   await expect(resets.locator("tbody tr").first()).toContainText("+2.10%");
   await expect(risk(page, "Coupon resets")).toContainText("The coupon is RUONIA on the first day of each period plus the issue's spread.");
-  await expect(risk(page, "Who can buy")).toContainText("The coupon follows an index. The synthetic universe gates it as a fixed coupon");
+  // A corporate floater rated below AA-: closed to non-qualified investors
+  // by law No. 192-FZ, article 11, part 12.
+  await expect(risk(page, "Who can buy")).toContainText("The coupon follows an index and the issue is rated below AA-, the Bank of Russia's level for such bonds");
+  await expect(risk(page, "Who can buy")).toContainText("Federal Law No. 192-FZ of Jun 11, 2021, article 11, part 12");
   // The card names the Bank of Russia beside the synthetic data.
   await expect(page.locator(".issue-card > .stoa-source-note, .issue-card .stoa-source-note").filter({ hasText: "Bank of Russia" })).toHaveCount(1);
   const schedule = page.getByRole("table", { name: "Face value repaid per bond" });
@@ -161,6 +164,16 @@ test("an inflation-linked issue's real yield has no G-spread to the nominal curv
   await page.getByTestId("working").locator("summary").click();
   await expect(page.getByRole("table", { name: "Yield, held to maturity" })).toBeVisible();
   await expect(page.getByRole("table", { name: /^G-spread/ })).toHaveCount(0);
+});
+
+test("an issue whose payments follow an index is gated as a bond with structured income: a synthetic government linker after a test", async ({ page }) => {
+  await page.goto(`/?lang=en&issue=SG-401`);
+  await ready(page);
+  const who = risk(page, "Who can buy");
+  await expect(who).toContainText("Test required");
+  await expect(who).toContainText("The face value follows inflation: the law counts the issue among bonds whose payments depend on the level of interest rates or inflation");
+  await expect(who).toContainText("after passing the broker's test for bonds with structured income, or without the test while such purchases stay within ₽300,000 a year");
+  await expect(who).toContainText("article 3.1, paragraph 2, subparagraph 5; Federal Law No. 192-FZ of Jun 11, 2021, article 11, part 13");
 });
 
 test("в карточке по-русски: риски, доходность без скрытого реинвестирования и расчёт со ссылкой на Налоговый кодекс", async ({ page }) => {

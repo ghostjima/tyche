@@ -26,9 +26,9 @@ import {
   type PriceYieldValue,
 } from "@ghostjima/stoa-react";
 import { pctToUnits, type Depth, type DepthQuery, type OrderSide } from "../data/depth";
-import type { Gate, Gates } from "../data/gates";
+import { INDEX_LAW, isIndexReason, reasonLevel, type Gate, type Gates } from "../data/gates";
 import type { Bond } from "../data/issues";
-import { MARKET } from "../data/market";
+import { MARKET, dayOf } from "../data/market";
 import type { Derived, Engine, ErrorCode, LimitKind, Ticket } from "../engine/types";
 import type { Strings } from "../i18n";
 import { feeInRange } from "../lib/fee";
@@ -333,11 +333,12 @@ export function OrderTicket({ t, f, bond, derived, engine, index, gates, feePct,
             <p data-access={gate.access}>
               <strong>{t.gateAccess[gate.access]}</strong>
               {": "}
-              {gate.reasons.map((r) => reasonText(t.gateReason[r], gates.testBelow)).join("; ")}.
+              {gate.reasons.map((r) => reasonText(t.gateReason[r], reasonLevel(gates, r))).join("; ")}.
             </p>
             <p className="muted">
               {t.gateRule(t.lawSecurities(SECURITIES_LAW.number, SECURITIES_LAW.test), t.lawSecurities(SECURITIES_LAW.number, SECURITIES_LAW.qualified))}
             </p>
+            {gate.reasons.some(isIndexReason) && <p className="muted">{t.gateRuleIndex(["12", "13"].map((part) => t.lawRestrictions(INDEX_LAW.number, f.day(dayOf(INDEX_LAW.date)), INDEX_LAW.article, part)).join("; "))}</p>}
             <RadioGroup<InvestorStatus>
               label={t.gateStatus}
               description={t.gateStatusDesc}

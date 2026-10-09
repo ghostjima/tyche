@@ -82,17 +82,22 @@ describe("the gate as tyche-market writes it", () => {
       const g = gates.byTicker.get(b.id)!;
       expect(g.reasons.length, b.id).toBeGreaterThan(0);
       // An issue its terms restrict to qualified investors is for them only;
-      // a government bond is open to everyone.
+      // a fixed-coupon government bond is open to everyone, an index-linked
+      // one needs the test.
       if (b.qualifiedOnly) expect(g, b.id).toMatchObject({ access: "qualified" });
-      if (b.issuer.kind === "government") expect(g, b.id).toEqual({ access: "open", reasons: ["government"] });
+      if (b.issuer.kind === "government") {
+        expect(g, b.id).toEqual(b.coupon.kind === "fixed" ? { access: "open", reasons: ["government"] } : { access: "test", reasons: ["index_government"] });
+      }
     }
+    expect([gates.testBelow, gates.indexBelow]).toEqual(["A+", "AA-"]);
     expect(new Set([...gates.byTicker.values()].map((g) => g.access))).toEqual(new Set(["open", "test", "qualified"]));
   });
 
   it("refuses an access or a reason it has no words for", () => {
-    expect(() => parseGates(JSON.stringify({ testBelow: "BBB-", issues: [{ ticker: "X", access: "open", reasons: ["whim"] }] }))).toThrow(/unknown reason/);
-    expect(() => parseGates(JSON.stringify({ testBelow: "BBB-", issues: [{ ticker: "X", access: "maybe", reasons: [] }] }))).toThrow(/unknown access/);
-    expect(() => parseGates(JSON.stringify({ testBelow: "Z", issues: [] }))).toThrow(/unknown rating/);
+    expect(() => parseGates(JSON.stringify({ testBelow: "BBB-", indexBelow: "AA-", issues: [{ ticker: "X", access: "open", reasons: ["whim"] }] }))).toThrow(/unknown reason/);
+    expect(() => parseGates(JSON.stringify({ testBelow: "BBB-", indexBelow: "AA-", issues: [{ ticker: "X", access: "maybe", reasons: [] }] }))).toThrow(/unknown access/);
+    expect(() => parseGates(JSON.stringify({ testBelow: "Z", indexBelow: "AA-", issues: [] }))).toThrow(/unknown rating/);
+    expect(() => parseGates(JSON.stringify({ testBelow: "A+", indexBelow: "Z", issues: [] }))).toThrow(/unknown rating/);
   });
 });
 

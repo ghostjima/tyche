@@ -12,7 +12,7 @@
 import type { ErrorCode } from "./engine/types";
 import type { EventKind } from "./data/events";
 import type { GateReason } from "./data/gates";
-import type { Access, Outlook, Place, Sector } from "./data/issues";
+import type { Access, CouponKind, Outlook, Place, Sector } from "./data/issues";
 import type { BookState } from "./data/placements";
 import type { GateVerdict, InvestorStatus } from "./lib/ticket";
 
@@ -234,13 +234,21 @@ const en = {
     `Rated below ${level}, the Bank of Russia's level, a non-qualified investor buys it after passing the broker's test for this kind of bond, or without the test while such purchases stay within ${limit} a year, after the broker's notice of the risks and the investor's statement accepting them (${law}).`,
   riskOpenGov: (law: string) => `Every investor: a government bond needs neither qualified status nor a test (${law}).`,
   riskOpenRated: (level: string, law: string) => `Every investor: rated ${level} or higher, the Bank of Russia's level, it needs neither qualified status nor a test (${law}).`,
-  riskIndexNote:
-    "The coupon follows an index. The synthetic universe gates it as a fixed coupon: the law lists interest rates and inflation among the circumstances that make a bond's payments structured, and its text does not settle whether an index plus a fixed spread is one; read the other way, this issue would need a test or be closed to non-qualified investors.",
+  riskIndexWhat: { key_rate: "The coupon follows the key rate", ruonia: "The coupon follows RUONIA", linker: "The face value follows inflation" } satisfies Record<Exclude<CouponKind, "fixed">, string>,
+  riskIndexTest: (what: string, limit: string, law: string) =>
+    `${what}: the law counts the issue among bonds whose payments depend on the level of interest rates or inflation, so a non-qualified investor buys it after passing the broker's test for bonds with structured income, or without the test while such purchases stay within ${limit} a year, after the broker's notice of the risks and the investor's statement accepting them (${law}).`,
+  riskIndexClosedLevel: (level: string, law: string) =>
+    `The coupon follows an index and the issue is rated below ${level}, the Bank of Russia's level for such bonds: a broker may not sell it to a non-qualified investor, with a test or without (${law}).`,
+  riskIndexClosedNominal: (law: string) =>
+    `The face value follows inflation, a payment besides the coupon, so the exception for bonds whose only income is a coupon does not apply: a broker may not sell it to a non-qualified investor, with a test or without (${law}).`,
+  riskIndexAssumption:
+    "Assumptions of the synthetic universe: a floater's coupon is set on the index at the start of each coupon period, and a synthetic rating stands for a national-scale rating from at least two rating agencies.",
   riskLevelNote: (level: string) =>
     `The Bank of Russia's level is ${level} on the national scale from at least two rating agencies; a synthetic rating is read as such a rating, an assumption of the synthetic universe.`,
   outlookNegativeTag: "Negative outlook",
   lawSecurities: (number: string, article: string, paragraph?: string, sub?: string) =>
     `Federal Law No. ${number}-FZ on the securities market, article ${article}${paragraph === undefined ? "" : `, paragraph ${paragraph}`}${sub === undefined ? "" : `, subparagraph ${sub}`}`,
+  lawRestrictions: (number: string, date: string, article: string, part: string) => `Federal Law No. ${number}-FZ of ${date}, article ${article}, part ${part}`,
   riskLiquidity: "Liquidity",
   liquidityLowTitle: "Thin market",
   liquidityLow: (spread: string, depth: string, maxSpread: string, minDepth: string) =>
@@ -415,9 +423,15 @@ const en = {
     rating_below_threshold: (rating: string) => `a corporate issue rated below ${rating} on the synthetic scale`,
     government: "a synthetic government bond",
     rating_at_threshold: (rating: string) => `a corporate issue rated ${rating} or higher on the synthetic scale`,
+    index_government: "a synthetic government bond whose coupon or face value follows the key rate, RUONIA or inflation",
+    index_corporate: (rating: string) => `a corporate floater rated ${rating} or higher on the synthetic scale`,
+    index_below_level: (rating: string) => `a corporate floater rated below ${rating} on the synthetic scale`,
+    indexed_nominal: "a corporate bond whose face value is indexed to inflation",
   } satisfies Record<GateReason, string | ((rating: string) => string)>,
   gateRule: (testLaw: string, qualifiedLaw: string) =>
     `The synthetic universe's rule, modelled on the law: a non-qualified investor buys such bonds after a passed test (${testLaw}), and an issue for qualified investors goes to them only (${qualifiedLaw}). No issue here has a real rating.`,
+  gateRuleIndex: (law: string) =>
+    `A bond whose payments follow an index has a structured income: a non-qualified investor buys it after a passed test only when it is a government bond, or a corporate one whose only income is a coupon and whose rating is at the Bank of Russia's level for such bonds; the rest are for qualified investors only (${law}).`,
   gateStatus: "Your status at the broker",
   gateStatusDesc: "The terminal cannot know it: choose what your broker has on record.",
   gateStatuses: {
@@ -1042,13 +1056,21 @@ const ru: Strings = {
     `Рейтинг ниже ${level}, уровня Банка России: неквалифицированный инвестор купит выпуск, пройдя у брокера тест по этому виду облигаций, или без теста, пока такие покупки за год не превышают ${limit}, получив от брокера уведомление о рисках и подав заявление об их принятии (${law}).`,
   riskOpenGov: (law) => `Все инвесторы: для государственной облигации не нужны ни статус квалифицированного инвестора, ни тест (${law}).`,
   riskOpenRated: (level, law) => `Все инвесторы: с рейтингом ${level} и выше, на уровне Банка России, не нужны ни статус квалифицированного инвестора, ни тест (${law}).`,
-  riskIndexNote:
-    "Купон следует за индексом. Синтетическая вселенная считает его фиксированным: закон называет процентные ставки и инфляцию среди обстоятельств, от которых зависят выплаты структурных облигаций, и из его текста не следует, относится ли к ним индекс плюс фиксированная надбавка; при обратном прочтении этот выпуск требовал бы теста или был бы закрыт для неквалифицированных инвесторов.",
+  riskIndexWhat: { key_rate: "Купон следует за ключевой ставкой", ruonia: "Купон следует за RUONIA", linker: "Номинал следует за инфляцией" },
+  riskIndexTest: (what, limit, law) =>
+    `${what}: закон относит выпуск к облигациям, выплаты по которым зависят от уровня процентных ставок или инфляции, поэтому неквалифицированный инвестор купит его, пройдя у брокера тест по облигациям со структурным доходом, или без теста, пока такие покупки за год не превышают ${limit}, получив от брокера уведомление о рисках и подав заявление об их принятии (${law}).`,
+  riskIndexClosedLevel: (level, law) =>
+    `Купон следует за индексом, а рейтинг выпуска ниже ${level}, уровня Банка России для таких облигаций: брокер не продаст его неквалифицированному инвестору ни с тестом, ни без него (${law}).`,
+  riskIndexClosedNominal: (law) =>
+    `Номинал следует за инфляцией, а это выплата сверх купона, поэтому исключение для облигаций, доход по которым составляет только купон, не действует: брокер не продаст выпуск неквалифицированному инвестору ни с тестом, ни без него (${law}).`,
+  riskIndexAssumption:
+    "Допущения синтетической вселенной: купон флоатера устанавливается по значению индекса в начале каждого купонного периода, а синтетический рейтинг читается как рейтинг по национальной шкале как минимум от двух рейтинговых агентств.",
   riskLevelNote: (level) =>
     `Уровень Банка России — ${level} по национальной шкале как минимум от двух рейтинговых агентств; синтетический рейтинг читается как такой рейтинг — это допущение синтетической вселенной.`,
   outlookNegativeTag: "Негативный прогноз",
   lawSecurities: (number, article, paragraph, sub) =>
     `Федеральный закон № ${number}-ФЗ «О рынке ценных бумаг», статья ${article}${paragraph === undefined ? "" : `, пункт ${paragraph}`}${sub === undefined ? "" : `, подпункт ${sub}`}`,
+  lawRestrictions: (number, date, article, part) => `Федеральный закон от ${date} № ${number}-ФЗ, статья ${article}, часть ${part}`,
   riskLiquidity: "Ликвидность",
   liquidityLowTitle: "Низкая ликвидность",
   liquidityLow: (spread, depth, maxSpread, minDepth) =>
@@ -1223,9 +1245,15 @@ const ru: Strings = {
     rating_below_threshold: (rating) => `корпоративный выпуск с рейтингом ниже ${rating} по синтетической шкале`,
     government: "синтетическая государственная облигация",
     rating_at_threshold: (rating) => `корпоративный выпуск с рейтингом ${rating} или выше по синтетической шкале`,
+    index_government: "синтетическая государственная облигация, у которой купон или номинал следует за ключевой ставкой, RUONIA или инфляцией",
+    index_corporate: (rating) => `корпоративный флоатер с рейтингом ${rating} или выше по синтетической шкале`,
+    index_below_level: (rating) => `корпоративный флоатер с рейтингом ниже ${rating} по синтетической шкале`,
+    indexed_nominal: "корпоративная облигация с номиналом, индексируемым на инфляцию",
   },
   gateRule: (testLaw, qualifiedLaw) =>
     `Правило синтетического рынка по образцу закона: неквалифицированный инвестор покупает такие облигации после тестирования (${testLaw}), а выпуск для квалифицированных инвесторов достаётся только им (${qualifiedLaw}). Реальных рейтингов у выпусков здесь нет.`,
+  gateRuleIndex: (law) =>
+    `Облигация, выплаты по которой следуют за индексом, считается облигацией со структурным доходом: неквалифицированный инвестор купит её после тестирования, только если это государственная облигация или корпоративная, доход по которой составляет только купон, с рейтингом не ниже уровня Банка России для таких облигаций; остальные доступны только квалифицированным инвесторам (${law}).`,
   gateStatus: "Ваш статус у брокера",
   gateStatusDesc: "Терминал его не знает: выберите то, что записано у вашего брокера.",
   gateStatuses: {

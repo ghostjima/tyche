@@ -3,7 +3,7 @@
 //! its digest) does not depend on the last bit of a platform's maths
 //! library.
 
-use super::access::{gate, TEST_BELOW};
+use super::access::{gate, INDEX_BELOW, TEST_BELOW};
 use super::day::{Day, Print};
 use super::events::HoldingEvent;
 use super::placements::Placement;
@@ -181,14 +181,17 @@ pub fn day_json(d: &Day, levels: usize) -> String {
     )
 }
 
-/// Who may buy each issue, by ticker, with the reasons and the synthetic
-/// rating below which a corporate issue needs a test (the Bank of Russia
-/// board's level as the synthetic scale reads it):
-/// `{"testBelow": "A+", "issues": [{"ticker", "access", "reasons"}]}`.
+/// Who may buy each issue, by ticker, with the reasons, the synthetic
+/// rating below which a corporate issue needs a test and the one below
+/// which a corporate floater is for qualified investors only (the Bank of
+/// Russia board's levels as the synthetic scale reads them):
+/// `{"testBelow": "A+", "indexBelow": "AA-", "issues": [{"ticker",
+/// "access", "reasons"}]}`.
 pub fn access_json(u: &Universe) -> String {
     format!(
-        "{{\"testBelow\":{},\"issues\":{}}}",
+        "{{\"testBelow\":{},\"indexBelow\":{},\"issues\":{}}}",
         text(RATINGS[TEST_BELOW]),
+        text(RATINGS[INDEX_BELOW]),
         list(&u.issues, |s| {
             let g = gate(s, &u.issuers[s.issuer]);
             format!(
