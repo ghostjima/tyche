@@ -158,7 +158,9 @@ Status: early. Performance record, with stamps:
 - **Holdings and events**: a synthetic portfolio, kept in the URL
   (`?hold=TICKER*BONDS` once per issue, up to twenty issues) or added from
   the issue card with a number of bonds (and changed there), with each
-  issue's bonds and face value and a button that takes it out. The
+  issue's bonds and face value and a button that takes it out (its
+  column's header, "Remove from the holdings", is for assistive
+  technology only). The
   events of the holdings come from tyche-market's events model in the
   worker: from six months back to a year ahead, by date (Stoa's
   Timeline, a day per heading), each with its issue: coupons,

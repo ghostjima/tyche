@@ -283,7 +283,7 @@ export function Holdings({ t, f, held, events, nameOf, onRemove, source }: Holdi
           { id: "face", header: t.colFace, numeric: true, cell: ({ holding, item }) => f.money(holding.bonds * item.bond.issue.nominal, { fractionDigits: 0 }) },
           {
             id: "remove",
-            header: "",
+            header: <VisuallyHidden>{t.colRemove}</VisuallyHidden>,
             cell: ({ holding }) => (
               <Button
                 variant="ghost"

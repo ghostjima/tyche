@@ -25,6 +25,9 @@ test("holdings from the link: the issues held, the events by date with their sou
   await expect(p).toContainText("rating changes and defaults are the synthetic universe's scenario");
   const held = p.getByRole("table", { name: "Issues held" });
   await expect(held.locator("tbody tr")).toHaveCount(6);
+  // The remove column has a header for assistive technology only.
+  await expect(held.getByRole("columnheader")).toHaveText(["Issue", "Bonds", "Face value", "Remove from the holdings"]);
+  await expect(held.getByRole("columnheader").last().locator(".stoa-visually-hidden")).toHaveText("Remove from the holdings");
   await expect(held.locator("tbody tr").first()).toContainText(PUT);
   await expect(held.locator("tbody tr").first()).toContainText("₽10,000");
 
@@ -136,6 +139,7 @@ test("по-русски: портфель, события и купонный д
   await expect(offer).toContainText("Заявки принимаются с 2 дек. 2026 г. по 8 дек. 2026 г.");
   await expect(offer.locator(".stoa-countdown")).toHaveText(/^Осталось \d+ рабочи/);
   await expect(offer.getByRole("button", { name: "Подать заявку на выкуп по оферте" })).toBeVisible();
+  await expect(p.getByRole("table", { name: "Выпуски в портфеле" }).getByRole("columnheader")).toHaveText(["Выпуск", "Облигаций", "Номинал", "Убрать из портфеля"]);
   await expect(p.getByTestId("income")).toContainText("Ежемесячный доход");
   await expect(p.getByTestId("income").locator("tbody tr").first()).toContainText("октябрь 2026");
 });
