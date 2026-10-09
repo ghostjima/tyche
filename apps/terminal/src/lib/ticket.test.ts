@@ -86,11 +86,24 @@ describe("the gate as tyche-market writes it", () => {
       // one needs the test.
       if (b.qualifiedOnly) expect(g, b.id).toMatchObject({ access: "qualified" });
       if (b.issuer.kind === "government") {
-        expect(g, b.id).toEqual(b.coupon.kind === "fixed" ? { access: "open", reasons: ["government"] } : { access: "test", reasons: ["index_government"] });
+        expect(g, b.id).toEqual(b.coupon.kind === "fixed" ? { access: "open", reasons: ["government"], test: null } : { access: "test", reasons: ["index_government"], test: "structured_income" });
       }
     }
     expect([gates.testBelow, gates.indexBelow]).toEqual(["A+", "AA-"]);
     expect(new Set([...gates.byTicker.values()].map((g) => g.access))).toEqual(new Set(["open", "test", "qualified"]));
+  });
+
+  it("names the broker's test each issue that needs one asks for: the rating kind for a fixed coupon, structured income for a coupon or a face value on an index", () => {
+    const gates = parseGates(accessJson());
+    const seen = new Set<string>();
+    for (const b of BONDS) {
+      const g = gates.byTicker.get(b.id)!;
+      const want = g.access !== "test" ? null : b.coupon.kind === "fixed" ? "rating_below_level" : "structured_income";
+      expect(g.test, b.id).toBe(want);
+      if (g.test) seen.add(g.test);
+    }
+    expect(seen).toEqual(new Set(["rating_below_level", "structured_income"]));
+    expect(() => parseGates(JSON.stringify({ testBelow: "A+", indexBelow: "AA-", issues: [{ ticker: "X", access: "test", reasons: ["government"], test: "quiz" }] }))).toThrow(/unknown test/);
   });
 
   it("refuses an access or a reason it has no words for", () => {

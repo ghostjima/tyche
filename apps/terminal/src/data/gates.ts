@@ -23,7 +23,19 @@ export type GateReason = (typeof GATE_REASONS)[number];
  * `indexBelow` rather than `testBelow`. */
 const INDEX_LEVEL_REASONS: readonly GateReason[] = ["index_corporate", "index_below_level"];
 
-export type Gate = { access: Access; reasons: GateReason[] };
+/** The broker's test an issue needs, by the kinds of deals of the
+ * brokers' base standard: bonds rated below the Bank of Russia's level
+ * (its point 6.1, subparagraph 6) or bonds with structured income
+ * (subparagraph 8). */
+export const TEST_KINDS = ["rating_below_level", "structured_income"] as const;
+export type TestKind = (typeof TEST_KINDS)[number];
+
+/** The brokers' base standard that sets the test, as the card cites it:
+ * approved by the Bank of Russia on 30 April 2025, applied from
+ * 7 November 2025. */
+export const BASE_STANDARD = { approved: "2025-04-30", applied: "2025-11-07" } as const;
+
+export type Gate = { access: Access; reasons: GateReason[]; test: TestKind | null };
 /** Each issue's gate by ticker, the synthetic rating below which a
  * corporate issue needs the test, and the one below which a corporate
  * floater is for qualified investors only. */
@@ -43,13 +55,14 @@ export const reasonLevel = (gates: Gates, reason: GateReason): Rating => (INDEX_
 
 const isAccess = (x: string): x is Access => x === "open" || x === "test" || x === "qualified";
 const isReason = (x: string): x is GateReason => (GATE_REASONS as readonly string[]).includes(x);
+const isTestKind = (x: string): x is TestKind => (TEST_KINDS as readonly string[]).includes(x);
 const isRating = (x: string): x is Rating => (RATINGS as readonly string[]).includes(x);
 
 /** Reads accessJson. Throws on an access, a reason or a rating the
  * interface has no words for, so a change to the rule cannot show a
  * blank. */
 export function parseGates(json: string): Gates {
-  const raw = JSON.parse(json) as { testBelow: string; indexBelow: string; issues: { ticker: string; access: string; reasons: string[] }[] };
+  const raw = JSON.parse(json) as { testBelow: string; indexBelow: string; issues: { ticker: string; access: string; reasons: string[]; test: string | null }[] };
   if (!isRating(raw.testBelow)) throw new Error(`unknown rating ${raw.testBelow}`);
   if (!isRating(raw.indexBelow)) throw new Error(`unknown rating ${raw.indexBelow}`);
   const byTicker = new Map<string, Gate>();
@@ -57,7 +70,8 @@ export function parseGates(json: string): Gates {
     if (!isAccess(i.access)) throw new Error(`${i.ticker}: unknown access ${i.access}`);
     const unknown = i.reasons.find((r) => !isReason(r));
     if (unknown !== undefined) throw new Error(`${i.ticker}: unknown reason ${unknown}`);
-    byTicker.set(i.ticker, { access: i.access, reasons: i.reasons.filter(isReason) });
+    if (i.test !== null && !isTestKind(i.test)) throw new Error(`${i.ticker}: unknown test ${i.test}`);
+    byTicker.set(i.ticker, { access: i.access, reasons: i.reasons.filter(isReason), test: i.test });
   }
   return { testBelow: raw.testBelow, indexBelow: raw.indexBelow, byTicker };
 }

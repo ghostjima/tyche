@@ -190,6 +190,7 @@ test("the gate holds a purchase the investor's status does not allow, with the r
     "A non-qualified investor after a passed test: a synthetic government bond whose coupon or face value follows the key rate, RUONIA or inflation.",
   );
   await expect(t.getByTestId("ticket-gate")).toContainText("A bond whose payments follow an index has a structured income");
+  await expect(t.getByTestId("ticket-gate")).toContainText("The test this issue needs: the test for bonds with structured income.");
   await expect(t.getByTestId("ticket-gate").getByRole("status")).toHaveText(/^A broker carries out this purchase for a non-qualified investor only after a passed test/);
 
   // After a passed test: a corporate issue rated below the threshold.

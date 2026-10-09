@@ -338,6 +338,7 @@ export function OrderTicket({ t, f, bond, derived, engine, index, gates, feePct,
             <p className="muted">
               {t.gateRule(t.lawSecurities(SECURITIES_LAW.number, SECURITIES_LAW.test), t.lawSecurities(SECURITIES_LAW.number, SECURITIES_LAW.qualified))}
             </p>
+            {gate.test !== null && <p>{t.gateTest(t.testKind[gate.test])}</p>}
             {gate.reasons.some(isIndexReason) && <p className="muted">{t.gateRuleIndex(["12", "13"].map((part) => t.lawRestrictions(INDEX_LAW.number, f.day(dayOf(INDEX_LAW.date)), INDEX_LAW.article, part)).join("; "))}</p>}
             <RadioGroup<InvestorStatus>
               label={t.gateStatus}

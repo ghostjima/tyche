@@ -92,6 +92,27 @@
 //! Russia's Directive of 27 November 2025 No. 7250-U lists as intended
 //! for qualified investors.
 //!
+//! # Which test
+//!
+//! The brokers' base standard that sets the test (39-FZ article 51.2-1),
+//! the base standard for protecting the rights and interests of
+//! individuals and legal entities receiving financial services from
+//! members of self-regulatory organisations uniting brokers, approved by
+//! the Bank of Russia on 30 April 2025 (minutes No. KFNP-14), applied from
+//! 7 November 2025 (the text NAUFOR and cbr.ru publish, read on
+//! 9 October 2026), tests each kind of deal on its own (points 6.1 and
+//! 6.10). Two of its kinds are the synthetic universe's:
+//!
+//! - point 6.1, subparagraph 6: bonds of Russian issuers that meet the
+//!   first and second paragraphs of 39-FZ article 3.1, paragraph 2,
+//!   subparagraph 2, but not its third (the rating), with the knowledge
+//!   questions of its appendix 9 ([`TestKind::RatingBelowLevel`]);
+//! - point 6.1, subparagraph 8: bonds with structured income, the bonds
+//!   whose income depends on the circumstances of 39-FZ article 2,
+//!   paragraph 1, subparagraph 23, second paragraph, and which meet
+//!   192-FZ article 11, thirteenth part, with the knowledge questions of
+//!   its appendix 11 ([`TestKind::StructuredIncome`]).
+//!
 //! # What the synthetic universe adds
 //!
 //! - Every issuer is a Russian company or the fictional treasury, every
@@ -211,11 +232,33 @@ impl Reason {
     }
 }
 
-/// An issue's access and the reasons for it, in the order of the rule.
+/// The broker's test an issue needs, by the base standard's kinds of
+/// deals (see the module's notes).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TestKind {
+    /// Bonds of Russian issuers rated below the level of 39-FZ article
+    /// 3.1, paragraph 2, subparagraph 2 (point 6.1, subparagraph 6).
+    RatingBelowLevel,
+    /// Bonds with structured income (point 6.1, subparagraph 8).
+    StructuredIncome,
+}
+
+impl TestKind {
+    pub fn code(self) -> &'static str {
+        match self {
+            TestKind::RatingBelowLevel => "rating_below_level",
+            TestKind::StructuredIncome => "structured_income",
+        }
+    }
+}
+
+/// An issue's access, the reasons for it in the order of the rule, and
+/// the test it needs when its access is [`Access::Test`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Gate {
     pub access: Access,
     pub reasons: Vec<Reason>,
+    pub test: Option<TestKind>,
 }
 
 /// The gate of an issue of `issuer`, by the rules above.
@@ -231,6 +274,7 @@ pub fn gate(issue: &SynthIssue, issuer: &Issuer) -> Gate {
         return Gate {
             access: Access::Qualified,
             reasons,
+            test: None,
         };
     }
     let indexed = issue.kind != CouponKind::Fixed;
@@ -249,9 +293,15 @@ pub fn gate(issue: &SynthIssue, issuer: &Issuer) -> Gate {
         }
         Segment::Corporate => (Access::Open, Reason::RatingAtThreshold),
     };
+    let test = match reason {
+        Reason::RatingBelowThreshold => Some(TestKind::RatingBelowLevel),
+        Reason::IndexGovernment | Reason::IndexCorporate => Some(TestKind::StructuredIncome),
+        _ => None,
+    };
     Gate {
         access,
         reasons: vec![reason],
+        test,
     }
 }
 

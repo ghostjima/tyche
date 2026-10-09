@@ -445,6 +445,7 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
           holdingsFull={holdings.length >= HOLDINGS_MAX}
           onHold={hold}
           access={market.status === "ready" ? market.access.get(selected.bond.id) : undefined}
+          test={market.status === "ready" ? (market.gates.byTicker.get(selected.bond.id)?.test ?? null) : undefined}
         />
         {market.status === "ready" && bonds && (
           <OrderTicket

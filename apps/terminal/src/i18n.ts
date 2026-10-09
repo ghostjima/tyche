@@ -11,7 +11,7 @@
 // rating is fictional, and the strings say so where they name them.
 import type { ErrorCode } from "./engine/types";
 import type { EventKind } from "./data/events";
-import type { GateReason } from "./data/gates";
+import type { GateReason, TestKind } from "./data/gates";
 import type { Access, CouponKind, Outlook, Place, Sector } from "./data/issues";
 import type { BookState } from "./data/placements";
 import type { GateVerdict, InvestorStatus } from "./lib/ticket";
@@ -241,6 +241,13 @@ const en = {
     `The coupon follows an index and the issue is rated below ${level}, the Bank of Russia's level for such bonds: a broker may not sell it to a non-qualified investor, with a test or without (${law}).`,
   riskIndexClosedNominal: (law: string) =>
     `The face value follows inflation, a payment besides the coupon, so the exception for bonds whose only income is a coupon does not apply: a broker may not sell it to a non-qualified investor, with a test or without (${law}).`,
+  testKind: {
+    rating_below_level: "the test for bonds of Russian issuers rated below the Bank of Russia's level",
+    structured_income: "the test for bonds with structured income",
+  } satisfies Record<TestKind, string>,
+  baseStandard: (approved: string, applied: string) => `approved by the Bank of Russia on ${approved}, applied from ${applied}`,
+  riskTestRules: (standard: string, law: string) =>
+    `The test is the brokers' base standard's (${standard}): three questions on your knowledge and experience, not scored, and four knowledge questions drawn at random, every one of which must be answered right; a broker may add questions of its own. Each kind of bond has a test of its own. It is free and may be taken again, with no limit set; a passed test holds for five years from the latest of the test, the last purchase of this kind and the last order for one. Without it, the yearly allowance needs the broker's notice of the risks, given within the past year, and your statement accepting them (${law}).`,
   riskIndexAssumption:
     "Assumptions of the synthetic universe: a floater's coupon is set on the index at the start of each coupon period, and a synthetic rating stands for a national-scale rating from at least two rating agencies.",
   riskLevelNote: (level: string) =>
@@ -430,6 +437,7 @@ const en = {
   } satisfies Record<GateReason, string | ((rating: string) => string)>,
   gateRule: (testLaw: string, qualifiedLaw: string) =>
     `The synthetic universe's rule, modelled on the law: a non-qualified investor buys such bonds after a passed test (${testLaw}), and an issue for qualified investors goes to them only (${qualifiedLaw}). No issue here has a real rating.`,
+  gateTest: (kind: string) => `The test this issue needs: ${kind}.`,
   gateRuleIndex: (law: string) =>
     `A bond whose payments follow an index has a structured income: a non-qualified investor buys it after a passed test only when it is a government bond, or a corporate one whose only income is a coupon and whose rating is at the Bank of Russia's level for such bonds; the rest are for qualified investors only (${law}).`,
   gateStatus: "Your status at the broker",
@@ -1063,6 +1071,13 @@ const ru: Strings = {
     `Купон следует за индексом, а рейтинг выпуска ниже ${level}, уровня Банка России для таких облигаций: брокер не продаст его неквалифицированному инвестору ни с тестом, ни без него (${law}).`,
   riskIndexClosedNominal: (law) =>
     `Номинал следует за инфляцией, а это выплата сверх купона, поэтому исключение для облигаций, доход по которым составляет только купон, не действует: брокер не продаст выпуск неквалифицированному инвестору ни с тестом, ни без него (${law}).`,
+  testKind: {
+    rating_below_level: "тест по облигациям российских эмитентов с рейтингом ниже уровня Банка России",
+    structured_income: "тест по облигациям со структурным доходом",
+  },
+  baseStandard: (approved, applied) => `утверждён Банком России ${approved}, применяется с ${applied}`,
+  riskTestRules: (standard, law) =>
+    `Тест проводится по базовому стандарту брокеров (${standard}): три вопроса о знаниях и опыте, которые не оцениваются, и четыре вопроса на знания, выбранные случайно, на каждый из которых нужно ответить верно; брокер может добавить свои вопросы. По каждому виду облигаций свой тест. Тестирование бесплатное, его можно проходить повторно без ограничения числа попыток; положительный результат действует пять лет со дня тестирования, последней покупки этого вида или последнего поручения на неё, смотря что позже. Без теста годовой лимит требует уведомления брокера о рисках, полученного в течение последнего года, и вашего заявления об их принятии (${law}).`,
   riskIndexAssumption:
     "Допущения синтетической вселенной: купон флоатера устанавливается по значению индекса в начале каждого купонного периода, а синтетический рейтинг читается как рейтинг по национальной шкале как минимум от двух рейтинговых агентств.",
   riskLevelNote: (level) =>
@@ -1252,6 +1267,7 @@ const ru: Strings = {
   },
   gateRule: (testLaw, qualifiedLaw) =>
     `Правило синтетического рынка по образцу закона: неквалифицированный инвестор покупает такие облигации после тестирования (${testLaw}), а выпуск для квалифицированных инвесторов достаётся только им (${qualifiedLaw}). Реальных рейтингов у выпусков здесь нет.`,
+  gateTest: (kind) => `Этому выпуску нужен ${kind}.`,
   gateRuleIndex: (law) =>
     `Облигация, выплаты по которой следуют за индексом, считается облигацией со структурным доходом: неквалифицированный инвестор купит её после тестирования, только если это государственная облигация или корпоративная, доход по которой составляет только купон, с рейтингом не ниже уровня Банка России для таких облигаций; остальные доступны только квалифицированным инвесторам (${law}).`,
   gateStatus: "Ваш статус у брокера",

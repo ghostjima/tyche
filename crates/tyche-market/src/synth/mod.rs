@@ -31,7 +31,7 @@ pub mod placements;
 pub mod rng;
 pub mod universe;
 
-pub use access::{gate, Access, Gate, Reason};
+pub use access::{gate, Access, Gate, Reason, TestKind};
 pub use day::{simulate, Aggressor, Day, Print, Session, SessionKind, Snapshot};
 pub use events::{holding_events, EventKind, HoldingEvent, Source};
 pub use inputs::{Curve, Inputs};
