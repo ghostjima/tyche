@@ -60,11 +60,32 @@ test("a put offer is on the calendar on its window's first day, its deadline and
   const dialog = page.getByRole("alertdialog", { name: `Request redemption of ${PORTFOLIO_PUT} at the offer?` });
   await expect(dialog).toContainText("sends nothing to a broker or the issuer and places no order");
   await dialog.getByRole("button", { name: "Record the request" }).click();
-  await expect(chosen.locator(".redeem__recorded")).toContainText("Request recorded in this browser, bonds: 10");
   await expect(chosen.getByRole("button", { name: "Cancel the request" })).toBeFocused();
+  await expect(chosen.getByRole("button", { name: "Cancel the request" })).toHaveAccessibleDescription(/^Request recorded in this browser, bonds: 10;/);
   // The list by date shows the same request.
   await box.getByRole("radio", { name: "By date" }).click();
-  await expect(box.locator(".redeem__recorded")).toContainText("Request recorded in this browser, bonds: 10");
+  await expect(box.getByRole("button", { name: "Cancel the request" })).toHaveAccessibleDescription(/^Request recorded in this browser, bonds: 10;/);
+});
+
+test("a request recorded from the list is on the calendar's deadline, and cancelled there", async ({ page }) => {
+  await page.goto(`/?lang=en&${PORTFOLIO}`);
+  await ready(page);
+  const box = inbox(page);
+  const offer = box.locator(".stoa-timeline__entry").filter({ hasText: "Put offer" }).filter({ hasText: PORTFOLIO_PUT });
+  await offer.getByRole("button", { name: "Request redemption at the offer" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Record the request" }).click();
+  await expect(offer.getByRole("button", { name: "Cancel the request" })).toBeFocused();
+  await box.getByRole("radio", { name: "On a calendar" }).click();
+  await box.getByRole("button", { name: "Next month: November 2026" }).click();
+  await box.getByRole("button", { name: "Next month: December 2026" }).click();
+  await box.getByRole("grid").locator('[data-date="2026-12-08"]').click();
+  const chosen = box.locator(".stoa-calendar__chosen");
+  const cancel = chosen.getByRole("button", { name: "Cancel the request" });
+  await expect(cancel).toHaveAccessibleDescription(/^Request recorded in this browser, bonds: 10;/);
+  await cancel.click();
+  await expect(chosen.getByRole("button", { name: "Request redemption at the offer" })).toBeFocused();
+  await box.getByRole("radio", { name: "By date" }).click();
+  await expect(offer.getByRole("button", { name: "Request redemption at the offer" })).toBeVisible();
 });
 
 test("the scenario's rating changes and defaults, the future ones included, are on the calendar and marked as synthetic", async ({ page }) => {

@@ -77,10 +77,6 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .peer-map { display: grid; gap: var(--stoa-space-2); min-inline-size: 0; }
 .peer-map__head { display: grid; gap: var(--stoa-space-1); }
 .peer-map__desc { margin: 0; color: var(--stoa-color-text-muted); font-size: var(--stoa-font-size-sm); }
-/* The chart's data table takes as many lines per header as it needs, as
-   Stoa's Table does with wrapHeaders, which ScatterChart does not pass:
-   so the table fits a phone without scrolling sideways. */
-.peer-map .stoa-chart__data .stoa-table th { white-space: normal; }
 .issue-card__id { margin: 0 0 var(--stoa-space-2); color: var(--stoa-color-text-muted); }
 .tags { display: flex; flex-wrap: wrap; gap: var(--stoa-space-1); }
 .block { display: grid; gap: var(--stoa-space-3); margin-block-start: var(--stoa-space-4); min-inline-size: 0; }
@@ -126,8 +122,6 @@ strong { font-weight: var(--stoa-font-weight-semibold); }
 .hold__actions { display: flex; flex-wrap: wrap; gap: var(--stoa-space-2) var(--stoa-space-3); align-items: center; }
 .event-text { display: grid; gap: var(--stoa-space-2); justify-items: start; min-inline-size: 0; }
 .event-text p { margin: 0; }
-.redeem { display: grid; gap: var(--stoa-space-2); justify-items: start; }
-.redeem p { margin: 0; }
 
 /* The order ticket: the side, the limit and the lots, then its figures,
    the depth check, the gate and the confirmation. */
