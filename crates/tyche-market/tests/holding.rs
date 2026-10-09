@@ -5,8 +5,8 @@
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 use tyche_market::synth::{
-    self, events, gate, inputs, json, Access, EventKind, Reason, Sector, Segment, Source, Universe,
-    RATINGS,
+    self, events, gate, inputs, json, Access, CouponKind, EventKind, Reason, Sector, Segment,
+    Source, Universe, RATINGS,
 };
 use tyche_market::{depth_check, Levels, Side};
 use tyche_yield::{derive_bond, Market};
@@ -131,8 +131,10 @@ fn the_depth_check_on_generated_books_fills_what_the_book_shows_at_or_better_tha
 fn the_gate_follows_the_law_at_the_bank_of_russia_level_for_every_issue() {
     let u = universe();
     // A+ on the synthetic scale stands for the board's level: A+ on the
-    // national scale from at least two agencies.
+    // national scale from at least two agencies; AA- for its level for
+    // bonds whose income follows an index.
     assert_eq!(RATINGS[synth::access::TEST_BELOW], "A+");
+    assert_eq!(RATINGS[synth::access::INDEX_BELOW], "AA-");
     let mut seen: BTreeMap<&str, usize> = BTreeMap::new();
     let mut tested_from_a_to_bbb_minus = 0;
     let mut bank_subordinated = 0;
@@ -150,9 +152,12 @@ fn the_gate_follows_the_law_at_the_bank_of_russia_level_for_every_issue() {
         if bank_sub {
             bank_subordinated += 1;
         }
+        let indexed = s.kind != CouponKind::Fixed;
         if s.qualified_only || bank_sub {
             assert_eq!(g.access, Access::Qualified, "{}", s.ticker);
             assert_eq!(g.reasons.contains(&Reason::QualifiedOnly), s.qualified_only);
+        } else if indexed {
+            // Checked by the next test.
         } else if s.segment == Segment::Government {
             assert_eq!(g.access, Access::Open);
             assert_eq!(g.reasons, [Reason::Government]);
@@ -176,8 +181,75 @@ fn the_gate_follows_the_law_at_the_bank_of_russia_level_for_every_issue() {
     );
     assert!(bank_subordinated > 0);
     let text = json::access_json(u);
-    assert!(text.starts_with("{\"testBelow\":\"A+\""));
+    assert!(text.starts_with("{\"testBelow\":\"A+\",\"indexBelow\":\"AA-\""));
     assert_eq!(text.matches("\"ticker\"").count(), u.issues.len());
+}
+
+#[test]
+fn floaters_and_linkers_are_gated_as_bonds_whose_payments_follow_an_index() {
+    // 39-FZ article 3.1, paragraph 2, subparagraphs 2 and 5 leave out bonds
+    // whose payments depend on interest rates or inflation; 192-FZ article
+    // 11, thirteenth part, lets a non-qualified investor buy a government
+    // one, or a corporate one whose only income is a coupon paid at least
+    // once a year and rated at least AA-, after a test; the twelfth part
+    // closes the rest.
+    let u = universe();
+    let mut count: BTreeMap<&str, usize> = BTreeMap::new();
+    for s in &u.issues {
+        let issuer = &u.issuers[s.issuer];
+        let g = gate(s, issuer);
+        if s.kind == CouponKind::Fixed || s.qualified_only || s.subordinated {
+            assert!(
+                !g.reasons.iter().any(|r| matches!(
+                    r,
+                    Reason::IndexGovernment
+                        | Reason::IndexCorporate
+                        | Reason::IndexBelowLevel
+                        | Reason::IndexedNominal
+                )),
+                "{}",
+                s.ticker
+            );
+            continue;
+        }
+        let (access, reason) = match (s.segment, s.kind) {
+            (Segment::Government, _) => (Access::Test, Reason::IndexGovernment),
+            (Segment::Corporate, CouponKind::Linker) => (Access::Qualified, Reason::IndexedNominal),
+            (Segment::Corporate, _) if s.rating > synth::access::INDEX_BELOW => {
+                (Access::Qualified, Reason::IndexBelowLevel)
+            }
+            (Segment::Corporate, _) => (Access::Test, Reason::IndexCorporate),
+        };
+        assert_eq!(
+            (g.access, g.reasons.as_slice()),
+            (access, [reason].as_slice()),
+            "{} {}",
+            s.ticker,
+            RATINGS[s.rating]
+        );
+        // Point 1 (a): a corporate floater pays a coupon at least once a year.
+        if reason == Reason::IndexCorporate {
+            assert!(s.engine.period_days <= 365.0, "{}", s.ticker);
+        }
+        *count.entry(reason.code()).or_default() += 1;
+    }
+    for reason in [
+        "index_government",
+        "index_corporate",
+        "index_below_level",
+        "indexed_nominal",
+    ] {
+        assert!(
+            count.get(reason).copied().unwrap_or(0) > 0,
+            "{reason}: {count:?}"
+        );
+    }
+    // No issue whose payments follow an index is open without a test.
+    assert!(u
+        .issues
+        .iter()
+        .filter(|s| s.kind != CouponKind::Fixed)
+        .all(|s| gate(s, &u.issuers[s.issuer]).access != Access::Open));
 }
 
 fn market(u: &Universe) -> Market {

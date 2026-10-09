@@ -8,23 +8,30 @@ import { derive_bond } from "@tyche/yield-twin";
 import { strings } from "../i18n";
 import { issuerName } from "../lib/names";
 import { MACRO, MARKET, SEED, SNAPSHOT } from "./market";
-import { TEST_LEVEL, parseAccess, parseUniverse, ratingIndex, type Bond } from "./issues";
+import { INDEX_LEVEL, TEST_LEVEL, parseAccess, parseUniverse, ratingIndex, type Access, type Bond } from "./issues";
 import { BONDS, accessJson, dayJson, fallbackInputs, generate } from "./universe.testing";
 
 /** The digest tests/synth.rs pins for the native build. */
 const DIGEST = "f5adfa55cefab800";
 
 describe("the synthetic universe", () => {
-  it("says who may buy every issue: qualified-only issues for qualified investors, synthetic government bonds for everyone, a test below the Bank of Russia's level", () => {
+  it("says who may buy every issue: qualified-only issues for qualified investors, fixed-coupon government bonds for everyone, a test below the Bank of Russia's level, and floaters and linkers as bonds with structured income", () => {
     const access = parseAccess(accessJson());
     expect(access.size).toBe(BONDS.length);
-    // The card names the level tyche-market gates at.
-    expect((JSON.parse(accessJson()) as { testBelow: string }).testBelow).toBe(TEST_LEVEL);
-    for (const b of BONDS) {
-      if (b.qualifiedOnly) expect(access.get(b.id), b.id).toBe("qualified");
-      else if (b.issuer.kind === "government") expect(access.get(b.id), b.id).toBe("open");
-      else expect(access.get(b.id), `${b.id} ${b.rating}`).toBe(ratingIndex(b.rating) > ratingIndex(TEST_LEVEL) ? "test" : "open");
-    }
+    // The card names the levels tyche-market gates at.
+    expect(JSON.parse(accessJson()) as { testBelow: string; indexBelow: string }).toMatchObject({ testBelow: TEST_LEVEL, indexBelow: INDEX_LEVEL });
+    const expected = (b: Bond): Access => {
+      if (b.qualifiedOnly) return "qualified";
+      const government = b.issuer.kind === "government";
+      if (b.coupon.kind === "fixed") return government || ratingIndex(b.rating) <= ratingIndex(TEST_LEVEL) ? "open" : "test";
+      // Law No. 192-FZ, article 11, parts 12 and 13: after a test for a
+      // government bond and for a corporate floater rated at the level;
+      // closed for the rest.
+      if (government) return "test";
+      return b.coupon.kind !== "linker" && ratingIndex(b.rating) <= ratingIndex(INDEX_LEVEL) ? "test" : "qualified";
+    };
+    for (const b of BONDS) expect(access.get(b.id), `${b.id} ${b.coupon.kind} ${b.rating}`).toBe(expected(b));
+    expect(BONDS.filter((b) => b.coupon.kind !== "fixed").some((b) => access.get(b.id) === "open")).toBe(false);
     expect(new Set(access.values())).toEqual(new Set(["open", "test", "qualified"]));
     expect(() => parseAccess('{"issues":[{"ticker":"A-01","access":"maybe"}]}')).toThrow();
   });

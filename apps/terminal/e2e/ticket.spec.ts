@@ -181,8 +181,19 @@ test("the gate holds a purchase the investor's status does not allow, with the r
   await t.getByRole("radio", { name: "Sell" }).click();
   await expect(t.getByRole("button", { name: "Review the order" })).toBeEnabled();
 
+  // After a passed test: a synthetic government bond on the key rate, whose
+  // payments follow an index.
+  await page.goto("/?lang=en&issue=SG-201");
+  await ready(page);
+  t = ticket(page);
+  await expect(t.getByTestId("ticket-gate").locator("[data-access]")).toHaveText(
+    "A non-qualified investor after a passed test: a synthetic government bond whose coupon or face value follows the key rate, RUONIA or inflation.",
+  );
+  await expect(t.getByTestId("ticket-gate")).toContainText("A bond whose payments follow an index has a structured income");
+  await expect(t.getByTestId("ticket-gate").getByRole("status")).toHaveText(/^A broker carries out this purchase for a non-qualified investor only after a passed test/);
+
   // After a passed test: a corporate issue rated below the threshold.
-  await page.goto("/?lang=en&issue=TAVE-02");
+  await page.goto("/?lang=en&issue=VLGE-01");
   await ready(page);
   t = ticket(page);
   await expect(t.getByTestId("ticket-gate").locator("[data-access]")).toContainText(/^A non-qualified investor after a passed test: a corporate issue rated below \S+ on the synthetic scale\.$/);

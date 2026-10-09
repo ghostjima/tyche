@@ -142,6 +142,11 @@ export type Access = "open" | "test" | "qualified";
  * tyche-market's `TEST_BELOW`, the Bank of Russia board's level as the
  * synthetic scale reads it (universe.test.ts checks they agree). */
 export const TEST_LEVEL: Rating = "A+";
+/** The lowest synthetic rating at which a corporate floater is open to a
+ * non-qualified investor after a test: tyche-market's `INDEX_BELOW`, the
+ * Bank of Russia board's level for bonds whose income follows an index
+ * (universe.test.ts checks they agree). */
+export const INDEX_LEVEL: Rating = "AA-";
 /** What a non-qualified investor may buy without a passed test in a
  * calendar year, after the broker's notice of the risks, roubles (law
  * No. 39-FZ, article 3.1, paragraph 7). */

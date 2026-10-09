@@ -76,27 +76,41 @@ on aggregate figures only.
   issued under Russian law, whose bonds, issuer or guarantor are rated
   at least at the level the Bank of Russia's board sets) and
   subparagraph 5 (no test for government securities of the Russian
-  Federation); and paragraph 7 (without a test, up to 300,000 roubles a
-  year after the broker's notice of the risks and the investor's
-  statement accepting them, an allowance of the investor, not of an
-  issue). The level: the board's decision of 19 December 2025, applied
-  from 1 July 2026, A+ on the national scale ("ruA+", "A+(RU)", "A+.ru",
-  "A+|ru|") from at least two rating agencies. Subordinated bonds of a
-  credit institution are for qualified investors (the Federal Law
-  No. 395-1 "On banks and banking", article 25.1, fourteenth part). So:
-  a subordinated issue of a bank, or an issue whose terms restrict it to
+  Federation); both leave out bonds whose payments depend on the
+  circumstances of article 2, paragraph 1, subparagraph 23, second
+  paragraph, among them the level of interest rates and of inflation;
+  and paragraph 7 (without a test, up to 300,000 roubles a year after
+  the broker's notice of the risks and the investor's statement
+  accepting them, an allowance of the investor, not of an issue). Such
+  bonds follow the Federal Law of 11 June 2021 No. 192-FZ, article 11,
+  as amended up to 23 November 2024: the twelfth part closes them to
+  non-qualified investors, and the thirteenth opens, after a test or
+  within the same allowance, government securities (point 2) and bonds
+  whose only income is a coupon paid at least once a year, tied to one
+  of the listed indicators (among them inflation and the Bank of
+  Russia's money market indicators, which include the key rate and
+  RUONIA) and rated at least at the board's level for that point (point
+  1). The levels: the board's decisions of 19 December 2025, applied
+  from 1 July 2026, A+ on the national scale ("ruA+", "A+(RU)",
+  "A+.ru", "A+|ru|") from at least two rating agencies for article 3.1,
+  and AA- ("ruAA-", "AA-(RU)", "AA-.ru", "AA|ru|") for 192-FZ article
+  11, thirteenth part, point 1. Subordinated bonds of a credit
+  institution are for qualified investors (the Federal Law No. 395-1
+  "On banks and banking", article 25.1, fourteenth part). So: a
+  subordinated issue of a bank, or an issue whose terms restrict it to
   qualified investors (every subordinated one's do), is for them only; a
-  synthetic government bond is open to everyone; a corporate issue rated
-  below A+ needs a test; the rest are open. What the synthetic universe
-  adds, as its assumptions: every issuer is Russian and every issue is
-  under Russian law, none structural, convertible or perpetual; a
-  synthetic rating stands for the national-scale rating two agencies
-  would give, notch for notch; a floater's coupon (an index plus a fixed
-  spread) and a linker's indexed face value are gated as a fixed coupon,
-  a reading the law's text does not settle (it names interest rates and
-  inflation among the circumstances that make payments structured; read
-  the other way, such issues would need a test or be closed to
-  non-qualified investors), and the card says so for each such issue.
+  synthetic government bond with a fixed coupon is open to everyone,
+  and one on the key rate, on RUONIA or indexed to inflation needs a
+  test; a corporate floater rated AA- or higher needs a test, and one
+  rated below AA- or a corporate linker (its indexed face value is
+  income besides the coupon) is for qualified investors only; a
+  fixed-coupon corporate issue rated below A+ needs a test; the rest
+  are open. What the synthetic universe adds, as its assumptions: every
+  issuer is Russian and every issue is under Russian law, none
+  structural, convertible or perpetual; a synthetic rating stands for
+  the national-scale rating two agencies would give, notch for notch; a
+  floater's coupon is set on its index at the start of each coupon
+  period.
 - **A holding's events** (`synth::holding_events(universe, index,
   bonds)`): its coupons, amortisations and maturity from the issue's
   terms through tyche-yield (a floater's and a linker's coupons projected

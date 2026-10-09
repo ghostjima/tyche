@@ -210,7 +210,9 @@ and the order ticket against the synthetic order book: see
   only; priced by the bond engine from the zero-coupon yield curve. It
   also says who may buy each issue (anyone, after a test, or qualified
   investors only) by the law on the securities market and the banking
-  law as amended up to 4 August 2026, at the rating level the Bank of
+  law as amended up to 4 August 2026, with floaters and linkers gated as
+  bonds whose payments follow an index (Federal Law No. 192-FZ,
+  article 11, parts 12 and 13), at the rating levels the Bank of
   Russia's board set from 1 July 2026, with the synthetic ratings read
   as national-scale ratings (an assumption stated apart from the rule),
   lists a holding's events (payments,

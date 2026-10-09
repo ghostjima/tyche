@@ -5,7 +5,9 @@
 // qualified investors only) and the law behind it, and a liquidity warning
 // from the synthetic order book, with the thresholds it checks.
 import { Callout, Countdown, DescriptionList, Table, Tag, useBreakpoint, type DescriptionItem } from "@ghostjima/stoa-react";
-import { TEST_LEVEL, WITHOUT_TEST_PER_YEAR, type Access, type Bond } from "../data/issues";
+import { INDEX_LAW } from "../data/gates";
+import { INDEX_LEVEL, TEST_LEVEL, WITHOUT_TEST_PER_YEAR, type Access, type Bond } from "../data/issues";
+import { dayOf } from "../data/market";
 import type { Derived } from "../engine/types";
 import type { Strings } from "../i18n";
 import type { Formats } from "../lib/format";
@@ -27,9 +29,11 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
   const { issue, liquidity } = bond;
   const spread = (bp: number) => f.percent(bp / 10_000, 2);
   const resets = couponResets(bond, d.couponDays[0] ?? d.maturityDay);
-  // A coupon or a face value that follows an index: the gate's reading of it
-  // is the synthetic universe's, and the card says so.
-  const indexed = bond.coupon.kind !== "fixed";
+  // A coupon or a face value that follows an index: the law gates it as a
+  // bond with structured income, and the card says which way.
+  const kind = bond.coupon.kind;
+  const limit = f.money(WITHOUT_TEST_PER_YEAR, { fractionDigits: 0 });
+  const indexLaw = (part: string) => t.lawRestrictions(INDEX_LAW.number, f.day(dayOf(INDEX_LAW.date)), INDEX_LAW.article, part);
   // Every repayment of the face value, the final one included.
   const amort: AmortRow[] =
     d.amortDays.length === 0
@@ -130,7 +134,27 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
                 {t.tagQualified}
               </Tag>
             </span>
-            <span>{t.riskQualifiedOnly(t.lawSecurities(SECURITIES_LAW, "3", "5"))}</span>
+            {kind !== "fixed" && access === "qualified" && !bond.qualifiedOnly ? (
+              <span>{kind === "linker" ? t.riskIndexClosedNominal(indexLaw("12")) : t.riskIndexClosedLevel(INDEX_LEVEL, indexLaw("12"))}</span>
+            ) : (
+              <span>{t.riskQualifiedOnly(t.lawSecurities(SECURITIES_LAW, "3", "5"))}</span>
+            )}
+          </div>
+        ) : access === "test" && kind !== "fixed" ? (
+          <div className="risk">
+            <span>
+              <Tag tone="warning" size="small">
+                {t.tagTest}
+              </Tag>
+            </span>
+            <span>
+              {t.riskIndexTest(
+                t.riskIndexWhat[kind],
+                limit,
+                `${t.lawSecurities(SECURITIES_LAW, "3.1", "2", bond.issuer.kind === "government" ? "5" : "2")}; ${indexLaw("13")}`,
+              )}
+            </span>
+            <span className="muted">{t.riskIndexAssumption}</span>
           </div>
         ) : access === "test" ? (
           <div className="risk">
@@ -139,20 +163,17 @@ export function Risks({ t, f, bond, derived: d, access }: { t: Strings; f: Forma
                 {t.tagTest}
               </Tag>
             </span>
-            <span>{t.riskTest(TEST_LEVEL, f.money(WITHOUT_TEST_PER_YEAR, { fractionDigits: 0 }), t.lawSecurities(SECURITIES_LAW, "3.1"))}</span>
+            <span>{t.riskTest(TEST_LEVEL, limit, t.lawSecurities(SECURITIES_LAW, "3.1"))}</span>
             <span className="muted">{t.riskLevelNote(TEST_LEVEL)}</span>
-            {indexed && <span className="muted">{t.riskIndexNote}</span>}
           </div>
         ) : access === "open" && bond.issuer.kind === "government" ? (
           <div className="risk">
             <span>{t.riskOpenGov(t.lawSecurities(SECURITIES_LAW, "3.1", "2", "5"))}</span>
-            {indexed && <span className="muted">{t.riskIndexNote}</span>}
           </div>
         ) : access === "open" ? (
           <div className="risk">
             <span>{t.riskOpenRated(TEST_LEVEL, t.lawSecurities(SECURITIES_LAW, "3.1", "2", "2"))}</span>
             <span className="muted">{t.riskLevelNote(TEST_LEVEL)}</span>
-            {indexed && <span className="muted">{t.riskIndexNote}</span>}
           </div>
         ) : null,
     },
