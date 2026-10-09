@@ -9,10 +9,13 @@ import { VALUATION_DATE } from "../data/market";
 import { EMPTY_QUERY, GROUPS, YIELD_BOUNDS, applyQuery, chipCounts, defaultMonth, monthEndDay, type ChipId, type GroupId, type Item, type Query, type SearchTexts, type SortKey } from "../lib/filters";
 import type { Formats } from "../lib/format";
 import { Goals } from "./Goals";
+import { accessLabel } from "./Risks";
 
 type YieldChip = "yieldLow" | "yieldMid" | "yieldHigh" | "yieldTop";
 
-const CHIP_LABEL: Record<Exclude<ChipId, YieldChip>, keyof Strings> = {
+type AccessChip = "open" | "test" | "qualified";
+
+const CHIP_LABEL: Record<Exclude<ChipId, YieldChip | AccessChip>, keyof Strings> = {
   gov: "chipGov",
   corporate: "chipCorporate",
   durShort: "chipShort",
@@ -34,8 +37,6 @@ const CHIP_LABEL: Record<Exclude<ChipId, YieldChip>, keyof Strings> = {
   call: "chipCall",
   noAmortisation: "chipNoAmortisation",
   amortising: "chipAmortising",
-  open: "chipOpen",
-  qualified: "chipQualified",
   liquid: "chipLiquid",
   illiquid: "chipIlliquid",
   short: "chipShort",
@@ -43,7 +44,8 @@ const CHIP_LABEL: Record<Exclude<ChipId, YieldChip>, keyof Strings> = {
   long: "chipLong",
 };
 
-/** A chip's words; the yield bands take their bounds. */
+/** A chip's words; the yield bands take their bounds, and who may buy
+ * takes the issue card's words. */
 function chipLabel(id: ChipId, t: Strings, f: Formats): string {
   const [low, mid, high] = YIELD_BOUNDS.map((x) => f.percent(x, 0)) as [string, string, string];
   switch (id) {
@@ -55,6 +57,10 @@ function chipLabel(id: ChipId, t: Strings, f: Formats): string {
       return t.chipYieldBetween(mid, high);
     case "yieldTop":
       return t.chipYieldFrom(high);
+    case "open":
+    case "test":
+    case "qualified":
+      return accessLabel(t, id);
     default:
       return t[CHIP_LABEL[id]] as string;
   }

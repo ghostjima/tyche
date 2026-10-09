@@ -13,7 +13,7 @@ export type AnaloguesProps = {
   t: Strings;
   f: Formats;
   engine: Engine;
-  item: Item;
+  item: Pick<Item, "bond" | "derived">;
   items: readonly Item[];
   compared: readonly string[];
   onOpen: (id: string) => void;

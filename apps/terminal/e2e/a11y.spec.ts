@@ -43,6 +43,14 @@ const READY_STATES: Record<string, Prepare> = {
     await ready(page);
     await expect(page.locator(".goals__note")).toBeVisible();
   },
+  // Who can buy filtered to the issues that need a test, one of them open
+  // with its card's tag.
+  "issues that need a test": async (page, lang, theme) => {
+    await open(page, lang, theme, "&f=test");
+    await ready(page);
+    await page.locator(".pane-list [role=option]").first().click();
+    await expect(page.getByTestId("risks").locator(".stoa-tag").first()).toBeVisible();
+  },
   "money by a date": async (page, lang, theme) => {
     await open(page, lang, theme, "&by=2027-10");
     await ready(page);

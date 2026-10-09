@@ -28,7 +28,7 @@ export const ANALOGUE_MAX = 5;
 
 /** The issues of a similar rating and duration, the closest first: by
  * notches apart plus years apart, then by ticker. */
-export function analogues(item: Item, items: readonly Item[]): Item[] {
+export function analogues(item: Pick<Item, "bond" | "derived">, items: readonly Item[]): Item[] {
   const r = ratingIndex(item.bond.rating);
   const distance = (x: Item) => Math.abs(ratingIndex(x.bond.rating) - r) + Math.abs(x.derived.macaulay - item.derived.macaulay);
   return items

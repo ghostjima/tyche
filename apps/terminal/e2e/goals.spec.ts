@@ -16,7 +16,7 @@ test("Instead of a deposit sets visible filters, says what it sets, and can be c
   await deposit.click();
   await expect(deposit).toHaveAttribute("aria-pressed", "true");
   // The goal's chips are the bar's own, pressed where anyone can see them.
-  for (const chip of ["AAA to AA-", "Up to a year", "Fixed", "On the key rate", "Without qualified status", "Liquid"]) {
+  for (const chip of ["AAA to AA-", "Up to a year", "Fixed", "On the key rate", "Every investor", "Liquid"]) {
     await expect(page.getByRole("search").getByRole("button", { name: new RegExp(`^${chip} \\d+$`) }).first()).toHaveAttribute("aria-pressed", "true");
   }
   const note = page.locator(".goals__note");
@@ -95,6 +95,47 @@ test("the list's state comes back from a link: goal, chips, search, date and sor
   expect(params(page).get("by")).toBeNull();
   await page.getByRole("button", { name: "Clear all" }).first().click();
   expect(params(page).toString()).toBe("lang=en");
+});
+
+test("who can buy has the gate's three states, in the issue card's words, with counts, kept in the link", async ({ page }) => {
+  await page.goto("/?lang=en");
+  await ready(page);
+  const total = await rows(page).count();
+  const group = page.getByRole("search").getByRole("toolbar", { name: "Who can buy", exact: true });
+  const chips = group.getByRole("button");
+  await expect(chips).toHaveText([/^Every investor\s*\d+$/, /^Test required\s*\d+$/, /^Qualified investors only\s*\d+$/]);
+  // Each issue is in exactly one state: the counts add up to the list.
+  const counts = (await chips.allInnerTexts()).map((text) => Number(text.match(/\d+$/)![0]));
+  expect(counts.every((n) => n > 0)).toBe(true);
+  expect(counts.reduce((a, b) => a + b, 0)).toBe(total);
+  // "Test required" keeps its count of issues, and says it in the link.
+  await chips.nth(1).click();
+  await expect(chips.nth(1)).toHaveAttribute("aria-pressed", "true");
+  await expect(rows(page)).toHaveCount(counts[1]!);
+  expect(params(page).getAll("f")).toEqual(["test"]);
+  // The card of an issue it keeps says the same.
+  await rows(page).first().click();
+  const access = page.getByTestId("risks").locator(".stoa-description-list__item").filter({ has: page.getByRole("term").filter({ hasText: "Who can buy" }) });
+  await expect(access.locator(".stoa-tag")).toHaveText("Test required");
+  // The link brings the chip back; with qualified investors only, the list widens.
+  await page.goto("/?lang=en&f=test&f=qualified");
+  await ready(page);
+  await expect(chips.nth(1)).toHaveAttribute("aria-pressed", "true");
+  await expect(chips.nth(2)).toHaveAttribute("aria-pressed", "true");
+  await expect(rows(page)).toHaveCount(counts[1]! + counts[2]!);
+  await chips.nth(2).click();
+  await expect(rows(page).first()).toBeVisible();
+  await rows(page).first().click();
+  await expect(access.locator(".stoa-tag")).toHaveText("Test required");
+  // In Russian, the card's words too.
+  await page.goto("/?lang=ru&f=qualified");
+  await ready(page);
+  const ru = page.getByRole("search").getByRole("toolbar", { name: "Кто может купить", exact: true }).getByRole("button");
+  for (const [n, name] of ["Все инвесторы", "Нужен тест", "Только для квалифицированных инвесторов"].entries()) {
+    await expect(ru.nth(n)).toHaveAccessibleName(new RegExp(`^${name} \\d+$`));
+  }
+  await expect(ru.nth(2)).toHaveAttribute("aria-pressed", "true");
+  await expect(rows(page)).toHaveCount(counts[2]!);
 });
 
 test("in Russian: the goals, the sentence and the professional filters, and still no advice", async ({ page }) => {

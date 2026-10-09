@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { ratingIndex } from "../data/issues";
+import { parseAccess, ratingIndex } from "../data/issues";
 import { CURVE, MARKET } from "../data/market";
-import { BONDS } from "../data/universe.testing";
+import { BONDS, accessJson } from "../data/universe.testing";
 import { twinEngine } from "../engine/twin";
 import type { GSpread } from "../engine/types";
 import type { Item } from "./filters";
 import { ANALOGUE_MAX, analogues, gSpread } from "./peers";
 
+const access = parseAccess(accessJson());
 const items: Item[] = BONDS.map((bond) => {
   const r = twinEngine.derive_bond(bond.issue, MARKET);
   if (!("ok" in r)) throw new Error(bond.id);
-  return { bond, derived: r.ok };
+  return { bond, derived: r.ok, access: access.get(bond.id)! };
 });
 const item = (id: string) => items.find((i) => i.bond.id === id)!;
 const spread = (i: Item): GSpread => {

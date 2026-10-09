@@ -39,7 +39,9 @@ Status: early. Performance record, with stamps:
   shown as on while they are exactly what it set. Below them, filter
   chips in groups, each with the count it would leave: issuer, yield to
   the offer or maturity, duration, synthetic rating, coupon type,
-  coupon frequency, offer, amortisation, who can buy, liquidity (a
+  coupon frequency, offer, amortisation, who can buy (every investor,
+  test required, or qualified investors only: tyche-market's gate, in
+  the issue card's words), liquidity (a
   quoted spread up to 0.5 percent and at least 10,000 bonds on each side
   of the synthetic book, `src/lib/liquidity.ts`), maturity, and the
   date; folded into a sheet on a phone; how many issues are shown, and
@@ -93,7 +95,8 @@ Status: early. Performance record, with stamps:
   cards and kept in the URL (`?cmp=`): yields to maturity and to the
   offer, after tax and the fee to the nearest exit with nothing
   reinvested, duration, rating and outlook, coupon, offer, amortisation,
-  liquidity, who can buy, and the G-spread: the issue's yield to the
+  liquidity, who can buy (the gate's three states, in the card's
+  words), and the G-spread: the issue's yield to the
   nearest exit less the Bank of Russia's zero-coupon yield of federal
   loan bonds at the same Macaulay duration, read linearly between the
   curve's terms, as the engine's `g_spread` works it out from the
@@ -289,7 +292,8 @@ What the tests cover, and nothing wider:
 
 - axe (`@axe-core/playwright`) finds no serious or critical violation in
   Russian and English, each in the light and the dark theme, on:
-  the list, a goal with its filters, "Money by a date" with its month,
+  the list, a goal with its filters, the issues that need a test with
+  one of them open, "Money by a date" with its month,
   the data and licensing page, an issue with an offer (with the Terms
   and the working open), a broker's fee out of range, an issue with
   every risk, three issues compared
