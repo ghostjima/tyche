@@ -20,7 +20,7 @@ export type PeerMapProps = {
   t: Strings;
   f: Formats;
   items: readonly Item[];
-  self: Item;
+  self: Pick<Item, "bond" | "derived">;
   analogues: readonly Item[];
   compared: readonly string[];
 };

@@ -3,7 +3,7 @@
 // issue, one step from opening them; the map of peers by rating and
 // duration, with its table. The comparison lives in the URL.
 import { expect, test, type Page } from "@playwright/test";
-import { ISSUES, expectNoHorizontalScroll, ready } from "./helpers";
+import { ISSUES, PORTFOLIO_PUT, expectNoHorizontalScroll, ready } from "./helpers";
 
 const compare = (page: Page) => page.getByRole("region", { name: /^(Comparison|Сравнение)$/ });
 const params = (page: Page) => new URL(page.url()).searchParams;
@@ -59,7 +59,7 @@ test("the comparison sets the measures side by side, the G-spread with them, and
   await expect(row("Yield to maturity").first()).toHaveText("15.79%");
   await expect(row("Synthetic rating").nth(2)).toHaveText("BB+, outlook negative");
   await expect(row("Liquidity").nth(2)).toHaveText("Thin market, spread 8.55%");
-  await expect(row("Who can buy").nth(2)).toHaveText("Qualified only");
+  await expect(row("Who can buy").nth(2)).toHaveText("Qualified investors only");
   // A G-spread in basis points; an inflation-linked issue's is not compared.
   await expect(row("G-spread").first()).toHaveText("+145 bp");
   await expect(row("G-spread").nth(1)).toHaveText("not compared: the yield is real");
@@ -71,6 +71,28 @@ test("the comparison sets the measures side by side, the G-spread with them, and
   await ready(page);
   await expect(compare(page).getByRole("columnheader")).toHaveCount(2);
   expect(params(page).getAll("cmp")).toEqual([ISSUES.offer]);
+});
+
+test("who can buy is compared in the gate's three states, in the issue card's words", async ({ page }) => {
+  // Every investor, a test, qualified investors only, as each card says.
+  const issues = [ISSUES.offer, PORTFOLIO_PUT, "BELB-02"];
+  const tags: string[] = [];
+  for (const id of issues) {
+    await page.goto(`/?lang=en&issue=${id}`);
+    await ready(page);
+    const access = page.getByTestId("risks").locator(".stoa-description-list__item").filter({ has: page.getByRole("term").filter({ hasText: "Who can buy" }) });
+    // The tag, or the words an open issue's sentence starts with.
+    const tag = access.locator(".stoa-tag");
+    tags.push((await tag.count()) > 0 ? await tag.innerText() : (await access.getByRole("definition").innerText()).split(":")[0]!);
+  }
+  expect(tags).toEqual(["Every investor", "Test required", "Qualified investors only"]);
+  await page.goto(`/?lang=en&${issues.map((id) => `cmp=${id}`).join("&")}`);
+  await ready(page);
+  const cells = compare(page).getByRole("row", { name: /^Who can buy/ }).getByRole("cell");
+  await expect(cells).toHaveText(tags);
+  await page.goto(`/?lang=ru&${issues.map((id) => `cmp=${id}`).join("&")}`);
+  await ready(page);
+  await expect(compare(page).getByRole("row", { name: /^Кто может купить/ }).getByRole("cell")).toHaveText(["Все инвесторы", "Нужен тест", "Только для квалифицированных инвесторов"]);
 });
 
 test("analogues are one step from opening, and sit on the map of peers with a table of its points", async ({ page }) => {
@@ -125,6 +147,14 @@ test("on a phone the comparison and the map fit the screen without sideways scro
   await ready(page);
   await expect(page.getByTestId("analogues").getByRole("figure")).toBeVisible();
   await expectNoHorizontalScroll(page, "issue with the comparison at 375");
+  // The map's table, open, wraps its headers rather than scroll sideways
+  // in its own box.
+  const map = page.getByTestId("analogues").getByRole("figure");
+  await map.getByText("Таблица данных").click();
+  const region = map.locator(".stoa-chart__data .stoa-table-region");
+  await expect(region.locator("tbody tr").first()).toBeVisible();
+  expect(await region.evaluate((r) => r.scrollWidth - r.clientWidth)).toBe(0);
+  await expectNoHorizontalScroll(page, "issue with the map's table at 375");
   await page.goto(`/?lang=en&cmp=${ISSUES.offer}&cmp=BELB-02&cmp=${ISSUES.floater}`);
   await ready(page);
   await expect(compare(page)).toBeVisible();

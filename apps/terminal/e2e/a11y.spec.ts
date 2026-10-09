@@ -43,6 +43,14 @@ const READY_STATES: Record<string, Prepare> = {
     await ready(page);
     await expect(page.locator(".goals__note")).toBeVisible();
   },
+  // Who can buy filtered to the issues that need a test, one of them open
+  // with its card's tag.
+  "issues that need a test": async (page, lang, theme) => {
+    await open(page, lang, theme, "&f=test");
+    await ready(page);
+    await page.locator(".pane-list [role=option]").first().click();
+    await expect(page.getByTestId("risks").locator(".stoa-tag").first()).toBeVisible();
+  },
   "money by a date": async (page, lang, theme) => {
     await open(page, lang, theme, "&by=2027-10");
     await ready(page);
@@ -102,17 +110,26 @@ const READY_STATES: Record<string, Prepare> = {
     await inbox.locator(".stoa-calendar__nav").last().click();
     await inbox.locator(".stoa-calendar__nav").last().click();
     await inbox.locator('[data-date="2026-12-08"]').click();
-    await expect(inbox.locator(".stoa-calendar__chosen .redeem")).toBeVisible();
+    await expect(inbox.locator(".stoa-calendar__chosen .stoa-request")).toBeVisible();
   },
   // The confirmation of a request to redeem at a put offer.
   "redemption request": async (page, lang, theme) => {
     await open(page, lang, theme, `&hold=${PORTFOLIO_PUT}*10`);
     await ready(page);
-    await page.locator(".redeem").getByRole("button").click();
+    await page.locator(".stoa-request").getByRole("button").click();
     await expect(page.getByRole("alertdialog")).toBeVisible();
     // Scanned once the dialog has faded in: mid-fade its text is paler
     // than it is drawn.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
+  },
+  // The request recorded: what was recorded beside Cancel, which both
+  // describe it.
+  "redemption request recorded": async (page, lang, theme) => {
+    await open(page, lang, theme, `&hold=${PORTFOLIO_PUT}*10`);
+    await ready(page);
+    await page.locator(".stoa-request").getByRole("button").click();
+    await page.getByRole("alertdialog").getByRole("button").last().click();
+    await expect(page.locator(".stoa-request__recorded")).toBeVisible();
   },
   // The order ticket: a limit off the price step, said under the price,
   // over a large order that takes several levels of the book.

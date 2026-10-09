@@ -213,15 +213,17 @@ export function App({ lang, onLang, theme }: { lang: Lang; onLang: (lang: Lang) 
   const nameOf = (bond: Bond) => issuerName(bond, t);
   const textsOf = (bond: Bond) => searchTexts(bond, t);
 
-  // Every issue of the universe derived by the active engine; derived
-  // again when the engine changes.
+  // Every issue of the universe derived by the active engine, with who
+  // may buy it; derived again when the engine changes.
+  const access = market.status === "ready" ? market.access : null;
   const items = useMemo<Item[] | null>(() => {
-    if (!engine || !bonds) return null;
+    if (!engine || !bonds || !access) return null;
     return bonds.flatMap((bond) => {
       const r = engine.derive_bond(bond.issue, MARKET);
-      return "ok" in r ? [{ bond, derived: r.ok }] : [];
+      const gate = access.get(bond.id);
+      return "ok" in r && gate ? [{ bond, derived: r.ok, access: gate }] : [];
     });
-  }, [engine, bonds]);
+  }, [engine, bonds, access]);
 
   // A link may name issues the universe does not have: they leave the
   // comparison.
