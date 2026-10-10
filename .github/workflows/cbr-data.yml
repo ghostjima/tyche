@@ -13,21 +13,24 @@ on:
     - cron: "45 11 * * *"
   workflow_dispatch:
 
-permissions:
-  contents: read
+# The token starts with no permission; each job states what it needs.
+permissions: {}
 
 concurrency:
   group: cbr-data
   cancel-in-progress: false
 
 jobs:
+  # Fetches and parses cbr.ru with a token that can only read: what the
+  # network answers is handled here, away from the job that can push.
   snapshot:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
-      # This job pushes to the cbr-data branch, so it keeps the credentials.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
@@ -35,6 +38,27 @@ jobs:
       # code is broken, not cbr.ru.
       - run: node --test scripts/cbr-snapshot.test.mjs
       - run: node scripts/cbr-snapshot.mjs --out "$RUNNER_TEMP/snapshot.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: snapshot
+          path: ${{ runner.temp }}/snapshot.json
+          if-no-files-found: error
+          retention-days: 7
+
+  # Commits the snapshot to the orphan branch `cbr-data`. The only job
+  # that can write, and it runs git and jq, nothing from the repository.
+  publish:
+    needs: snapshot
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # This job pushes to the cbr-data branch, so it keeps the credentials.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: snapshot
+          path: ${{ runner.temp }}
       - name: Commit to the cbr-data branch
         shell: bash
         run: |
@@ -59,6 +83,6 @@ jobs:
             echo "The snapshot is unchanged."
             exit 0
           fi
-          retrieved="$(node -e "console.log(JSON.parse(require('fs').readFileSync('snapshot.json', 'utf8')).retrievedAt)")"
+          retrieved="$(jq -er '.retrievedAt | strings' snapshot.json)"
           git commit -q -m "Bank of Russia snapshot retrieved at ${retrieved}"
           git push origin HEAD:refs/heads/cbr-data
