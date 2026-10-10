@@ -2,6 +2,7 @@ import { defineConfig, searchForWorkspaceRoot } from "vite";
 import react from "@vitejs/plugin-react";
 import { firstPaintScript } from "@ghostjima/stoa-react/first-paint";
 import { PREFERENCES } from "./src/preferences";
+import { contentSecurityPolicy } from "./csp";
 
 // Served from GitHub Pages under /tyche/.
 export default defineConfig({
@@ -17,6 +18,10 @@ export default defineConfig({
       name: "first-paint",
       transformIndexHtml: () => [{ tag: "script", children: firstPaintScript(PREFERENCES), injectTo: "head" }],
     },
+    // The built page's Content Security Policy, with the hash of the
+    // script above as it stands in the page. Last, so it sees the page as
+    // it will be served; the dev server's page has none.
+    contentSecurityPolicy(),
   ],
   // Stoa is linked from the sibling repository and has its own
   // node_modules: without dedupe the app would run two copies of React and

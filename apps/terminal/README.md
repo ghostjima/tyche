@@ -386,6 +386,15 @@ pnpm --filter terminal measure # after pnpm build: the measurement tables
 E2E_PORT=4181 pnpm e2e
 ```
 
+The built page states a Content Security Policy and a referrer policy
+in meta elements, since GitHub Pages cannot send them as headers:
+`csp.ts` writes the first during `vite build`, with the hash of the
+first-paint script as it stands in the page. The dev server's page has
+no policy, because hot reload needs inline scripts and `eval`; the
+browser tests check the policy on the build (`e2e/csp.spec.ts`). What
+the policy allows, and its limits on Pages, are in
+[SECURITY.md](../../SECURITY.md).
+
 ## Measurements
 
 `pnpm --filter terminal measure` reads the page's marks `tyche:wasm-init`
