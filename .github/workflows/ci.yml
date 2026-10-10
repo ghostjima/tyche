@@ -9,8 +9,15 @@ on:
     types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
 
-permissions:
-  contents: read
+# The token starts with no permission; each job states what it needs.
+permissions: {}
+
+# A newer push to a pull request replaces the run in progress. A run on
+# main has a group of its own, so every merge is measured and none is
+# cancelled.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always
@@ -21,6 +28,8 @@ jobs:
   rust:
     name: rust (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -61,6 +70,8 @@ jobs:
   # this job's tyche-yield package, so what is measured is what is tested.
   wasm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -88,6 +99,8 @@ jobs:
   msrv:
     name: msrv (1.85)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -101,6 +114,8 @@ jobs:
   parity:
     needs: wasm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -142,6 +157,8 @@ jobs:
   build-and-test:
     needs: wasm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: tyche
@@ -247,6 +264,8 @@ jobs:
   badges:
     needs: [rust, wasm, msrv, parity, build-and-test]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
