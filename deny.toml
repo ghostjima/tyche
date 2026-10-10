@@ -1,0 +1,33 @@
+# cargo-deny, run by .github/workflows/audit.yml: the advisories, licences,
+# duplicate versions and sources of every crate in Cargo.lock, with every
+# feature on, for every target, development dependencies included.
+[graph]
+all-features = true
+
+# The RustSec advisory database: a vulnerability, an unsound or an
+# unmaintained crate fails, and so does a yanked version. An advisory that
+# cannot be acted on yet is listed in `ignore` with its reason.
+[advisories]
+version = 2
+yanked = "deny"
+ignore = []
+
+# The licences the crates in Cargo.lock need today. A crate under any
+# other licence fails until the licence is read and added here.
+[licenses]
+version = 2
+allow = ["MIT", "Apache-2.0", "Unicode-3.0"]
+confidence-threshold = 0.93
+
+# One version of each crate, and no `*` requirement.
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+# crates.io only: no other registry and no git dependency.
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
