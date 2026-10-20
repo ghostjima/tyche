@@ -4,12 +4,12 @@
   "site": "https://www.cbr.ru/",
   "terms": "https://www.cbr.ru/user_agreement/",
   "attribution": "Source: Bank of Russia (https://www.cbr.ru/). The zero-coupon yield curve of federal loan bonds is calculated by the Moscow Exchange (https://www.moex.com/a3642). Inflation: Rosstat and the Bank of Russia.",
-  "retrievedAt": "2026-10-19T17:46:10.325Z",
+  "retrievedAt": "2026-10-20T15:50:09.790Z",
   "keyRate": {
     "url": "https://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?op=KeyRateXML",
-    "retrievedAt": "2026-10-19T17:46:08.940Z",
+    "retrievedAt": "2026-10-20T15:50:08.524Z",
     "from": "2013-09-13",
-    "to": "2026-10-19",
+    "to": "2026-10-20",
     "page": "https://www.cbr.ru/hd_base/KeyRate/",
     "method": "KeyRateXML",
     "changes": [
@@ -281,9 +281,9 @@
   },
   "ruonia": {
     "url": "https://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?op=RuoniaXML",
-    "retrievedAt": "2026-10-19T17:46:09.170Z",
-    "from": "2025-10-19",
-    "to": "2026-10-19",
+    "retrievedAt": "2026-10-20T15:50:08.706Z",
+    "from": "2025-10-20",
+    "to": "2026-10-20",
     "page": "https://www.cbr.ru/hd_base/ruonia/",
     "method": "RuoniaXML",
     "values": [
@@ -1266,14 +1266,18 @@
       {
         "date": "2026-10-16",
         "pct": 13.97
+      },
+      {
+        "date": "2026-10-19",
+        "pct": 14
       }
     ]
   },
   "curve": {
-    "url": "https://www.cbr.ru/hd_base/zcyc_params/?UniDbQuery.Posted=True&UniDbQuery.From=18.09.2026&UniDbQuery.To=19.10.2026",
-    "retrievedAt": "2026-10-19T17:46:09.788Z",
-    "from": "2026-09-18",
-    "to": "2026-10-19",
+    "url": "https://www.cbr.ru/hd_base/zcyc_params/?UniDbQuery.Posted=True&UniDbQuery.From=19.09.2026&UniDbQuery.To=20.10.2026",
+    "retrievedAt": "2026-10-20T15:50:09.325Z",
+    "from": "2026-09-19",
+    "to": "2026-10-20",
     "page": "https://www.cbr.ru/hd_base/zcyc_params/",
     "calculatedBy": {
       "name": "Moscow Exchange",
@@ -1294,23 +1298,6 @@
       30
     ],
     "values": [
-      {
-        "date": "2026-09-18",
-        "yieldsPct": [
-          12.5,
-          12.84,
-          13.22,
-          13.6,
-          14.8,
-          15.48,
-          16.14,
-          16.38,
-          16.46,
-          16.51,
-          16.58,
-          16.7
-        ]
-      },
       {
         "date": "2026-09-21",
         "yieldsPct": [
@@ -1671,10 +1658,10 @@
     ]
   },
   "inflation": {
-    "url": "https://www.cbr.ru/hd_base/infl/?UniDbQuery.Posted=True&UniDbQuery.From=01.01.2020&UniDbQuery.To=19.10.2026",
-    "retrievedAt": "2026-10-19T17:46:10.325Z",
+    "url": "https://www.cbr.ru/hd_base/infl/?UniDbQuery.Posted=True&UniDbQuery.From=01.01.2020&UniDbQuery.To=20.10.2026",
+    "retrievedAt": "2026-10-20T15:50:09.790Z",
     "from": "2020-01-01",
-    "to": "2026-10-19",
+    "to": "2026-10-20",
     "page": "https://www.cbr.ru/hd_base/infl/",
     "sources": [
       "Rosstat",
@@ -2172,8 +2159,8 @@
   "latest": {
     "date": "2026-10-19",
     "keyRatePct": 14,
-    "ruoniaPct": 13.97,
-    "ruoniaDate": "2026-10-16",
+    "ruoniaPct": 14,
+    "ruoniaDate": "2026-10-19",
     "inflationPct": 6.35,
     "inflationMonth": "2026-09",
     "curve": {
