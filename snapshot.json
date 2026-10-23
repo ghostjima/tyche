@@ -4,12 +4,12 @@
   "site": "https://www.cbr.ru/",
   "terms": "https://www.cbr.ru/user_agreement/",
   "attribution": "Source: Bank of Russia (https://www.cbr.ru/). The zero-coupon yield curve of federal loan bonds is calculated by the Moscow Exchange (https://www.moex.com/a3642). Inflation: Rosstat and the Bank of Russia.",
-  "retrievedAt": "2026-10-22T16:01:09.596Z",
+  "retrievedAt": "2026-10-23T15:54:54.676Z",
   "keyRate": {
     "url": "https://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?op=KeyRateXML",
-    "retrievedAt": "2026-10-22T16:01:08.291Z",
+    "retrievedAt": "2026-10-23T15:54:53.313Z",
     "from": "2013-09-13",
-    "to": "2026-10-22",
+    "to": "2026-10-23",
     "page": "https://www.cbr.ru/hd_base/KeyRate/",
     "method": "KeyRateXML",
     "changes": [
@@ -281,16 +281,12 @@
   },
   "ruonia": {
     "url": "https://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?op=RuoniaXML",
-    "retrievedAt": "2026-10-22T16:01:08.443Z",
-    "from": "2025-10-22",
-    "to": "2026-10-22",
+    "retrievedAt": "2026-10-23T15:54:53.513Z",
+    "from": "2025-10-23",
+    "to": "2026-10-23",
     "page": "https://www.cbr.ru/hd_base/ruonia/",
     "method": "RuoniaXML",
     "values": [
-      {
-        "date": "2025-10-22",
-        "pct": 16.43
-      },
       {
         "date": "2025-10-23",
         "pct": 16.39
@@ -1270,14 +1266,18 @@
       {
         "date": "2026-10-21",
         "pct": 14.01
+      },
+      {
+        "date": "2026-10-22",
+        "pct": 14.2
       }
     ]
   },
   "curve": {
-    "url": "https://www.cbr.ru/hd_base/zcyc_params/?UniDbQuery.Posted=True&UniDbQuery.From=21.09.2026&UniDbQuery.To=22.10.2026",
-    "retrievedAt": "2026-10-22T16:01:09.093Z",
-    "from": "2026-09-21",
-    "to": "2026-10-22",
+    "url": "https://www.cbr.ru/hd_base/zcyc_params/?UniDbQuery.Posted=True&UniDbQuery.From=22.09.2026&UniDbQuery.To=23.10.2026",
+    "retrievedAt": "2026-10-23T15:54:54.168Z",
+    "from": "2026-09-22",
+    "to": "2026-10-23",
     "page": "https://www.cbr.ru/hd_base/zcyc_params/",
     "calculatedBy": {
       "name": "Moscow Exchange",
@@ -1298,23 +1298,6 @@
       30
     ],
     "values": [
-      {
-        "date": "2026-09-21",
-        "yieldsPct": [
-          12.3,
-          12.71,
-          13.17,
-          13.61,
-          14.95,
-          15.63,
-          16.2,
-          16.42,
-          16.58,
-          16.72,
-          16.8,
-          16.91
-        ]
-      },
       {
         "date": "2026-09-22",
         "yieldsPct": [
@@ -1688,14 +1671,31 @@
           16.52,
           16.48
         ]
+      },
+      {
+        "date": "2026-10-22",
+        "yieldsPct": [
+          12.93,
+          13.33,
+          13.69,
+          14.01,
+          14.99,
+          15.59,
+          16.2,
+          16.43,
+          16.53,
+          16.56,
+          16.57,
+          16.57
+        ]
       }
     ]
   },
   "inflation": {
-    "url": "https://www.cbr.ru/hd_base/infl/?UniDbQuery.Posted=True&UniDbQuery.From=01.01.2020&UniDbQuery.To=22.10.2026",
-    "retrievedAt": "2026-10-22T16:01:09.596Z",
+    "url": "https://www.cbr.ru/hd_base/infl/?UniDbQuery.Posted=True&UniDbQuery.From=01.01.2020&UniDbQuery.To=23.10.2026",
+    "retrievedAt": "2026-10-23T15:54:54.676Z",
     "from": "2020-01-01",
-    "to": "2026-10-22",
+    "to": "2026-10-23",
     "page": "https://www.cbr.ru/hd_base/infl/",
     "sources": [
       "Rosstat",
@@ -2191,10 +2191,10 @@
     ]
   },
   "latest": {
-    "date": "2026-10-21",
+    "date": "2026-10-22",
     "keyRatePct": 14,
-    "ruoniaPct": 14.01,
-    "ruoniaDate": "2026-10-21",
+    "ruoniaPct": 14.2,
+    "ruoniaDate": "2026-10-22",
     "inflationPct": 6.35,
     "inflationMonth": "2026-09",
     "curve": {
@@ -2213,18 +2213,18 @@
         30
       ],
       "yieldsPct": [
-        12.72,
-        13.16,
-        13.55,
-        13.9,
-        14.97,
-        15.63,
-        16.24,
-        16.46,
-        16.55,
-        16.55,
-        16.52,
-        16.48
+        12.93,
+        13.33,
+        13.69,
+        14.01,
+        14.99,
+        15.59,
+        16.2,
+        16.43,
+        16.53,
+        16.56,
+        16.57,
+        16.57
       ]
     }
   }
